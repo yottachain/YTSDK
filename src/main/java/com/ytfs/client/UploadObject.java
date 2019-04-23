@@ -17,6 +17,7 @@ import com.ytfs.service.packet.UploadBlockInit2Req;
 import com.ytfs.service.packet.UploadBlockDupResp;
 import com.ytfs.service.packet.UploadBlockInitReq;
 import com.ytfs.service.packet.UploadBlockInitResp;
+import com.ytfs.service.packet.UploadFileReq;
 import com.ytfs.service.packet.UploadObjectEndReq;
 import com.ytfs.service.packet.UploadObjectInitReq;
 import com.ytfs.service.packet.UploadObjectInitResp;
@@ -72,7 +73,7 @@ public class UploadObject {
             }
             complete(ytfile.getVHW());
         }
-        VNU=res.getVNU();
+        VNU = res.getVNU();
         return ytfile.getVHW();
     }
 
@@ -182,4 +183,11 @@ public class UploadObject {
         return VNU;
     }
 
+    public void writeMeta(String bucketname, String filename) throws ServiceException {
+        UploadFileReq req = new UploadFileReq();
+        req.setBucketname(bucketname);
+        req.setFileName(filename);
+        req.setVNU(VNU);
+        P2PUtils.requestBPU(req, UserConfig.superNode);
+    }
 }
