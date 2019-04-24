@@ -4,14 +4,17 @@ import com.ytfs.service.codec.Block;
 import com.ytfs.service.codec.BlockInputStream;
 import com.ytfs.service.packet.ObjectRefer;
 import com.ytfs.service.packet.ServiceException;
+import com.ytfs.service.servlet.FromUserMsgDispatcher;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.log4j.Logger;
 
 public class DownloadInputStream extends InputStream {
 
+    private static final Logger LOG = Logger.getLogger(DownloadInputStream.class);
     private Map<Integer, ObjectRefer> refers = new HashMap();
     private final long end;
     private BlockInputStream bin;
@@ -26,12 +29,14 @@ public class DownloadInputStream extends InputStream {
         }
         this.readpos = start;
         this.end = end;
+        LOG.info("read start:"+start+",end:"+end);
     }
 
     private void readBlock() throws IOException, ServiceException {
         bin = null;
         while (bin == null) {
             ObjectRefer refer = refers.get(referIndex);
+            LOG.info("refers:"+referIndex+" :"+refer);
             if (refer == null) {
                 return;
             }

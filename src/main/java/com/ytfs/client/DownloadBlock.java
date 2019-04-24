@@ -21,8 +21,10 @@ import io.yottachain.nodemgmt.core.vo.Node;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.log4j.Logger;
 
 public class DownloadBlock {
+    private static final Logger LOG = Logger.getLogger(DownloadBlock.class);
 
     private final ObjectRefer refer;
     private byte[] data;
@@ -38,6 +40,7 @@ public class DownloadBlock {
     }
 
     public void load() throws ServiceException {
+        LOG.info("load");
         ks = KeyStoreCoder.decryped(refer.getKEU(), UserConfig.KUSp);
         DownloadBlockInitReq req = new DownloadBlockInitReq();
         req.setVBI(refer.getVBI());

@@ -161,7 +161,9 @@ public class UploadBlock {
     }
 
     private void sign(UploadShardReq req, int nodeid) {
-        Key key = KeyStoreCoder.rsaPrivateKey(UserConfig.KUSp);
+        req.setUSERSIGN(new byte[0]);
+       // Key key = KeyStoreCoder.rsaPrivateKey(UserConfig.KUSp);
+       /*
         try {
             Signature signet = java.security.Signature.getInstance("DSA");
             signet.initSign((PrivateKey) key);
@@ -175,6 +177,6 @@ public class UploadBlock {
             req.setUSERSIGN(signet.sign());
         } catch (Exception r) {
             throw new IllegalArgumentException(r.getMessage());
-        }
+        }*/
     }
 }
