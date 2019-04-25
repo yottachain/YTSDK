@@ -7,7 +7,7 @@ public class UploadTest {
     public static void main(String[] args) {
         try {
             ClientInitor.init();
-            UploadObject upload = new UploadObject("/test.dat");
+            UploadObject upload = new UploadObject("d:/seo.txt");
             upload.upload();
 
             System.out.println(upload.getVNU());

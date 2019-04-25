@@ -13,10 +13,15 @@ public class UploadSmallTest {
         ss=ss+"12345678901234567890123456789012345678901234567890";
         try {
             ClientInitor.init();
-            UploadObject upload = new UploadObject(ss.getBytes());
-            byte[] VHW=upload.upload();
+           // BucketHandler.createBucket("test");
+            String[] buckets=BucketHandler.listBucket();
+            System.out.println(buckets[0]);
             
-            DownloadObject obj=new DownloadObject(VHW);
+            UploadObject upload = new UploadObject(ss.getBytes());
+            upload.upload();
+            upload.writeMeta("test", "testfile");
+            
+            DownloadObject obj=new DownloadObject("test", "testfile");
             InputStream is=obj.load();
             byte[] bs=new byte[1024];
             is.read(bs);

@@ -105,16 +105,22 @@ public class UploadBlock {
     }
 
     private void subUpload() throws InterruptedException, ServiceException {
+        int retrycount = 0;
         while (true) {
             UploadBlockSubReq uloadBlockSubReq = doUploadShardRes();
             if (uloadBlockSubReq == null) {
                 return;
+            } else {
+                if (retrycount >= 5) {
+                    throw new ServiceException(SERVER_ERROR);
+                }
             }
             UploadBlockSubResp resp = (UploadBlockSubResp) P2PUtils.requestBPU(uloadBlockSubReq, bpdNode);
             if (resp.getNodes() == null || resp.getNodes().length == 0) {
-                return;
+                throw new ServiceException(SERVER_ERROR);
             }
             secondUpload(resp);
+            retrycount++;
         }
     }
 
