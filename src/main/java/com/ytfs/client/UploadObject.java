@@ -117,10 +117,11 @@ public class UploadObject {
         if (resp instanceof UploadBlockInitResp) {
             if (!be.needEncode()) {
                 UploadBlockToDB(b, vnu, id, node);
+            } else {
+                UploadBlockInitResp resp1 = (UploadBlockInitResp) resp;
+                UploadBlock ub = new UploadBlock(b, id, resp1.getNodes(), resp1.getVBI(), node);
+                ub.upload();
             }
-            UploadBlockInitResp resp1 = (UploadBlockInitResp) resp;
-            UploadBlock ub = new UploadBlock(b, id, resp1.getNodes(), resp1.getVBI(), node);
-            ub.upload();
         }
     }
 

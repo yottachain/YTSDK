@@ -1,12 +1,10 @@
 package com.ytfs.client;
 
 import com.ytfs.service.UserConfig;
-import com.ytfs.service.utils.LogConfigurator;
 import static com.ytfs.service.UserConfig.*;
 import com.ytfs.service.net.P2PUtils;
 import io.jafka.jeos.util.Base58;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -18,14 +16,12 @@ public class ClientInitor {
 
     private static final Logger LOG = Logger.getLogger(ClientInitor.class);
 
-    public static void init() {
-        try {
-            LogConfigurator.configPath(new File("logs"), "INFO");
-            load();
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(0);//循环初始化
-        }
+    public static void init(Configurator cfg) throws IOException {
+        load(cfg);
+        start();
+    }
+
+    private static void start() {
         String key = Base58.encode(UserConfig.KUSp);
         for (int ii = 0; ii < 10; ii++) {
             try {
@@ -42,6 +38,22 @@ public class ClientInitor {
                 P2PUtils.stop();
             }
         }
+    }
+
+    public static void init() throws IOException {
+        load();
+        start();
+    }
+
+    private static void load(Configurator cfg) throws IOException {
+        userID = cfg.getUserID();
+        superNode = new SuperNode(0, null, null, null, null);
+        superNode.setId(cfg.getSuperNodeNum());
+        superNode.setNodeid(cfg.getSuperNodeID());
+        superNode.setAddrs(cfg.getSuperNodeAddrs());
+        KUEp = Base58.decode(cfg.getKUEp());
+        KUSp = Base58.decode(cfg.getKUSp());
+        port = cfg.getPort();
     }
 
     private static void load() throws IOException {
@@ -86,12 +98,6 @@ public class ClientInitor {
             throw new IOException("The 'superNodeAddr' parameter is not configured.");
         } else {
             superNode.setAddrs(ls);
-        }
-        try {
-            String ss = p.getProperty("secretKey").trim();
-            secretKey = Base58.decode(ss);
-        } catch (Exception d) {
-            throw new IOException("The 'secretKey' parameter is not configured.");
         }
         try {
             String ss = p.getProperty("KUEp").trim();

@@ -17,17 +17,15 @@ import com.ytfs.service.packet.UploadBlockEndReq;
 import com.ytfs.service.packet.UploadBlockSubReq;
 import com.ytfs.service.packet.UploadBlockSubResp;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
-import java.nio.ByteBuffer;
-import java.security.Key;
-import java.security.PrivateKey;
-import java.security.Signature;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.log4j.Logger;
 
 public class UploadBlock {
 
+    private static final Logger LOG = Logger.getLogger(UploadBlock.class);
     private ShardRSEncoder rs;
     private final Block block;
     private final short id;
@@ -63,6 +61,7 @@ public class UploadBlock {
             subUpload();
             completeUploadBlock(ks);
         } catch (Exception r) {
+            LOG.error("", r);
             throw new ServiceException(SERVER_ERROR);
         }
     }
@@ -162,8 +161,8 @@ public class UploadBlock {
 
     private void sign(UploadShardReq req, int nodeid) {
         req.setUSERSIGN(new byte[0]);
-       // Key key = KeyStoreCoder.rsaPrivateKey(UserConfig.KUSp);
-       /*
+        // Key key = KeyStoreCoder.rsaPrivateKey(UserConfig.KUSp);
+        /*
         try {
             Signature signet = java.security.Signature.getInstance("DSA");
             signet.initSign((PrivateKey) key);

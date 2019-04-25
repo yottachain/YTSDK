@@ -7,9 +7,13 @@ import sun.misc.IOUtils;
 public class UploadSmallTest {
 
     public static void main(String[] args) {
+        String ss="12345678901234567890123456789012345678901234567890";
+        ss=ss+"12345678901234567890123456789012345678901234567890";
+        ss=ss+"12345678901234567890123456789012345678901234567890";
+        ss=ss+"12345678901234567890123456789012345678901234567890";
         try {
             ClientInitor.init();
-            UploadObject upload = new UploadObject("sdsd".getBytes());
+            UploadObject upload = new UploadObject(ss.getBytes());
             byte[] VHW=upload.upload();
             
             DownloadObject obj=new DownloadObject(VHW);

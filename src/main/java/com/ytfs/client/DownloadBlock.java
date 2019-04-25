@@ -40,8 +40,7 @@ public class DownloadBlock {
     }
 
     public void load() throws ServiceException {
-        LOG.info("load");
-        ks = KeyStoreCoder.decryped(refer.getKEU(), UserConfig.KUSp);
+        ks = KeyStoreCoder.rsaDecryped(refer.getKEU(), UserConfig.KUSp);
         DownloadBlockInitReq req = new DownloadBlockInitReq();
         req.setVBI(refer.getVBI());
         SuperNode pbd = SuperNodeList.getBlockSuperNode(refer.getSuperID());
