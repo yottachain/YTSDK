@@ -16,6 +16,7 @@ import com.ytfs.service.packet.ShardNode;
 import com.ytfs.service.packet.UploadBlockEndReq;
 import com.ytfs.service.packet.UploadBlockSubReq;
 import com.ytfs.service.packet.UploadBlockSubResp;
+import static com.ytfs.service.packet.UploadShardRes.RES_VNF_EXISTS;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -149,7 +150,9 @@ public class UploadBlock {
         List<UploadShardRes> ls = new ArrayList();
         for (UploadShardRes res : resList) {
             if (res.getRES() != RES_OK) {
-                ls.add(res);
+                if (res.getRES() !=UploadShardRes.RES_NO_SPACE){// RES_VNF_EXISTS) {
+                    ls.add(res);
+                }
             }
         }
         resList.clear();

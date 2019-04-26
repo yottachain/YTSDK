@@ -24,6 +24,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 public class DownloadBlock {
+
     private static final Logger LOG = Logger.getLogger(DownloadBlock.class);
 
     private final ObjectRefer refer;
@@ -104,7 +105,7 @@ public class DownloadBlock {
             BlockEncrypted be = new BlockEncrypted(refer.getRealSize());
             ShardRSDecoder rsdec = new ShardRSDecoder(shards, be.getEncryptedBlockSize());
             be = rsdec.decode();
-            BlockAESDecryptor dec = new BlockAESDecryptor(be.getData(), refer.getRealSize(), ks);
+            BlockAESDecryptor dec = new BlockAESDecryptor(be.getData(), ks);
             dec.decrypt();
             return dec.getSrcData();
         } else {
@@ -138,13 +139,13 @@ public class DownloadBlock {
         BlockEncrypted be = new BlockEncrypted(refer.getRealSize());
         ShardRSDecoder rsdec = new ShardRSDecoder(new Shard(data), be.getEncryptedBlockSize());
         be = rsdec.decode();
-        BlockAESDecryptor dec = new BlockAESDecryptor(be.getData(), refer.getRealSize(), ks);
+        BlockAESDecryptor dec = new BlockAESDecryptor(be.getData(), ks);
         dec.decrypt();
         return dec.getSrcData();
     }
 
     private byte[] aesDBDecode(byte[] data) {
-        BlockAESDecryptor dec = new BlockAESDecryptor(data, refer.getRealSize(), ks);
+        BlockAESDecryptor dec = new BlockAESDecryptor(data, ks);
         dec.decrypt();
         return dec.getSrcData();
     }

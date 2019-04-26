@@ -48,10 +48,11 @@ public class UploadShard implements Runnable {
             try {
                 UploadShard2CResp resp = (UploadShard2CResp) P2PUtils.requestNode(req, node);
                 res.setRES(resp.getRES());
-            } catch (ServiceException ex) {
+            } catch (Throwable ex) {
                 LOG.error("Network error.");
                 res.setRES(RES_NETIOERR);
             }
+            System.out.println(res.getRES());
             uploadBlock.onResponse(res);
         } finally {
             queue.add(this);
