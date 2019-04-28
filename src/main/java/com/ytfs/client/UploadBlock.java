@@ -16,7 +16,6 @@ import com.ytfs.service.packet.ShardNode;
 import com.ytfs.service.packet.UploadBlockEndReq;
 import com.ytfs.service.packet.UploadBlockSubReq;
 import com.ytfs.service.packet.UploadBlockSubResp;
-import static com.ytfs.service.packet.UploadShardRes.RES_VNF_EXISTS;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -99,7 +98,7 @@ public class UploadBlock {
             nodeindex++;
         }
         synchronized (this) {
-            if (resList.size() != shards.size()) {
+            while (resList.size() != shards.size()) {
                 this.wait(1000 * 15);
             }
         }
@@ -140,7 +139,7 @@ public class UploadBlock {
             UploadShard.startUploadShard(req, n, this);
         }
         synchronized (this) {
-            if (resList.size() != shardNodes.length) {
+            while (resList.size() != shardNodes.length) {
                 this.wait(1000 * 15);
             }
         }
@@ -150,8 +149,10 @@ public class UploadBlock {
         List<UploadShardRes> ls = new ArrayList();
         for (UploadShardRes res : resList) {
             if (res.getRES() != RES_OK) {
-                if (res.getRES() !=UploadShardRes.RES_NO_SPACE){// RES_VNF_EXISTS) {
-                    ls.add(res);
+                if (res.getRES() != UploadShardRes.RES_VNF_EXISTS) {// RES_NO_SPACE RES_VNF_EXISTS 
+                    if (res.getRES() != UploadShardRes.RES_NO_SPACE) {
+                        ls.add(res);
+                    }
                 }
             }
         }

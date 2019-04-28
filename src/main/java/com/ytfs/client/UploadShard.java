@@ -4,7 +4,6 @@ import com.ytfs.service.packet.UploadShardRes;
 import static com.ytfs.service.packet.UploadShardRes.RES_NETIOERR;
 import static com.ytfs.service.UserConfig.UPLOADSHARDTHREAD;
 import com.ytfs.service.net.P2PUtils;
-import com.ytfs.service.packet.ServiceException;
 import com.ytfs.service.packet.ShardNode;
 import com.ytfs.service.packet.UploadShard2CResp;
 import com.ytfs.service.packet.UploadShardReq;

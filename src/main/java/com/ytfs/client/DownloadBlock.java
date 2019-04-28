@@ -2,6 +2,7 @@ package com.ytfs.client;
 
 import com.ytfs.service.UserConfig;
 import com.ytfs.service.codec.BlockAESDecryptor;
+import com.ytfs.service.codec.BlockAESEncryptor;
 import com.ytfs.service.codec.BlockEncrypted;
 import com.ytfs.service.codec.KeyStoreCoder;
 import com.ytfs.service.packet.ObjectRefer;
@@ -19,8 +20,12 @@ import static com.ytfs.service.packet.ServiceErrorCode.INVALID_SHARD;
 import com.ytfs.service.packet.ServiceException;
 import io.yottachain.nodemgmt.core.vo.Node;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
+import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.log4j.Logger;
 
 public class DownloadBlock {
@@ -73,16 +78,20 @@ public class DownloadBlock {
         List<Shard> shards = new ArrayList();
         int len = initresp.getVNF() - UserConfig.Default_PND;
         int nodeindex = 0;
+        Map<Integer, Node> map = new HashMap();
+        for (Node n : initresp.getNodes()) {
+            map.put(n.getId(), n);
+        }
         while (true) {
             int count = len - shards.size();
             if (count <= 0) {
                 break;
             }
-            if (count > initresp.getNodes().length - nodeindex) {
+            if (count > initresp.getNodeids().length - nodeindex) {
                 break;
             }
             for (int ii = 0; ii < count; ii++) {
-                Node n = initresp.getNodes()[nodeindex];
+                Node n = map.get(initresp.getNodeids()[nodeindex]);
                 byte[] VHF = initresp.getVHF()[nodeindex];
                 DownloadShardReq req = new DownloadShardReq();
                 req.setVHF(VHF);
@@ -90,7 +99,7 @@ public class DownloadBlock {
                 nodeindex++;
             }
             synchronized (this) {
-                if (resList.size() != count) {
+                while (resList.size() != count) {
                     this.wait(1000 * 15);
                 }
             }
@@ -116,11 +125,16 @@ public class DownloadBlock {
     private byte[] loadCopyShard(DownloadBlockInitResp initresp) throws ServiceException {
         DownloadShardReq req = new DownloadShardReq();
         int len = initresp.getVNF() * -1;
+        int count = initresp.getNodes().length;
         int index = 0;
+        Map<Integer, Node> map = new HashMap();
+        for (Node n : initresp.getNodes()) {
+            map.put(n.getId(), n);
+        }
         ServiceException t = null;
-        while (index < len) {
+        while (index < len && index < count) {
             try {
-                Node n = initresp.getNodes()[index];
+                Node n = map.get(initresp.getNodeids()[index]);
                 byte[] VHF = initresp.getVHF()[index];
                 req.setVHF(VHF);
                 DownloadShardResp resp = (DownloadShardResp) P2PUtils.requestNode(req, n);

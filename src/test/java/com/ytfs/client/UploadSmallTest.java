@@ -2,15 +2,15 @@ package com.ytfs.client;
 
 import com.ytfs.service.packet.ServiceException;
 import java.io.InputStream;
-import sun.misc.IOUtils;
 
 public class UploadSmallTest {
 
     public static void main(String[] args) {
-        String ss="12345678901234567890123456789012345678901234567890";
+        String ss="abc12345678901234567890123456789012345678901234567890";
         ss=ss+"12345678901234567890123456789012345678901234567890";
         ss=ss+"12345678901234567890123456789012345678901234567890";
-        ss=ss+"12345678901234567890123456789012345678901234567890";
+        ss=ss+"12345678901234567890123456789012345678901234567890cba";
+
         try {
             ClientInitor.init();
            // BucketHandler.createBucket("test");
@@ -19,9 +19,9 @@ public class UploadSmallTest {
             
             UploadObject upload = new UploadObject(ss.getBytes());
             upload.upload();
-            upload.writeMeta("test", "testfile");
+          //  upload.writeMeta("test", "testfile2");
             
-            DownloadObject obj=new DownloadObject("test", "testfile");
+            DownloadObject obj=new DownloadObject("test", "testfile2");
             InputStream is=obj.load();
             byte[] bs=new byte[1024];
             is.read(bs);

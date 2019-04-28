@@ -1,5 +1,6 @@
 package com.ytfs.client;
 
+import com.ytfs.service.UserConfig;
 import static com.ytfs.service.UserConfig.DOWNLOADSHARDTHREAD;
 import com.ytfs.service.net.P2PUtils;
 import com.ytfs.service.packet.DownloadShardReq;
@@ -11,6 +12,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.concurrent.ArrayBlockingQueue;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.log4j.Logger;
 
 public class DownloadShare implements Runnable {
@@ -42,10 +44,17 @@ public class DownloadShare implements Runnable {
     private DownloadBlock downloadBlock;
 
     static boolean verify(DownloadShardResp resp, byte[] VHF) {
+        byte[] data = resp.getData();
+        if (data.length < UserConfig.Default_Shard_Size) {
+            return false;
+        } else {
+            byte[] bs = new byte[UserConfig.Default_Shard_Size];
+            System.arraycopy(data, 0, bs, 0, bs.length);
+            resp.setData(bs);
+        }
         try {
             MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
-            sha256.update(resp.getData());
-            byte[] bs = sha256.digest();
+            byte[] bs = sha256.digest(resp.getData());
             return Arrays.equals(bs, VHF);
         } catch (NoSuchAlgorithmException ex) {
             return false;
