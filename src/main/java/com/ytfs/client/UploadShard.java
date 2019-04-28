@@ -18,7 +18,7 @@ public class UploadShard implements Runnable {
     private static final ArrayBlockingQueue<UploadShard> queue;
 
     static {
-        int num = UPLOADSHARDTHREAD > 50 ? 50 : UPLOADSHARDTHREAD;
+        int num = UPLOADSHARDTHREAD > 255 ? 255 : UPLOADSHARDTHREAD;
         num = num < 5 ? 5 : num;
         queue = new ArrayBlockingQueue(num);
         for (int ii = 0; ii < num; ii++) {
@@ -51,7 +51,6 @@ public class UploadShard implements Runnable {
                 LOG.error("Network error.");
                 res.setRES(RES_NETIOERR);
             }
-            System.out.println(res.getRES());
             uploadBlock.onResponse(res);
         } finally {
             queue.add(this);

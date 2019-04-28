@@ -9,21 +9,22 @@ public class UploadTest {
     public static void main(String[] args) {
         try {
             ClientInitor.init();
-            UploadObject upload = new UploadObject("d:/LICENSE.txt");
-            //UploadObject upload = new UploadObject("d:/surfs-lib-2.0.jar");            
-            byte[] VHW = upload.upload();
-
-            System.out.println(upload.getVNU());
+            //UploadObject upload = new UploadObject("d:/LICENSE.txt");
+            UploadObject upload = new UploadObject("e:/s3-server.rar");            
+            //byte[] VHW = upload.upload();
+            byte[] VHW =upload.getVHW();
+            //System.out.println(upload.getVNU());
 
             DownloadObject obj = new DownloadObject(VHW);
-            FileOutputStream out = new FileOutputStream("d:/LICENSE1.txt");
-            //FileOutputStream out=new FileOutputStream("d:/wrapper.jar");
+            //FileOutputStream out = new FileOutputStream("d:/LICENSE1.txt");
+            FileOutputStream out=new FileOutputStream("e:/s3-server2.rar");
             InputStream is = obj.load();
-            byte[] bs = new byte[1024];
+            byte[] bs = new byte[1024*128];
             int len;
             while ((len = is.read(bs)) != -1) {
                 out.write(bs, 0, len);
             }
+            out.close();
         } catch (ServiceException se) {
             se.printStackTrace();
             System.out.println(Integer.toHexString(se.getErrorCode()));

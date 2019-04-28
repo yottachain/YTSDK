@@ -2,7 +2,6 @@ package com.ytfs.client;
 
 import com.ytfs.service.UserConfig;
 import com.ytfs.service.codec.BlockAESDecryptor;
-import com.ytfs.service.codec.BlockAESEncryptor;
 import com.ytfs.service.codec.BlockEncrypted;
 import com.ytfs.service.codec.KeyStoreCoder;
 import com.ytfs.service.packet.ObjectRefer;
@@ -17,21 +16,19 @@ import com.ytfs.service.packet.DownloadShardReq;
 import com.ytfs.service.packet.DownloadShardResp;
 import static com.ytfs.service.packet.ServiceErrorCode.INTERNAL_ERROR;
 import static com.ytfs.service.packet.ServiceErrorCode.INVALID_SHARD;
+import static com.ytfs.service.packet.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.service.packet.ServiceException;
 import io.yottachain.nodemgmt.core.vo.Node;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
-import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.codec.binary.Hex;
 import org.apache.log4j.Logger;
 
 public class DownloadBlock {
 
     private static final Logger LOG = Logger.getLogger(DownloadBlock.class);
-
     private final ObjectRefer refer;
     private byte[] data;
     private final List<DownloadShardResp> resList = new ArrayList();
@@ -65,6 +62,7 @@ public class DownloadBlock {
                 }
             }
         }
+        LOG.info("Download block " + refer.getId() + ",VBI:" + refer.getVBI());
     }
 
     void onResponse(DownloadShardResp res) {
@@ -82,10 +80,15 @@ public class DownloadBlock {
         for (Node n : initresp.getNodes()) {
             map.put(n.getId(), n);
         }
+        long l = System.currentTimeMillis();
+        int retrytimes = 0;
         while (true) {
             int count = len - shards.size();
             if (count <= 0) {
                 break;
+            }
+            if (retrytimes >= 5) {
+                throw new ServiceException(SERVER_ERROR);
             }
             if (count > initresp.getNodeids().length - nodeindex) {
                 break;
@@ -109,7 +112,9 @@ public class DownloadBlock {
                 }
             }
             resList.clear();
+            retrytimes++;
         }
+        LOG.info("Download shardcount " + len + ",take time " + (System.currentTimeMillis() - l) + "ms");
         if (shards.size() >= len) {
             BlockEncrypted be = new BlockEncrypted(refer.getRealSize());
             ShardRSDecoder rsdec = new ShardRSDecoder(shards, be.getEncryptedBlockSize());

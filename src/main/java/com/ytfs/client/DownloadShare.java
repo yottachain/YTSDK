@@ -12,7 +12,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.concurrent.ArrayBlockingQueue;
-import org.apache.commons.codec.binary.Hex;
 import org.apache.log4j.Logger;
 
 public class DownloadShare implements Runnable {
@@ -22,7 +21,7 @@ public class DownloadShare implements Runnable {
     private static final ArrayBlockingQueue<DownloadShare> queue;
 
     static {
-        int num = DOWNLOADSHARDTHREAD > 50 ? 50 : DOWNLOADSHARDTHREAD;
+        int num = DOWNLOADSHARDTHREAD > 255 ? 255 : DOWNLOADSHARDTHREAD;
         num = num < 5 ? 5 : num;
         queue = new ArrayBlockingQueue(num);
         for (int ii = 0; ii < num; ii++) {
@@ -38,7 +37,7 @@ public class DownloadShare implements Runnable {
         downloader.node = node;
         GlobleThreadPool.execute(downloader);
     }
-
+ 
     private DownloadShardReq req;
     private Node node;
     private DownloadBlock downloadBlock;

@@ -52,14 +52,17 @@ public class UploadBlock {
 
     void upload() throws ServiceException, InterruptedException {
         try {
+            long l = System.currentTimeMillis();
             byte[] ks = KeyStoreCoder.generateRandomKey();
             BlockAESEncryptor aes = new BlockAESEncryptor(block, ks);
             aes.encrypt();
             rs = new ShardRSEncoder(aes.getBlockEncrypted());
             rs.encode();
+            int len = rs.getShardList().size();
             firstUpload();
             subUpload();
             completeUploadBlock(ks);
+            LOG.info("Download shardcount " + len + ",take time " + (System.currentTimeMillis() - l) + "ms");
         } catch (Exception r) {
             LOG.error("", r);
             throw new ServiceException(SERVER_ERROR);
@@ -78,6 +81,7 @@ public class UploadBlock {
         req.setRealSize(block.getRealSize());
         req.setRsShard(rs.getShardList().get(0).isRsShard());
         P2PUtils.requestBPU(req, bpdNode);
+        LOG.info("Upload block " + id + ",VBI:" + VBI);
     }
 
     private void firstUpload() throws InterruptedException {

@@ -3,8 +3,11 @@ package com.ytfs.client;
 import com.ytfs.service.UserConfig;
 import static com.ytfs.service.UserConfig.*;
 import com.ytfs.service.net.P2PUtils;
+import com.ytfs.service.utils.GlobleThreadPool;
 import io.jafka.jeos.util.Base58;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -15,19 +18,23 @@ import org.apache.log4j.Logger;
 public class ClientInitor {
 
     private static final Logger LOG = Logger.getLogger(ClientInitor.class);
+    private static final DiskCacheCleaner clean = new DiskCacheCleaner();
 
     public static void init(Configurator cfg) throws IOException {
         load(cfg);
         start();
+        clean.start();
     }
 
-    private static void start() {
+    private static void start() throws IOException {
         String key = Base58.encode(UserConfig.KUSp);
+        boolean ok = false;
         for (int ii = 0; ii < 10; ii++) {
             try {
                 int port = UserConfig.port + ii;
                 P2PUtils.start(port, key);
                 LOG.info("P2P initialization completed, port " + port);
+                ok = true;
                 break;
             } catch (Exception r) {
                 LOG.info("P2P initialization failed!", r);
@@ -38,11 +45,21 @@ public class ClientInitor {
                 P2PUtils.stop();
             }
         }
+        if (!ok) {
+            throw new IOException();
+        }
     }
 
     public static void init() throws IOException {
         load();
         start();
+        clean.start();
+    }
+
+    public static void stop() {
+        P2PUtils.stop();
+        clean.interrupt();
+        GlobleThreadPool.shutdown();
     }
 
     private static void load(Configurator cfg) throws IOException {
@@ -54,10 +71,24 @@ public class ClientInitor {
         KUEp = Base58.decode(cfg.getKUEp());
         KUSp = Base58.decode(cfg.getKUSp());
         port = cfg.getPort();
+        tmpFilePath = new File(cfg.getTmpFilePath(), "ytfs.temp");
+        if (!tmpFilePath.exists()) {
+            tmpFilePath.mkdirs();
+        }
+        if (!tmpFilePath.isDirectory()) {
+            throw new IOException("The 'tmpFilePath' parameter is not configured.");
+        }
     }
 
     private static void load() throws IOException {
         InputStream is = ClientInitor.class.getResourceAsStream("/ytfs.properties");
+        if (is == null) {
+            try {
+                is = new FileInputStream("ytfs.properties");
+            } catch (Exception e) {
+                throw new IOException("No properties file could be found for ytfs service");
+            }
+        }
         if (is == null) {
             throw new IOException("No properties file could be found for ytfs service");
         }
@@ -116,6 +147,18 @@ public class ClientInitor {
             port = Integer.parseInt(ss);
         } catch (Exception d) {
             throw new IOException("The 'port' parameter is not configured.");
+        }
+        try {
+            String ss = p.getProperty("tmpFilePath", "").trim();
+            tmpFilePath = new File(ss, "ytfs.temp");
+            if (!tmpFilePath.exists()) {
+                tmpFilePath.mkdirs();
+            }
+        } catch (Exception d) {
+            throw new IOException("The 'tmpFilePath' parameter is not configured.");
+        }
+        if (!tmpFilePath.isDirectory()) {
+            throw new IOException("The 'tmpFilePath' parameter is not configured.");
         }
     }
 }

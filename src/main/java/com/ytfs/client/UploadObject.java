@@ -26,9 +26,12 @@ import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 
 public class UploadObject {
+
+    private static final Logger LOG = Logger.getLogger(UploadObject.class);
 
     private final YTFile ytfile;
     private ObjectId VNU;
@@ -72,8 +75,14 @@ public class UploadObject {
                 ii++;
             }
             complete(ytfile.getVHW());
+            ytfile.clear();
         }
         VNU = res.getVNU();
+        LOG.info("Upload object " + VNU);
+        return ytfile.getVHW();
+    }
+
+    public byte[] getVHW() {
         return ytfile.getVHW();
     }
 
@@ -142,6 +151,7 @@ public class UploadObject {
             req.setData(enc.getBlockEncrypted().getData());
             P2PUtils.requestBPU(req, node);
         } catch (Exception e) {
+            LOG.error("", e);
             throw new ServiceException(SERVER_ERROR);
         }
     }

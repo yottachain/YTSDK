@@ -11,6 +11,7 @@ public class Configurator {
     private int userID;      //用户ID (1---max)
     private String KUEp;     //用户公钥
     private String KUSp;     //用户私钥
+    private String tmpFilePath;
 
     /**
      * @return the superNodeNum
@@ -108,6 +109,20 @@ public class Configurator {
      */
     public void setSuperNodeAddrs(List<String> superNodeAddrs) {
         this.superNodeAddrs = superNodeAddrs;
+    }
+
+    /**
+     * @return the tmpFilePath
+     */
+    public String getTmpFilePath() {
+        return tmpFilePath;
+    }
+
+    /**
+     * @param tmpFilePath the tmpFilePath to set
+     */
+    public void setTmpFilePath(String tmpFilePath) {
+        this.tmpFilePath = tmpFilePath;
     }
 
 }
