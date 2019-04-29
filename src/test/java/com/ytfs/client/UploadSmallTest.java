@@ -19,7 +19,7 @@ public class UploadSmallTest {
             
             UploadObject upload = new UploadObject(ss.getBytes());
             upload.upload();
-          //  upload.writeMeta("test", "testfile2");
+            upload.writeMeta("test", "testfile2");
             
             DownloadObject obj=new DownloadObject("test", "testfile2");
             InputStream is=obj.load();

@@ -154,9 +154,7 @@ public class UploadBlock {
         for (UploadShardRes res : resList) {
             if (res.getRES() != RES_OK) {
                 if (res.getRES() != UploadShardRes.RES_VNF_EXISTS) {// RES_NO_SPACE RES_VNF_EXISTS 
-                    if (res.getRES() != UploadShardRes.RES_NO_SPACE) {
-                        ls.add(res);
-                    }
+                    ls.add(res);
                 }
             }
         }
