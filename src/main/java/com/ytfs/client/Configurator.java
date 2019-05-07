@@ -9,7 +9,8 @@ public class Configurator {
     private List<String> superNodeAddrs;  //超级节点地址
     private int port;        //本地端口 !=0
     private int userID;      //用户ID (1---max)
-    private String KUEp;     //用户公钥
+    private String username;
+    private String contractAccount;
     private String KUSp;     //用户私钥
     private String tmpFilePath;
 
@@ -70,20 +71,6 @@ public class Configurator {
     }
 
     /**
-     * @return the KUEp
-     */
-    public String getKUEp() {
-        return KUEp;
-    }
-
-    /**
-     * @param KUEp the KUEp to set
-     */
-    public void setKUEp(String KUEp) {
-        this.KUEp = KUEp;
-    }
-
-    /**
      * @return the KUSp
      */
     public String getKUSp() {
@@ -123,6 +110,34 @@ public class Configurator {
      */
     public void setTmpFilePath(String tmpFilePath) {
         this.tmpFilePath = tmpFilePath;
+    }
+
+    /**
+     * @return the username
+     */
+    public String getUsername() {
+        return username;
+    }
+
+    /**
+     * @param username the username to set
+     */
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    /**
+     * @return the contractAccount
+     */
+    public String getContractAccount() {
+        return contractAccount;
+    }
+
+    /**
+     * @param contractAccount the contractAccount to set
+     */
+    public void setContractAccount(String contractAccount) {
+        this.contractAccount = contractAccount;
     }
 
 }

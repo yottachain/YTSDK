@@ -10,14 +10,14 @@ public class UploadTest {
         try {
             ClientInitor.init();
             //UploadObject upload = new UploadObject("d:/LICENSE.txt");
-            UploadObject upload = new UploadObject("e:/s3-server.rar");            
+            UploadObject upload = new UploadObject("F:/TortoiseGit-1.8.15.0-64bit.msi");            
             //byte[] VHW = upload.upload();
             byte[] VHW =upload.getVHW();
             //System.out.println(upload.getVNU());
 
             DownloadObject obj = new DownloadObject(VHW);
             //FileOutputStream out = new FileOutputStream("d:/LICENSE1.txt");
-            FileOutputStream out=new FileOutputStream("e:/s3-server2.rar");
+            FileOutputStream out=new FileOutputStream("F:/Tortoise.msi");
             InputStream is = obj.load();
             byte[] bs = new byte[1024*128];
             int len;

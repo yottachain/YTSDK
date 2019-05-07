@@ -5,6 +5,7 @@ import static com.ytfs.service.UserConfig.*;
 import com.ytfs.service.net.P2PUtils;
 import com.ytfs.service.utils.GlobleThreadPool;
 import io.jafka.jeos.util.Base58;
+import io.jafka.jeos.util.KeyUtil;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.io.File;
 import java.io.FileInputStream;
@@ -68,8 +69,12 @@ public class ClientInitor {
         superNode.setId(cfg.getSuperNodeNum());
         superNode.setNodeid(cfg.getSuperNodeID());
         superNode.setAddrs(cfg.getSuperNodeAddrs());
-        KUEp = Base58.decode(cfg.getKUEp());
         KUSp = Base58.decode(cfg.getKUSp());
+        privateKey=cfg.getKUSp();
+        String pubkey = KeyUtil.toPublicKey(cfg.getKUSp());
+        KUEp = Base58.decode(pubkey.substring(3));
+        username = cfg.getUsername();
+        contractAccount = cfg.getContractAccount();
         port = cfg.getPort();
         tmpFilePath = new File(cfg.getTmpFilePath(), "ytfs.temp");
         if (!tmpFilePath.exists()) {
@@ -101,6 +106,14 @@ public class ClientInitor {
         } catch (Exception d) {
             throw new IOException("The 'userID' parameter is not configured.");
         }
+        username = p.getProperty("username");
+        if (username == null || username.trim().isEmpty()) {
+            throw new IOException("The 'username' parameter is not configured.");
+        }
+        contractAccount = p.getProperty("contractAccount");
+        if (contractAccount == null || contractAccount.trim().isEmpty()) {
+            throw new IOException("The 'contractAccount' parameter is not configured.");
+        }
         superNode = new SuperNode(0, null, null, null, null);
         try {
             String ss = p.getProperty("superNodeID").trim();
@@ -131,14 +144,11 @@ public class ClientInitor {
             superNode.setAddrs(ls);
         }
         try {
-            String ss = p.getProperty("KUEp").trim();
-            KUEp = Base58.decode(ss);
-        } catch (Exception d) {
-            throw new IOException("The 'KUEp' parameter is not configured.");
-        }
-        try {
             String ss = p.getProperty("KUSp").trim();
             KUSp = Base58.decode(ss);
+            privateKey=ss;
+            String pubkey = KeyUtil.toPublicKey(ss);
+            KUEp = Base58.decode(pubkey.substring(3));
         } catch (Exception d) {
             throw new IOException("The 'KUSp' parameter is not configured.");
         }

@@ -7,8 +7,10 @@ import com.ytfs.service.codec.BlockEncrypted;
 import com.ytfs.service.codec.KeyStoreCoder;
 import com.ytfs.service.codec.ShardRSEncoder;
 import com.ytfs.service.codec.YTFile;
+import com.ytfs.service.eos.EOSRequest;
 import com.ytfs.service.net.P2PUtils;
 import com.ytfs.service.node.SuperNodeList;
+import com.ytfs.service.packet.GetBalanceReq;
 import static com.ytfs.service.packet.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.service.packet.ServiceException;
 import com.ytfs.service.packet.UploadBlockDBReq;
@@ -30,24 +32,32 @@ import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 
 public class UploadObject {
-
+    
     private static final Logger LOG = Logger.getLogger(UploadObject.class);
-
+    
     private final YTFile ytfile;
     private ObjectId VNU;
-
+    
     public UploadObject(byte[] data) throws IOException {
         ytfile = new YTFile(data);
     }
-
+    
     public UploadObject(String path) throws IOException {
         ytfile = new YTFile(path);
     }
-
+    
     public byte[] upload() throws ServiceException, IOException, InterruptedException {
-        UploadObjectInitReq req = new UploadObjectInitReq(ytfile.getLength(), ytfile.getVHW());
+        UploadObjectInitReq req = new UploadObjectInitReq(ytfile.getVHW());
         UploadObjectInitResp res = (UploadObjectInitResp) P2PUtils.requestBPU(req, UserConfig.superNode);
         if (!res.isRepeat()) {
+            byte[] bs = res.getSignArg();
+            byte[] signData = EOSRequest.makeGetBalanceRequest(bs, UserConfig.username, UserConfig.privateKey, UserConfig.contractAccount);
+            GetBalanceReq getBalanceReq = new GetBalanceReq();
+            getBalanceReq.setLength(ytfile.getLength());
+            getBalanceReq.setSignData(signData);
+            getBalanceReq.setVHW(ytfile.getVHW());
+            getBalanceReq.setVNU(res.getVNU());
+            P2PUtils.requestBPU(getBalanceReq, UserConfig.superNode);
             ytfile.init(res.getVNU().toHexString());
             ytfile.handle();
             List<Block> blockList = ytfile.getBlockList();
@@ -81,7 +91,7 @@ public class UploadObject {
         LOG.info("Upload object " + VNU);
         return ytfile.getVHW();
     }
-
+    
     public byte[] getVHW() {
         return ytfile.getVHW();
     }
@@ -193,7 +203,7 @@ public class UploadObject {
     public ObjectId getVNU() {
         return VNU;
     }
-
+    
     public void writeMeta(String bucketname, String filename) throws ServiceException {
         UploadFileReq req = new UploadFileReq();
         req.setBucketname(bucketname);
