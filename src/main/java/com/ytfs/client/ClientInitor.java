@@ -4,6 +4,7 @@ import com.ytfs.service.UserConfig;
 import static com.ytfs.service.UserConfig.*;
 import com.ytfs.service.net.P2PUtils;
 import com.ytfs.service.utils.GlobleThreadPool;
+import com.ytfs.service.utils.LogConfigurator;
 import io.jafka.jeos.util.Base58;
 import io.jafka.jeos.util.KeyUtil;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import org.apache.log4j.Logger;
+import org.tanukisoftware.wrapper.WrapperManager;
 
 public class ClientInitor {
 
@@ -52,7 +54,17 @@ public class ClientInitor {
     }
 
     public static void init() throws IOException {
-        load();
+        try {
+            String path = System.getProperty("logger.path", "log");
+            File dir = new File(path);
+            dir.mkdirs();
+            String level = WrapperManager.getProperties().getProperty("wrapper.log4j.loglevel", "INFO");
+            LogConfigurator.configPath(new File(dir, "log"), level);
+            load();
+        } catch (IOException e) {
+            LOG.error("Init err.", e);
+            System.exit(0);//循环初始化
+        }
         start();
         clean.start();
     }
@@ -64,13 +76,12 @@ public class ClientInitor {
     }
 
     private static void load(Configurator cfg) throws IOException {
-        userID = cfg.getUserID();
         superNode = new SuperNode(0, null, null, null, null);
         superNode.setId(cfg.getSuperNodeNum());
         superNode.setNodeid(cfg.getSuperNodeID());
         superNode.setAddrs(cfg.getSuperNodeAddrs());
         KUSp = Base58.decode(cfg.getKUSp());
-        privateKey=cfg.getKUSp();
+        privateKey = cfg.getKUSp();
         String pubkey = KeyUtil.toPublicKey(cfg.getKUSp());
         KUEp = Base58.decode(pubkey.substring(3));
         username = cfg.getUsername();
@@ -86,13 +97,11 @@ public class ClientInitor {
     }
 
     private static void load() throws IOException {
-        InputStream is = ClientInitor.class.getResourceAsStream("/ytfs.properties");
-        if (is == null) {
-            try {
-                is = new FileInputStream("ytfs.properties");
-            } catch (Exception e) {
-                throw new IOException("No properties file could be found for ytfs service");
-            }
+        InputStream is = null;
+        try {
+            is = new FileInputStream("../../conf/ytfs.properties");
+        } catch (Exception r) {
+            is = is = ClientInitor.class.getResourceAsStream("/ytfs.properties");
         }
         if (is == null) {
             throw new IOException("No properties file could be found for ytfs service");
@@ -100,12 +109,7 @@ public class ClientInitor {
         Properties p = new Properties();
         p.load(is);
         is.close();
-        try {
-            String ss = p.getProperty("userID").trim();
-            userID = Integer.parseInt(ss);
-        } catch (Exception d) {
-            throw new IOException("The 'userID' parameter is not configured.");
-        }
+
         username = p.getProperty("username");
         if (username == null || username.trim().isEmpty()) {
             throw new IOException("The 'username' parameter is not configured.");
@@ -146,7 +150,7 @@ public class ClientInitor {
         try {
             String ss = p.getProperty("KUSp").trim();
             KUSp = Base58.decode(ss);
-            privateKey=ss;
+            privateKey = ss;
             String pubkey = KeyUtil.toPublicKey(ss);
             KUEp = Base58.decode(pubkey.substring(3));
         } catch (Exception d) {

@@ -11,16 +11,18 @@ import com.ytfs.service.eos.EOSRequest;
 import com.ytfs.service.net.P2PUtils;
 import com.ytfs.service.node.SuperNodeList;
 import com.ytfs.service.packet.GetBalanceReq;
-import static com.ytfs.service.packet.ServiceErrorCode.SERVER_ERROR;
-import com.ytfs.service.packet.ServiceException;
+import com.ytfs.service.packet.SubBalanceReq;
+import static com.ytfs.service.utils.ServiceErrorCode.SERVER_ERROR;
+import com.ytfs.service.utils.ServiceException;
 import com.ytfs.service.packet.UploadBlockDBReq;
 import com.ytfs.service.packet.UploadBlockDupReq;
 import com.ytfs.service.packet.UploadBlockInit2Req;
 import com.ytfs.service.packet.UploadBlockDupResp;
 import com.ytfs.service.packet.UploadBlockInitReq;
 import com.ytfs.service.packet.UploadBlockInitResp;
-import com.ytfs.service.packet.UploadFileReq;
+import com.ytfs.service.packet.s3.UploadFileReq;
 import com.ytfs.service.packet.UploadObjectEndReq;
+import com.ytfs.service.packet.UploadObjectEndResp;
 import com.ytfs.service.packet.UploadObjectInitReq;
 import com.ytfs.service.packet.UploadObjectInitResp;
 import com.ytfs.service.packet.VoidResp;
@@ -32,23 +34,24 @@ import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 
 public class UploadObject {
-    
+
     private static final Logger LOG = Logger.getLogger(UploadObject.class);
-    
+
     private final YTFile ytfile;
     private ObjectId VNU;
-    
+
     public UploadObject(byte[] data) throws IOException {
         ytfile = new YTFile(data);
     }
-    
+
     public UploadObject(String path) throws IOException {
         ytfile = new YTFile(path);
     }
-    
+
     public byte[] upload() throws ServiceException, IOException, InterruptedException {
         UploadObjectInitReq req = new UploadObjectInitReq(ytfile.getVHW());
         UploadObjectInitResp res = (UploadObjectInitResp) P2PUtils.requestBPU(req, UserConfig.superNode);
+        VNU = res.getVNU();
         if (!res.isRepeat()) {
             byte[] bs = res.getSignArg();
             byte[] signData = EOSRequest.makeGetBalanceRequest(bs, UserConfig.username, UserConfig.privateKey, UserConfig.contractAccount);
@@ -87,11 +90,10 @@ public class UploadObject {
             complete(ytfile.getVHW());
             ytfile.clear();
         }
-        VNU = res.getVNU();
         LOG.info("Upload object " + VNU);
         return ytfile.getVHW();
     }
-    
+
     public byte[] getVHW() {
         return ytfile.getVHW();
     }
@@ -100,7 +102,18 @@ public class UploadObject {
     private void complete(byte[] VHW) throws ServiceException {
         UploadObjectEndReq req = new UploadObjectEndReq();
         req.setVHW(VHW);
-        P2PUtils.requestBPU(req, UserConfig.superNode);
+        UploadObjectEndResp resp = (UploadObjectEndResp) P2PUtils.requestBPU(req, UserConfig.superNode);
+        byte[] bs = resp.getSignArg();
+        SubBalanceReq sub = new SubBalanceReq();
+        sub.setVNU(VNU);
+        try {
+            byte[] signData = EOSRequest.makeSubBalanceRequest(bs, UserConfig.username,
+                    UserConfig.privateKey, UserConfig.contractAccount, resp.getFirstCost());
+            sub.setSignData(signData);
+        } catch (Exception e) {
+            throw new ServiceException(SERVER_ERROR);
+        }
+        P2PUtils.requestBPU(sub, UserConfig.superNode);
     }
 
     //上传块
@@ -155,8 +168,8 @@ public class UploadObject {
             req.setVNU(vnu);
             req.setVHP(b.getVHP());
             req.setVHB(enc.getBlockEncrypted().getVHB());
-            req.setKEU(KeyStoreCoder.rsaEncryped(ks, UserConfig.KUEp));
-            req.setKED(KeyStoreCoder.encryped(ks, b.getKD()));
+            req.setKEU(KeyStoreCoder.eccEncryped(ks, UserConfig.KUEp));
+            req.setKED(KeyStoreCoder.aesEncryped(ks, b.getKD()));
             req.setOriginalSize(b.getOriginalSize());
             req.setData(enc.getBlockEncrypted().getData());
             P2PUtils.requestBPU(req, node);
@@ -173,7 +186,7 @@ public class UploadObject {
         for (int ii = 0; ii < keds.length; ii++) {
             byte[] ked = keds[ii];
             try {
-                byte[] ks = KeyStoreCoder.decryped(ked, b.getKD());
+                byte[] ks = KeyStoreCoder.aesDecryped(ked, b.getKD());
                 byte[] VHB;
                 BlockAESEncryptor aes = new BlockAESEncryptor(b, ks);
                 aes.encrypt();
@@ -187,7 +200,7 @@ public class UploadObject {
                 if (Arrays.equals(vhbs[ii], VHB)) {
                     UploadBlockDupReq req = new UploadBlockDupReq();
                     req.setVHB(VHB);
-                    byte[] keu = KeyStoreCoder.encryped(ks, UserConfig.KUEp);
+                    byte[] keu = KeyStoreCoder.eccEncryped(ks, UserConfig.KUEp);
                     req.setKEU(keu);
                     return req;
                 }
@@ -203,7 +216,7 @@ public class UploadObject {
     public ObjectId getVNU() {
         return VNU;
     }
-    
+
     public void writeMeta(String bucketname, String filename) throws ServiceException {
         UploadFileReq req = new UploadFileReq();
         req.setBucketname(bucketname);

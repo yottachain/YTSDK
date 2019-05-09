@@ -3,10 +3,10 @@ package com.ytfs.client;
 import com.ytfs.service.UserConfig;
 import com.ytfs.service.packet.ObjectRefer;
 import com.ytfs.service.net.P2PUtils;
-import com.ytfs.service.packet.DownloadFileReq;
+import com.ytfs.service.packet.s3.DownloadFileReq;
 import com.ytfs.service.packet.DownloadObjectInitReq;
 import com.ytfs.service.packet.DownloadObjectInitResp;
-import com.ytfs.service.packet.ServiceException;
+import com.ytfs.service.utils.ServiceException;
 import java.io.InputStream;
 import java.util.List;
 

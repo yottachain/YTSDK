@@ -5,7 +5,7 @@ import static com.ytfs.service.UserConfig.DOWNLOADSHARDTHREAD;
 import com.ytfs.service.net.P2PUtils;
 import com.ytfs.service.packet.DownloadShardReq;
 import com.ytfs.service.packet.DownloadShardResp;
-import com.ytfs.service.packet.ServiceException;
+import com.ytfs.service.utils.ServiceException;
 import com.ytfs.service.utils.GlobleThreadPool;
 import io.yottachain.nodemgmt.core.vo.Node;
 import java.security.MessageDigest;

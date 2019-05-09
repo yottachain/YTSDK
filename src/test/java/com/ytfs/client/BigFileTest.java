@@ -1,23 +1,23 @@
 package com.ytfs.client;
 
-import com.ytfs.service.packet.ServiceException;
+import com.ytfs.service.utils.ServiceException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 
-public class UploadTest {
+public class BigFileTest {
 
     public static void main(String[] args) {
         try {
             ClientInitor.init();
             //UploadObject upload = new UploadObject("d:/LICENSE.txt");
-            UploadObject upload = new UploadObject("F:/TortoiseGit-1.8.15.0-64bit.msi");            
-            //byte[] VHW = upload.upload();
-            byte[] VHW =upload.getVHW();
+            UploadObject upload = new UploadObject("d:/YottaChain.pdf");            
+            byte[] VHW = upload.upload();
+            //byte[] VHW =upload.getVHW();
             //System.out.println(upload.getVNU());
 
             DownloadObject obj = new DownloadObject(VHW);
             //FileOutputStream out = new FileOutputStream("d:/LICENSE1.txt");
-            FileOutputStream out=new FileOutputStream("F:/Tortoise.msi");
+            FileOutputStream out=new FileOutputStream("d:/a.pdf");
             InputStream is = obj.load();
             byte[] bs = new byte[1024*128];
             int len;

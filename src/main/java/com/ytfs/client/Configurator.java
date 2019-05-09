@@ -8,7 +8,6 @@ public class Configurator {
     private String superNodeID;  //超级节点id !=null trim
     private List<String> superNodeAddrs;  //超级节点地址
     private int port;        //本地端口 !=0
-    private int userID;      //用户ID (1---max)
     private String username;
     private String contractAccount;
     private String KUSp;     //用户私钥
@@ -54,20 +53,6 @@ public class Configurator {
      */
     public void setPort(int port) {
         this.port = port;
-    }
-
-    /**
-     * @return the userID
-     */
-    public int getUserID() {
-        return userID;
-    }
-
-    /**
-     * @param userID the userID to set
-     */
-    public void setUserID(int userID) {
-        this.userID = userID;
     }
 
     /**

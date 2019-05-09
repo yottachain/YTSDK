@@ -1,11 +1,11 @@
-package com.ytfs.client;
+package com.ytfs.client.ns;
 
 import com.ytfs.service.UserConfig;
 import com.ytfs.service.net.P2PUtils;
-import com.ytfs.service.packet.CreateBucketReq;
-import com.ytfs.service.packet.ListBucketReq;
-import com.ytfs.service.packet.ListBucketResp;
-import com.ytfs.service.packet.ServiceException;
+import com.ytfs.service.packet.s3.CreateBucketReq;
+import com.ytfs.service.packet.s3.ListBucketReq;
+import com.ytfs.service.packet.s3.ListBucketResp;
+import com.ytfs.service.utils.ServiceException;
 
 public class BucketHandler {
 

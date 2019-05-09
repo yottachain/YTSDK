@@ -14,10 +14,10 @@ import com.ytfs.service.packet.DownloadBlockInitReq;
 import com.ytfs.service.packet.DownloadBlockInitResp;
 import com.ytfs.service.packet.DownloadShardReq;
 import com.ytfs.service.packet.DownloadShardResp;
-import static com.ytfs.service.packet.ServiceErrorCode.INTERNAL_ERROR;
-import static com.ytfs.service.packet.ServiceErrorCode.INVALID_SHARD;
-import static com.ytfs.service.packet.ServiceErrorCode.SERVER_ERROR;
-import com.ytfs.service.packet.ServiceException;
+import static com.ytfs.service.utils.ServiceErrorCode.INTERNAL_ERROR;
+import static com.ytfs.service.utils.ServiceErrorCode.INVALID_SHARD;
+import static com.ytfs.service.utils.ServiceErrorCode.SERVER_ERROR;
+import com.ytfs.service.utils.ServiceException;
 import io.yottachain.nodemgmt.core.vo.Node;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.util.ArrayList;
@@ -43,7 +43,7 @@ public class DownloadBlock {
     }
 
     public void load() throws ServiceException {
-        ks = KeyStoreCoder.rsaDecryped(refer.getKEU(), UserConfig.KUSp);
+        ks = KeyStoreCoder.eccDecryped(refer.getKEU(), UserConfig.KUSp);
         DownloadBlockInitReq req = new DownloadBlockInitReq();
         req.setVBI(refer.getVBI());
         SuperNode pbd = SuperNodeList.getBlockSuperNode(refer.getSuperID());

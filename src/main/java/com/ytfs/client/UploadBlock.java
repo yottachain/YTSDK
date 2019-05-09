@@ -10,17 +10,19 @@ import com.ytfs.service.codec.KeyStoreCoder;
 import com.ytfs.service.codec.Shard;
 import com.ytfs.service.codec.ShardRSEncoder;
 import com.ytfs.service.net.P2PUtils;
-import static com.ytfs.service.packet.ServiceErrorCode.SERVER_ERROR;
-import com.ytfs.service.packet.ServiceException;
+import static com.ytfs.service.utils.ServiceErrorCode.SERVER_ERROR;
+import com.ytfs.service.utils.ServiceException;
 import com.ytfs.service.packet.ShardNode;
 import com.ytfs.service.packet.UploadBlockEndReq;
 import com.ytfs.service.packet.UploadBlockSubReq;
 import com.ytfs.service.packet.UploadBlockSubResp;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.log4j.Logger;
 
 public class UploadBlock {
@@ -75,8 +77,8 @@ public class UploadBlock {
         req.setVBI(VBI);
         req.setVHP(block.getVHP());
         req.setVHB(rs.makeVHB());
-        req.setKEU(KeyStoreCoder.rsaEncryped(ks, UserConfig.KUEp));
-        req.setKED(KeyStoreCoder.encryped(ks, block.getKD()));
+        req.setKEU(KeyStoreCoder.eccEncryped(ks, UserConfig.KUEp));
+        req.setKED(KeyStoreCoder.aesEncryped(ks, block.getKD()));
         req.setOriginalSize(block.getOriginalSize());
         req.setRealSize(block.getRealSize());
         req.setRsShard(rs.getShardList().get(0).isRsShard());
@@ -120,8 +122,8 @@ public class UploadBlock {
                 }
             }
             UploadBlockSubResp resp = (UploadBlockSubResp) P2PUtils.requestBPU(uloadBlockSubReq, bpdNode);
-            if (resp.getNodes() == null || resp.getNodes().length == 0) {
-                throw new ServiceException(SERVER_ERROR);
+            if (resp.getNodes() == null || resp.getNodes().length == 0) {//OK
+                break;
             }
             secondUpload(resp);
             retrycount++;
@@ -172,22 +174,14 @@ public class UploadBlock {
     }
 
     private void sign(UploadShardReq req, int nodeid) {
-        req.setUSERSIGN(new byte[0]);
-        // Key key = KeyStoreCoder.rsaPrivateKey(UserConfig.KUSp);
-        /*
-        try {
-            Signature signet = java.security.Signature.getInstance("DSA");
-            signet.initSign((PrivateKey) key);
-            ByteBuffer bs = ByteBuffer.allocate(48);
-            bs.put(req.getVHF());
-            bs.putInt(req.getSHARDID());
-            bs.putInt(nodeid);
-            bs.putLong(req.getVBI());
-            bs.flip();
-            signet.update(bs.array());
-            req.setUSERSIGN(signet.sign());
-        } catch (Exception r) {
-            throw new IllegalArgumentException(r.getMessage());
-        }*/
+        ByteBuffer bs = ByteBuffer.allocate(48);
+        bs.put(req.getVHF());
+        bs.putInt(req.getSHARDID());
+        bs.putInt(nodeid);
+        bs.putLong(req.getVBI());
+        bs.flip();
+        byte[] sign = KeyStoreCoder.ecdsaSign(bs.array(), UserConfig.KUSp);
+        req.setUSERSIGN(sign);
+        LOG.info(req.getSHARDID() + " getUSERSIGN " + Hex.encodeHexString(req.getUSERSIGN()));
     }
 }
