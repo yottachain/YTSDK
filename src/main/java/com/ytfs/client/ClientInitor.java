@@ -164,7 +164,8 @@ public class ClientInitor {
         }
         try {
             String ss = p.getProperty("tmpFilePath", "").trim();
-            tmpFilePath = new File(ss, "ytfs.temp");
+            File parent=new File(ss);          
+            tmpFilePath = new File(parent.getAbsolutePath(), "ytfs.temp");
             if (!tmpFilePath.exists()) {
                 tmpFilePath.mkdirs();
             }
