@@ -2,12 +2,12 @@ package com.ytfs.client;
 
 import com.ytfs.service.packet.UploadShardRes;
 import static com.ytfs.service.packet.UploadShardRes.RES_NETIOERR;
-import static com.ytfs.service.UserConfig.UPLOADSHARDTHREAD;
+import static com.ytfs.client.UserConfig.UPLOADSHARDTHREAD;
 import com.ytfs.service.net.P2PUtils;
 import com.ytfs.service.packet.ShardNode;
 import com.ytfs.service.packet.UploadShard2CResp;
 import com.ytfs.service.packet.UploadShardReq;
-import com.ytfs.service.utils.GlobleThreadPool;
+import com.ytfs.service.GlobleThreadPool;
 import io.yottachain.nodemgmt.core.vo.Node;
 import java.util.concurrent.ArrayBlockingQueue;
 import org.apache.log4j.Logger;

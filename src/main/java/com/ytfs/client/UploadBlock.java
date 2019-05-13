@@ -1,17 +1,16 @@
 package com.ytfs.client;
 
-import com.ytfs.service.UserConfig;
 import com.ytfs.service.packet.UploadShardRes;
 import static com.ytfs.service.packet.UploadShardRes.RES_OK;
-import com.ytfs.service.codec.Block;
-import com.ytfs.service.codec.BlockAESEncryptor;
+import com.ytfs.codec.Block;
+import com.ytfs.codec.BlockAESEncryptor;
 import com.ytfs.service.packet.UploadShardReq;
-import com.ytfs.service.codec.KeyStoreCoder;
-import com.ytfs.service.codec.Shard;
-import com.ytfs.service.codec.ShardRSEncoder;
+import com.ytfs.codec.KeyStoreCoder;
+import com.ytfs.codec.Shard;
+import com.ytfs.codec.ShardRSEncoder;
 import com.ytfs.service.net.P2PUtils;
-import static com.ytfs.service.utils.ServiceErrorCode.SERVER_ERROR;
-import com.ytfs.service.utils.ServiceException;
+import static com.ytfs.service.ServiceErrorCode.SERVER_ERROR;
+import com.ytfs.service.ServiceException;
 import com.ytfs.service.packet.ShardNode;
 import com.ytfs.service.packet.UploadBlockEndReq;
 import com.ytfs.service.packet.UploadBlockSubReq;

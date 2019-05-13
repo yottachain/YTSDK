@@ -1,19 +1,18 @@
 package com.ytfs.client;
 
-import com.ytfs.service.UserConfig;
-import com.ytfs.service.codec.Block;
-import com.ytfs.service.codec.BlockAESEncryptor;
-import com.ytfs.service.codec.BlockEncrypted;
-import com.ytfs.service.codec.KeyStoreCoder;
-import com.ytfs.service.codec.ShardRSEncoder;
-import com.ytfs.service.codec.YTFile;
+import com.ytfs.codec.Block;
+import com.ytfs.codec.BlockAESEncryptor;
+import com.ytfs.codec.BlockEncrypted;
+import com.ytfs.codec.KeyStoreCoder;
+import com.ytfs.codec.ShardRSEncoder;
+import com.ytfs.codec.YTFile;
 import com.ytfs.service.eos.EOSRequest;
 import com.ytfs.service.net.P2PUtils;
 import com.ytfs.service.node.SuperNodeList;
 import com.ytfs.service.packet.GetBalanceReq;
 import com.ytfs.service.packet.SubBalanceReq;
-import static com.ytfs.service.utils.ServiceErrorCode.SERVER_ERROR;
-import com.ytfs.service.utils.ServiceException;
+import static com.ytfs.service.ServiceErrorCode.SERVER_ERROR;
+import com.ytfs.service.ServiceException;
 import com.ytfs.service.packet.UploadBlockDBReq;
 import com.ytfs.service.packet.UploadBlockDupReq;
 import com.ytfs.service.packet.UploadBlockInit2Req;

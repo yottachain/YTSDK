@@ -1,9 +1,9 @@
 package com.ytfs.client;
 
-import com.ytfs.service.codec.Block;
-import com.ytfs.service.codec.BlockInputStream;
+import com.ytfs.codec.Block;
+import com.ytfs.codec.BlockInputStream;
 import com.ytfs.service.packet.ObjectRefer;
-import com.ytfs.service.utils.ServiceException;
+import com.ytfs.service.ServiceException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;

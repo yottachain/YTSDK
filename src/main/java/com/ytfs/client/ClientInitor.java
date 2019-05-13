@@ -1,10 +1,9 @@
 package com.ytfs.client;
 
-import com.ytfs.service.UserConfig;
-import static com.ytfs.service.UserConfig.*;
+import static com.ytfs.client.UserConfig.*;
 import com.ytfs.service.net.P2PUtils;
-import com.ytfs.service.utils.GlobleThreadPool;
-import com.ytfs.service.utils.LogConfigurator;
+import com.ytfs.service.GlobleThreadPool;
+import com.ytfs.service.LogConfigurator;
 import io.jafka.jeos.util.Base58;
 import io.jafka.jeos.util.KeyUtil;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
