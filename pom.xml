@@ -12,6 +12,17 @@
             <artifactId>YTSN</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>YTSDK</groupId>
+            <artifactId>YTSDK</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>YTSDK</groupId>
+                    <artifactId>YTSDK</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

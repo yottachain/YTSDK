@@ -21,6 +21,7 @@ public class SDKTest implements WrapperListener {
             String filepath = null;
             String newfilepath = null;
             if (strings.length > 0) {
+                System.out.println("准备上传文件:"+strings[0]);
                 File file = new File(strings[0]);
                 if (file.exists() && file.isFile()) {
                     filepath = strings[0];

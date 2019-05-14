@@ -1,5 +1,6 @@
 package com.ytfs.client;
 
+import com.ytfs.client.examples.MakeRandFile;
 import com.ytfs.service.ServiceException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,7 +16,7 @@ public class RandomFileTest {
         //测试多副本
         //test(new UploadObject(MakeRandFile.makeMediumFile()));
         //测试rs模式
-        //test(new UploadObject(MakeRandFile.makeLargeFile()));
+        test(new UploadObject(MakeRandFile.makeLargeFile()));
     }
 
     public static void test(UploadObject upload) {
