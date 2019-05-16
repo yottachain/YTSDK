@@ -9,8 +9,9 @@ import com.ytfs.common.ServiceException;
 
 public class BucketHandler {
 
-    public static void createBucket(String name) throws ServiceException {
+    public static void createBucket(String name,byte[] meta) throws ServiceException {
         CreateBucketReq req = new CreateBucketReq();
+        req.setMeta(meta);
         req.setBucketName(name);
         P2PUtils.requestBPU(req, UserConfig.superNode);
     }
