@@ -1,7 +1,7 @@
 package com.ytfs.client;
 
 import com.ytfs.client.examples.MakeRandFile;
-import com.ytfs.service.ServiceException;
+import com.ytfs.common.ServiceException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;

@@ -1,6 +1,6 @@
 package com.ytfs.client;
 
-import com.ytfs.service.ServiceException;
+import com.ytfs.common.ServiceException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.security.MessageDigest;

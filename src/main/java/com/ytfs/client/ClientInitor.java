@@ -1,9 +1,10 @@
 package com.ytfs.client;
 
-import static com.ytfs.client.UserConfig.*;
-import com.ytfs.service.net.P2PUtils;
-import com.ytfs.service.GlobleThreadPool;
-import com.ytfs.service.LogConfigurator;
+import com.ytfs.common.conf.UserConfig;
+import static com.ytfs.common.conf.UserConfig.*;
+import com.ytfs.common.net.P2PUtils;
+import com.ytfs.common.GlobleThreadPool;
+import com.ytfs.common.LogConfigurator;
 import io.jafka.jeos.util.Base58;
 import io.jafka.jeos.util.KeyUtil;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
@@ -16,7 +17,7 @@ import java.util.List;
 import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.tanukisoftware.wrapper.WrapperManager;
-
+ 
 public class ClientInitor {
 
     private static final Logger LOG = Logger.getLogger(ClientInitor.class);
@@ -98,9 +99,9 @@ public class ClientInitor {
     private static void load() throws IOException {
         InputStream is = null;
         try {
-            is = new FileInputStream("../../conf/ytfs.properties");
+            is = new FileInputStream("../conf/ytfs.properties");
         } catch (Exception r) {
-            is = is = ClientInitor.class.getResourceAsStream("/ytfs.properties");
+            is = ClientInitor.class.getResourceAsStream("/ytfs.properties");
         }
         if (is == null) {
             throw new IOException("No properties file could be found for ytfs service");

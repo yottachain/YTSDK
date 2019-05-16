@@ -1,5 +1,6 @@
 package com.ytfs.client;
 
+import com.ytfs.common.conf.UserConfig;
 import java.io.File;
 
 public class DiskCacheCleaner extends Thread {

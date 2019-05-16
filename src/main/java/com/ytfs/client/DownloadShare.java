@@ -1,11 +1,12 @@
 package com.ytfs.client;
 
-import static com.ytfs.client.UserConfig.DOWNLOADSHARDTHREAD;
-import com.ytfs.service.net.P2PUtils;
+import com.ytfs.common.conf.UserConfig;
+import static com.ytfs.common.conf.UserConfig.DOWNLOADSHARDTHREAD;
+import com.ytfs.common.net.P2PUtils;
 import com.ytfs.service.packet.DownloadShardReq;
 import com.ytfs.service.packet.DownloadShardResp;
-import com.ytfs.service.ServiceException;
-import com.ytfs.service.GlobleThreadPool;
+import com.ytfs.common.ServiceException;
+import com.ytfs.common.GlobleThreadPool;
 import io.yottachain.nodemgmt.core.vo.Node;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
