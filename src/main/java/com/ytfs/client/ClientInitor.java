@@ -97,9 +97,10 @@ public class ClientInitor {
     }
 
     private static void load() throws IOException {
+        String path = System.getProperty("ytfs.conf", "../conf/ytfs.properties");
         InputStream is = null;
         try {
-            is = new FileInputStream("../conf/ytfs.properties");
+            is = new FileInputStream(path);
         } catch (Exception r) {
             is = ClientInitor.class.getResourceAsStream("/ytfs.properties");
         }
