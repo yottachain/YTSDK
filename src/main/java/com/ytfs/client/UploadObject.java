@@ -217,12 +217,11 @@ public class UploadObject {
         return VNU;
     }
 
-    public void writeMeta(String bucketname, String filename,byte[] meta) throws ServiceException {
-        UploadFileReq req = new UploadFileReq();
-        req.setBucketname(bucketname);
-        req.setFileName(filename);
-        req.setVNU(VNU);
-        req.setMeta(meta);
-        P2PUtils.requestBPU(req, UserConfig.superNode);
-    }
+//    public void writeMeta(String bucketname, String filename,byte[] meta) throws ServiceException {
+//        UploadFileReq req = new UploadFileReq();
+//        req.setBucketname(bucketname);
+//        req.setFileName(filename);
+//        req.setVNU(VNU);
+//        P2PUtils.requestBPU(req, UserConfig.superNode);
+//    }
 }
