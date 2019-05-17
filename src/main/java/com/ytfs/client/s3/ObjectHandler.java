@@ -20,6 +20,7 @@ public class ObjectHandler {
     }
     public static Map<String,byte[]> listObject(String bucketName) throws ServiceException {
         ListObjectReq req = new ListObjectReq();
+        req.setBucketName(bucketName);
         ListObjectResp resp = (ListObjectResp) P2PUtils.requestBPU(req, UserConfig.superNode);
         return resp.getMap();
     }
