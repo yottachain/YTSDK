@@ -23,10 +23,6 @@ public class SendShardTest {
         ls.add("/ip4/152.136.11.50/tcp/9001");
         node.setAddrs(ls);
         node.setNodeid("QmWBdg3aED1fjhr1g6JJHXC7ugWmZDD375hRW9ZvMsXjJK");
-        //              UploadShardReq req = makeUploadShardReq();
-        //            UploadShard2CResp res= (UploadShard2CResp)P2PUtils.requestNode(req, node);
-        //           System.out.println(res.getRES());
-
         for (int ii = 0; ii < 10; ii++) {
             Sender s = new Sender();
             s.start();

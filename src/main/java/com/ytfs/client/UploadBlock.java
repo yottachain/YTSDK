@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.log4j.Logger;
 
 public class UploadBlock {
@@ -63,7 +64,7 @@ public class UploadBlock {
             firstUpload();
             subUpload();
             completeUploadBlock(ks);
-            LOG.info("Download shardcount " + len + ",take time " + (System.currentTimeMillis() - l) + "ms");
+            LOG.info("Upload shardcount " + len + ",take time " + (System.currentTimeMillis() - l) + "ms");
         } catch (Exception r) {
             LOG.error("", r);
             throw new ServiceException(SERVER_ERROR);
@@ -181,6 +182,6 @@ public class UploadBlock {
         bs.flip();
         byte[] sign = KeyStoreCoder.ecdsaSign(bs.array(), UserConfig.KUSp);
         req.setUSERSIGN(sign);
-        //LOG.info(req.getSHARDID() + " getUSERSIGN " + Hex.encodeHexString(req.getUSERSIGN()));
+        LOG.info(req.getSHARDID() + " getUSERSIGN " + Hex.encodeHexString(req.getUSERSIGN()));
     }
 }
