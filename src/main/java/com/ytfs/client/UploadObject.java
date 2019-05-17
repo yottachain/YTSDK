@@ -10,7 +10,6 @@ import com.ytfs.common.codec.YTFile;
 import com.ytfs.common.eos.EOSRequest;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.node.SuperNodeList;
-import com.ytfs.service.packet.GetBalanceReq;
 import com.ytfs.service.packet.SubBalanceReq;
 import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.common.ServiceException;
@@ -25,7 +24,6 @@ import com.ytfs.service.packet.UploadObjectEndResp;
 import com.ytfs.service.packet.UploadObjectInitReq;
 import com.ytfs.service.packet.UploadObjectInitResp;
 import com.ytfs.service.packet.VoidResp;
-import com.ytfs.service.packet.s3.UploadFileReq;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.io.IOException;
 import java.util.Arrays;
@@ -50,17 +48,10 @@ public class UploadObject {
 
     public byte[] upload() throws ServiceException, IOException, InterruptedException {
         UploadObjectInitReq req = new UploadObjectInitReq(ytfile.getVHW());
+        req.setLength(ytfile.getLength());
         UploadObjectInitResp res = (UploadObjectInitResp) P2PUtils.requestBPU(req, UserConfig.superNode);
         VNU = res.getVNU();
         if (!res.isRepeat()) {
-            byte[] bs = res.getSignArg();
-            byte[] signData = EOSRequest.makeGetBalanceRequest(bs, UserConfig.username, UserConfig.privateKey, UserConfig.contractAccount);
-            GetBalanceReq getBalanceReq = new GetBalanceReq();
-            getBalanceReq.setLength(ytfile.getLength());
-            getBalanceReq.setSignData(signData);
-            getBalanceReq.setVHW(ytfile.getVHW());
-            getBalanceReq.setVNU(res.getVNU());
-            P2PUtils.requestBPU(getBalanceReq, UserConfig.superNode);
             ytfile.init(res.getVNU().toHexString());
             ytfile.handle();
             List<Block> blockList = ytfile.getBlockList();
