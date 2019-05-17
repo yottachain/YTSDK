@@ -12,12 +12,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.tanukisoftware.wrapper.WrapperManager;
- 
+
 public class ClientInitor {
 
     private static final Logger LOG = Logger.getLogger(ClientInitor.class);
@@ -34,7 +36,7 @@ public class ClientInitor {
         boolean ok = false;
         for (int ii = 0; ii < 10; ii++) {
             try {
-                int port = UserConfig.port + ii;
+                int port = freePort();
                 P2PUtils.start(port, key);
                 LOG.info("P2P initialization completed, port " + port);
                 ok = true;
@@ -86,7 +88,6 @@ public class ClientInitor {
         KUEp = Base58.decode(pubkey.substring(3));
         username = cfg.getUsername();
         contractAccount = cfg.getContractAccount();
-        port = cfg.getPort();
         tmpFilePath = new File(cfg.getTmpFilePath(), "ytfs.temp");
         if (!tmpFilePath.exists()) {
             tmpFilePath.mkdirs();
@@ -158,14 +159,8 @@ public class ClientInitor {
             throw new IOException("The 'KUSp' parameter is not configured.");
         }
         try {
-            String ss = p.getProperty("port").trim();
-            port = Integer.parseInt(ss);
-        } catch (Exception d) {
-            throw new IOException("The 'port' parameter is not configured.");
-        }
-        try {
             String ss = p.getProperty("tmpFilePath", "").trim();
-            File parent=new File(ss);          
+            File parent = new File(ss);
             tmpFilePath = new File(parent.getAbsolutePath(), "ytfs.temp");
             if (!tmpFilePath.exists()) {
                 tmpFilePath.mkdirs();
@@ -175,6 +170,17 @@ public class ClientInitor {
         }
         if (!tmpFilePath.isDirectory()) {
             throw new IOException("The 'tmpFilePath' parameter is not configured.");
+        }
+    }
+
+    private static int freePort() throws IOException {
+        Socket socket = new Socket();
+        try {
+            InetSocketAddress inetAddress = new InetSocketAddress(0);
+            socket.bind(inetAddress);
+            return socket.getLocalPort();
+        } finally {
+            socket.close();
         }
     }
 }

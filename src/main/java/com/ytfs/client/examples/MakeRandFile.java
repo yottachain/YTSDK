@@ -9,7 +9,7 @@ public class MakeRandFile {
     private static final int mediumFileLength = 1024 * 8;
     private static final int largeFileLength = 1024 * 1024 * 2 - 1024 * 16;
 
-    private static byte[] makeBytes(int length) {
+    public static byte[] makeBytes(int length) {
         Random ran = new Random();
         ByteBuffer buf = ByteBuffer.allocate(length);
         for (int ii = 0; ii < length / 8; ii++) {

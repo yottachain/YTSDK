@@ -7,7 +7,6 @@ public class Configurator {
     private int superNodeNum;   //超级节点编号 (0-31)
     private String superNodeID;  //超级节点id !=null trim
     private List<String> superNodeAddrs;  //超级节点地址
-    private int port;        //本地端口 !=0
     private String username;
     private String contractAccount;
     private String KUSp;     //用户私钥
@@ -39,20 +38,6 @@ public class Configurator {
      */
     public void setSuperNodeID(String superNodeID) {
         this.superNodeID = superNodeID;
-    }
-
-    /**
-     * @return the port
-     */
-    public int getPort() {
-        return port;
-    }
-
-    /**
-     * @param port the port to set
-     */
-    public void setPort(int port) {
-        this.port = port;
     }
 
     /**
