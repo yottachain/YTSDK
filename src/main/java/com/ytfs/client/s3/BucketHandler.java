@@ -1,11 +1,9 @@
 package com.ytfs.client.s3;
 
+import com.ytfs.common.ServiceException;
 import com.ytfs.common.conf.UserConfig;
 import com.ytfs.common.net.P2PUtils;
-import com.ytfs.service.packet.s3.CreateBucketReq;
-import com.ytfs.service.packet.s3.ListBucketReq;
-import com.ytfs.service.packet.s3.ListBucketResp;
-import com.ytfs.common.ServiceException;
+import com.ytfs.service.packet.s3.*;
 
 public class BucketHandler {
 
@@ -20,5 +18,19 @@ public class BucketHandler {
         ListBucketReq req = new ListBucketReq();
         ListBucketResp resp = (ListBucketResp) P2PUtils.requestBPU(req, UserConfig.superNode);
         return resp.getNames();
+    }
+
+    public static GetBucketResp getBucketByName(String bucketName) throws ServiceException {
+
+        GetBucketReq req = new GetBucketReq();
+        req.setBucketName(bucketName);
+        GetBucketResp resp = (GetBucketResp) P2PUtils.requestBP(req,UserConfig.superNode);
+        return resp;
+    }
+
+    public static void deleteBucket(String bucketName) throws ServiceException {
+        DeleteBucketReq req = new DeleteBucketReq();
+        req.setBucketname(bucketName);
+        P2PUtils.requestBPU(req, UserConfig.superNode);
     }
 }
