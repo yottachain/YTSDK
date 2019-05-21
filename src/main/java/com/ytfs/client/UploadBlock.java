@@ -182,6 +182,6 @@ public class UploadBlock {
         bs.flip();
         byte[] sign = KeyStoreCoder.ecdsaSign(bs.array(), UserConfig.KUSp);
         req.setUSERSIGN(sign);
-        LOG.info(req.getSHARDID() + " getUSERSIGN " + Hex.encodeHexString(req.getUSERSIGN()));
+        //LOG.info(req.getSHARDID() + " getUSERSIGN " + Hex.encodeHexString(req.getUSERSIGN()));
     }
 }
