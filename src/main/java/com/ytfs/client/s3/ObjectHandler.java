@@ -24,4 +24,10 @@ public class ObjectHandler {
         ListObjectResp resp = (ListObjectResp) P2PUtils.requestBPU(req, UserConfig.superNode);
         return resp.getMap();
     }
+    public static void deleteObject(String bucketName,String fileName) throws ServiceException {
+        DeleteFileReq req = new DeleteFileReq();
+        req.setBucketname(bucketName);
+        req.setFileName(fileName);
+        P2PUtils.requestBPU(req,UserConfig.superNode);
+    }
 }
