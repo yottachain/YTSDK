@@ -33,13 +33,13 @@ public class ClientInitor {
 
     private static void start() throws IOException {
         String key = Base58.encode(UserConfig.KUSp);
-        boolean ok = false;
+        Exception err = null;
         for (int ii = 0; ii < 10; ii++) {
             try {
                 int port = freePort();
                 P2PUtils.start(port, key);
                 LOG.info("P2P initialization completed, port " + port);
-                ok = true;
+                err = null;
                 break;
             } catch (Exception r) {
                 LOG.info("P2P initialization failed!", r);
@@ -48,10 +48,29 @@ public class ClientInitor {
                 } catch (InterruptedException ex) {
                 }
                 P2PUtils.stop();
+                err = r;
             }
         }
-        if (!ok) {
-            throw new IOException();
+        if (err != null) {
+            throw new IOException(err);
+        }
+        for (int ii = 0; ii < 10; ii++) {
+            try {
+                RegUser.regist();
+                LOG.info("User Registration Successful.");
+                err = null;
+                break;
+            } catch (Exception r) {
+                LOG.info("User registration failed.", r);
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException ex) {
+                }
+                err = r;
+            }
+        }
+        if (err != null) {
+            throw new IOException(err);
         }
     }
 
