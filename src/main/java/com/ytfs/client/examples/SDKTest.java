@@ -16,6 +16,7 @@ public class SDKTest implements WrapperListener {
     @Override
     public Integer start(String[] strings) {
         try {
+            strings=new String[]{"d:/test9.docx"};
             ClientInitor.init();
             String filepath = null;
             String newfilepath = null;

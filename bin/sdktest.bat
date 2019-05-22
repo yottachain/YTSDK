@@ -1,8 +1,8 @@
-@echo off 
+﻿@echo off 
 
 rem ---------在这里设置要上传的文件路径------------
 
-set filepath=d:/aa.txt
+set filepath=f:/aa.txt
 
 
 rem --------------------upload test----------------------
