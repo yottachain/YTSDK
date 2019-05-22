@@ -30,4 +30,15 @@ public class ObjectHandler {
         req.setFileName(fileName);
         P2PUtils.requestBPU(req,UserConfig.superNode);
     }
+    public static boolean isExistObject(String bucketName,String fileName) throws ServiceException{
+        boolean isExistObject = false;
+        GetObjectReq req = new GetObjectReq();
+        req.setBucketName(bucketName);
+        req.setFileName(fileName);
+        GetObjectResp resp = (GetObjectResp)P2PUtils.requestBPU(req, UserConfig.superNode);
+        if(resp.getFileName() != null) {
+            isExistObject = true;
+        }
+        return isExistObject;
+    }
 }
