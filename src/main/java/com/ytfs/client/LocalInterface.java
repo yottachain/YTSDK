@@ -8,6 +8,7 @@ import com.ytfs.service.packet.UserSpaceResp;
 
 public class LocalInterface {
 
+ 
     /**
      * 当前用户统计数据
      *
