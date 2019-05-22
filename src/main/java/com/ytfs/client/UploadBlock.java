@@ -180,8 +180,8 @@ public class UploadBlock {
         bs.putInt(nodeid);
         bs.putLong(req.getVBI());
         bs.flip();
-        byte[] sign = KeyStoreCoder.ecdsaSign(bs.array(), UserConfig.KUSp);
-        req.setUSERSIGN(sign);
+        //byte[] sign = KeyStoreCoder.ecdsaSign(bs.array(), UserConfig.KUSp);
+        req.setUSERSIGN(new byte[0]);
         //LOG.info(req.getSHARDID() + " getUSERSIGN " + Hex.encodeHexString(req.getUSERSIGN()));
     }
 }
