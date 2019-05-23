@@ -98,7 +98,7 @@ public class ClientInitor {
 
     private static void load(Configurator cfg) throws IOException {
         superNode = new SuperNode(0, null, null, null, null);
-        superNode.setId(cfg.getSuperNodeNum());
+        //superNode.setId(cfg.getSuperNodeNum());
         superNode.setNodeid(cfg.getSuperNodeID());
         superNode.setAddrs(cfg.getSuperNodeAddrs());
         KUSp = Base58.decode(cfg.getKUSp());
@@ -139,17 +139,8 @@ public class ClientInitor {
         if (contractAccount == null || contractAccount.trim().isEmpty()) {
             throw new IOException("The 'contractAccount' parameter is not configured.");
         }
+        
         superNode = new SuperNode(0, null, null, null, null);
-        try {
-            String ss = p.getProperty("superNodeID").trim();
-            int superNodeID = Integer.parseInt(ss);
-            if (superNodeID < 0 || superNodeID > 31) {
-                throw new IOException();
-            }
-            superNode.setId(superNodeID);
-        } catch (Exception d) {
-            throw new IOException("The 'superNodeID' parameter is not configured.");
-        }
         String key = p.getProperty("superNodeKey");
         if (key == null || key.trim().isEmpty()) {
             throw new IOException("The 'superNodeKey' parameter is not configured.");
