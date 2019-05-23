@@ -93,16 +93,22 @@ public class DownloadBlock {
             if (count > initresp.getNodeids().length - nodeindex) {
                 break;
             }
+            int sendnum = 0;
             for (int ii = 0; ii < count; ii++) {
                 Node n = map.get(initresp.getNodeids()[nodeindex]);
                 byte[] VHF = initresp.getVHF()[nodeindex];
                 DownloadShardReq req = new DownloadShardReq();
                 req.setVHF(VHF);
-                DownloadShare.startDownloadShard(VHF, n, this);
                 nodeindex++;
+                if (n == null) {
+                    LOG.warn("Node Offline,ID:" + initresp.getNodeids()[nodeindex - 1]);
+                    continue;
+                }
+                DownloadShare.startDownloadShard(VHF, n, this);
+                sendnum++;
             }
             synchronized (this) {
-                while (resList.size() != count) {
+                while (resList.size() != sendnum) {
                     this.wait(1000 * 15);
                 }
             }
@@ -114,8 +120,8 @@ public class DownloadBlock {
             resList.clear();
             retrytimes++;
         }
-        LOG.info("Download shardcount " + len + ",take time " + (System.currentTimeMillis() - l) + "ms");
         if (shards.size() >= len) {
+            LOG.info("Download shardcount " + len + ",take time " + (System.currentTimeMillis() - l) + "ms");
             BlockEncrypted be = new BlockEncrypted(refer.getRealSize());
             ShardRSDecoder rsdec = new ShardRSDecoder(shards, be.getEncryptedBlockSize());
             be = rsdec.decode();
@@ -123,6 +129,7 @@ public class DownloadBlock {
             dec.decrypt();
             return dec.getSrcData();
         } else {
+            LOG.info("Download shardcount " + shards.size() + ",Not enough shards present.");
             throw new ServiceException(INTERNAL_ERROR);
         }
     }
