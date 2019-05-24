@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.codec.binary.Hex;
 import org.apache.log4j.Logger;
 
 public class UploadBlock {
@@ -180,8 +179,8 @@ public class UploadBlock {
         bs.putInt(nodeid);
         bs.putLong(req.getVBI());
         bs.flip();
-        //byte[] sign = KeyStoreCoder.ecdsaSign(bs.array(), UserConfig.KUSp);
-        req.setUSERSIGN(new byte[0]);
+        byte[] sign = KeyStoreCoder.ecdsaSign(bs.array(), UserConfig.privateKey);
+        req.setUSERSIGN(sign);
         //LOG.info(req.getSHARDID() + " getUSERSIGN " + Hex.encodeHexString(req.getUSERSIGN()));
     }
 }

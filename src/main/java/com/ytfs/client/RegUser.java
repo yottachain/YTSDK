@@ -8,8 +8,10 @@ import com.ytfs.service.packet.RegUserReq;
 import com.ytfs.service.packet.RegUserResp;
 import io.jafka.jeos.util.KeyUtil;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
+import org.apache.log4j.Logger;
 
 public class RegUser {
+    private static final Logger LOG = Logger.getLogger(RegUser.class);
 
     /**
      * 注册用户
@@ -28,6 +30,7 @@ public class RegUser {
         sn.setId(resp.getSuperNodeNum());
         sn.setNodeid(resp.getSuperNodeID());
         sn.setAddrs(resp.getSuperNodeAddrs());
+        LOG.info("当前用户超级节点："+sn.getId()+",ID:"+sn.getNodeid());
         superNode = sn;
     }
 
