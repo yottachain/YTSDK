@@ -16,7 +16,7 @@ public class SDKTest implements WrapperListener {
     @Override
     public Integer start(String[] strings) {
         try {
-            //strings=new String[]{"d:/MicrosoftOfficeProfessionalPlus2007.iso"};
+            strings=new String[]{"d:/web.rar"};
             ClientInitor.init();
             String filepath = null;
             String newfilepath = null;
