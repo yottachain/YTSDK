@@ -111,11 +111,19 @@ public class UploadBlock {
 
     private void subUpload() throws InterruptedException, ServiceException {
         int retrycount = 0;
+        int lasterrnum = 0;
         while (true) {
             UploadBlockSubReq uloadBlockSubReq = doUploadShardRes();
             if (uloadBlockSubReq == null) {
                 return;
             } else {
+                int errnum = uloadBlockSubReq.getRes().length;
+                if (errnum != lasterrnum) {
+                    retrycount = 0;
+                    lasterrnum = errnum;
+                } else {
+                    retrycount++;
+                }
                 if (retrycount >= 5) {
                     throw new ServiceException(SERVER_ERROR);
                 }
@@ -125,7 +133,6 @@ public class UploadBlock {
                 break;
             }
             secondUpload(resp);
-            retrycount++;
         }
     }
 
