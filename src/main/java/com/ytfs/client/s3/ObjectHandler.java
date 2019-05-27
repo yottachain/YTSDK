@@ -18,11 +18,14 @@ public class ObjectHandler {
         req.setMeta(meta);
         P2PUtils.requestBPU(req, UserConfig.superNode);
     }
-    public static Map<String,byte[]> listObject(String bucketName) throws ServiceException {
+    public static ObjectId listObject(Map<String,byte[]> map,String bucketName,ObjectId startId,int limit) throws ServiceException {
         ListObjectReq req = new ListObjectReq();
         req.setBucketName(bucketName);
+        req.setLimit(limit);
+        req.setStartId(startId);
         ListObjectResp resp = (ListObjectResp) P2PUtils.requestBPU(req, UserConfig.superNode);
-        return resp.getMap();
+        map.putAll(resp.getMap());
+        return resp.getObjectId();
     }
     public static void deleteObject(String bucketName,String fileName) throws ServiceException {
         DeleteFileReq req = new DeleteFileReq();
