@@ -15,15 +15,18 @@ import java.util.List;
 public class SendShardTest {
 
     static Node node;
-
+ 
     public static void main(String[] args) throws Exception {
         start();
         node = new Node();
         List<String> ls = new ArrayList();
-        ls.add("/ip4/152.136.11.50/tcp/9001");
+        ls.add("/ip4/10.10.21.177/tcp/9001");
+        ls.add("/ip4/172.17.0.1/tcp/9001");
+        ls.add("/ip4/36.110.28.94/tcp/9001");
+      
         node.setAddrs(ls);
-        node.setNodeid("QmWBdg3aED1fjhr1g6JJHXC7ugWmZDD375hRW9ZvMsXjJK");
-        for (int ii = 0; ii < 10; ii++) {
+        node.setNodeid("16Uiu2HAmTKoBBkDDpUNxSoHviCjUe5V9DHMudwiUL8rFUDyC7mAp");
+        for (int ii = 0; ii < 1; ii++) {
             Sender s = new Sender();
             s.start();
         }
