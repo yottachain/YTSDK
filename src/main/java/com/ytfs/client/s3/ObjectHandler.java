@@ -52,4 +52,12 @@ public class ObjectHandler {
         }
         return isExistObject;
     }
+    public static ObjectId getObjectIdByName(String bucketName,String fileName) throws ServiceException{
+        GetObjectReq req = new GetObjectReq();
+        req.setFileName(fileName);
+        req.setBucketName(bucketName);
+        GetObjectResp resp = (GetObjectResp)P2PUtils.requestBPU(req, UserConfig.superNode);
+        ObjectId objectId = resp.getObjectId();
+        return objectId;
+    }
 }
