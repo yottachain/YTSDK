@@ -1,6 +1,8 @@
 package com.ytfs.client.examples;
 
 import com.ytfs.common.net.P2PUtils;
+import com.ytfs.service.packet.DownloadShardReq;
+import com.ytfs.service.packet.DownloadShardResp;
 import com.ytfs.service.packet.UploadShard2CResp;
 import com.ytfs.service.packet.UploadShardReq;
 import io.yottachain.nodemgmt.core.vo.Node;
@@ -11,6 +13,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.codec.binary.Hex;
 
 public class SendShardTest {
 
@@ -20,12 +23,10 @@ public class SendShardTest {
         start();
         node = new Node();
         List<String> ls = new ArrayList();
-        ls.add("/ip4/10.10.21.177/tcp/9001");
-        ls.add("/ip4/172.17.0.1/tcp/9001");
-        ls.add("/ip4/36.110.28.94/tcp/9001");
-      
+        ls.add("/ip4/110.253.175.192/tcp/1510");
+
         node.setAddrs(ls);
-        node.setNodeid("16Uiu2HAmTKoBBkDDpUNxSoHviCjUe5V9DHMudwiUL8rFUDyC7mAp");
+        node.setNodeid("16Uiu2HAmKEgs1jy4mkpDFSyALf2yxeQ47KuHpZcioTikTffBxjMC");
         for (int ii = 0; ii < 1; ii++) {
             Sender s = new Sender();
             s.start();
@@ -81,8 +82,17 @@ public class SendShardTest {
             while (!this.isInterrupted()) {
                 try {
                     UploadShardReq req = makeUploadShardReq();
-                    UploadShard2CResp res = (UploadShard2CResp) P2PUtils.requestNode(req, node);
+                    byte[] VHF=req.getVHF();
+                    UploadShard2CResp res = (UploadShard2CResp) P2PUtils.requestNode(req, node);  
                     System.out.println(res.getRES());
+                    
+                    DownloadShardReq dreq=new DownloadShardReq();
+                   // byte[] VHF=Hex.decodeHex("87628f3d794b3bd032132b7f5c175a2b076929e22ae7aa2fe5baa14bcdf26585".toCharArray());
+                    dreq.setVHF(VHF);
+                    DownloadShardResp resp=(DownloadShardResp) P2PUtils.requestNode(dreq, node);  
+                    
+                    System.out.println(resp.getData().length);
+                    return;
                 } catch (Exception r) {
                     try {
                         Thread.sleep(5000);

@@ -12,6 +12,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.concurrent.ArrayBlockingQueue;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.log4j.Logger;
 
 public class DownloadShare implements Runnable {
@@ -44,6 +45,10 @@ public class DownloadShare implements Runnable {
 
     static boolean verify(DownloadShardResp resp, byte[] VHF) {
         byte[] data = resp.getData();
+        if(data==null){
+            LOG.error("VHF Non-existent.");
+            return false;
+        }
         if (data.length < UserConfig.Default_Shard_Size) {
             return false;
         } else {
@@ -72,7 +77,7 @@ public class DownloadShare implements Runnable {
                 } else {
                     downloadBlock.onResponse(resp);
                 }
-            } catch (ServiceException ex) {
+            } catch (Throwable ex) {                 
                 downloadBlock.onResponse(new DownloadShardResp());
             }
         } finally {
