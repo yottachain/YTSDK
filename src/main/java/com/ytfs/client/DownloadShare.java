@@ -73,7 +73,6 @@ public class DownloadShare implements Runnable {
                     downloadBlock.onResponse(resp);
                 }
             } catch (ServiceException ex) {
-                LOG.error("Network error.");
                 downloadBlock.onResponse(new DownloadShardResp());
             }
         } finally {
