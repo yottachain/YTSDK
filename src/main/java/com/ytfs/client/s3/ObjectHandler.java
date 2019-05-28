@@ -19,21 +19,16 @@ public class ObjectHandler {
         req.setMeta(meta);
         P2PUtils.requestBPU(req, UserConfig.superNode);
     }
-    public static Map<ObjectId,String> listObject(Map<String,byte[]> map,String bucketName,ObjectId startId,int limit) throws ServiceException {
+    public static String listObject(Map<String,byte[]> map,String bucketName,String fileName,int limit) throws ServiceException {
         ListObjectReq req = new ListObjectReq();
         req.setBucketName(bucketName);
         req.setLimit(limit);
-        req.setStartId(startId);
+        req.setFileName(fileName);
         ListObjectResp resp = (ListObjectResp) P2PUtils.requestBPU(req, UserConfig.superNode);
         map.putAll(resp.getMap());
         Map<ObjectId,String> lastMap = new HashMap<>();
         System.out.println("resp.getFileName()====="+resp.getFileName()+"  ,resp.getObjectId()====="+resp.getObjectId());
-        if(resp.getFileName()!=null && resp.getObjectId() !=null) {
-            lastMap.put(resp.getObjectId(),resp.getFileName());
-            return lastMap;
-        } else {
-            return lastMap;
-        }
+        return resp.getFileName();
     }
     public static void deleteObject(String bucketName,String fileName) throws ServiceException {
         DeleteFileReq req = new DeleteFileReq();
