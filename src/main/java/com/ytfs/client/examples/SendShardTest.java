@@ -13,20 +13,20 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.codec.binary.Hex;
 
 public class SendShardTest {
 
     static Node node;
- 
+
     public static void main(String[] args) throws Exception {
         start();
         node = new Node();
         List<String> ls = new ArrayList();
-        ls.add("/ip4/110.253.175.192/tcp/1510");
-
+        ls.add("/ip4/169.254.111.26/tcp/9001");
+        ls.add("/ip4/192.168.10.253/tcp/9001");
+        ls.add("/ip4/111.85.221.186/tcp/9001");
         node.setAddrs(ls);
-        node.setNodeid("16Uiu2HAmKEgs1jy4mkpDFSyALf2yxeQ47KuHpZcioTikTffBxjMC");
+        node.setNodeid("16Uiu2HAm48Eg2oEeYD4tt6TKzQqRY1LueJLsvXvmmXvrg5GLizVQ");
         for (int ii = 0; ii < 1; ii++) {
             Sender s = new Sender();
             s.start();
@@ -82,16 +82,16 @@ public class SendShardTest {
             while (!this.isInterrupted()) {
                 try {
                     UploadShardReq req = makeUploadShardReq();
-                    byte[] VHF=req.getVHF();
-                    UploadShard2CResp res = (UploadShard2CResp) P2PUtils.requestNode(req, node);  
+                    byte[] VHF = req.getVHF();
+                    UploadShard2CResp res = (UploadShard2CResp) P2PUtils.requestNode(req, node);
                     System.out.println(res.getRES());
-                    
-                    DownloadShardReq dreq=new DownloadShardReq();
-                   // byte[] VHF=Hex.decodeHex("87628f3d794b3bd032132b7f5c175a2b076929e22ae7aa2fe5baa14bcdf26585".toCharArray());
-                    dreq.setVHF(VHF);
-                    DownloadShardResp resp=(DownloadShardResp) P2PUtils.requestNode(dreq, node);  
-                    
-                    System.out.println(resp.getData().length);
+
+                   // DownloadShardReq dreq = new DownloadShardReq();
+                    // byte[] VHF=Hex.decodeHex("87628f3d794b3bd032132b7f5c175a2b076929e22ae7aa2fe5baa14bcdf26585".toCharArray());
+                   // dreq.setVHF(VHF);
+                   // DownloadShardResp resp = (DownloadShardResp) P2PUtils.requestNode(dreq, node);
+
+                   // System.out.println(resp.getData().length);
                     return;
                 } catch (Exception r) {
                     try {
@@ -100,6 +100,7 @@ public class SendShardTest {
                         break;
                     }
                 }
+                return;
             }
         }
     }
