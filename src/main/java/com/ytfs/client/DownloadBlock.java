@@ -129,7 +129,7 @@ public class DownloadBlock {
             dec.decrypt();
             return dec.getSrcData();
         } else {
-            LOG.info("Download shardcount " + shards.size() + ",Not enough shards present.");
+            LOG.error("Download shardcount " + shards.size() + ",Not enough shards present.");
             throw new ServiceException(INTERNAL_ERROR);
         }
     }
@@ -158,6 +158,7 @@ public class DownloadBlock {
                 t = e;
             }
         }
+        LOG.error("Download shardcount " + count + " ERR.");
         throw t == null ? new ServiceException(INVALID_SHARD) : t;
     }
 

@@ -3,6 +3,9 @@ package com.ytfs.client.examples;
 import com.ytfs.client.ClientInitor;
 import com.ytfs.client.DownloadObject;
 import com.ytfs.client.UploadObject;
+import static com.ytfs.client.examples.MakeRandFile.largeFileLength;
+import static com.ytfs.client.examples.MakeRandFile.mediumFileLength;
+import static com.ytfs.client.examples.MakeRandFile.smallFileLength;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -16,12 +19,11 @@ public class SDKTest implements WrapperListener {
     @Override
     public Integer start(String[] strings) {
         try {
-            strings=new String[]{"d:/web.rar"};
+            strings = new String[]{"e:/mongodb.tgz"};
             ClientInitor.init();
             String filepath = null;
             String newfilepath = null;
             if (strings.length > 0) {
-                System.out.println("准备上传文件:"+strings[0]);
                 File file = new File(strings[0]);
                 if (file.exists() && file.isFile()) {
                     filepath = strings[0];
@@ -37,17 +39,21 @@ public class SDKTest implements WrapperListener {
             UploadObject upload;
             byte[] VHW = null;
             if (filepath != null) {
+                System.out.println("准备上传文件:" + strings[0]);
                 upload = new UploadObject(filepath);
             } else {
                 int index = (int) System.currentTimeMillis() % 3;
                 switch (index) {
                     case 0:
+                        System.out.println("准备上传文件，大小(b):" + smallFileLength);
                         upload = new UploadObject(MakeRandFile.makeSmallFile());
                         break;
                     case 1:
+                        System.out.println("准备上传文件，大小(b):" + mediumFileLength);
                         upload = new UploadObject(MakeRandFile.makeMediumFile());
                         break;
                     default:
+                        System.out.println("准备上传文件，大小(b):" + largeFileLength);
                         upload = new UploadObject(MakeRandFile.makeLargeFile());
                         break;
                 }

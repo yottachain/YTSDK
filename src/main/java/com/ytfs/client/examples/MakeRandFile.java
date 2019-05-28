@@ -5,9 +5,9 @@ import java.util.Random;
 
 public class MakeRandFile {
 
-    private static final int smallFileLength = 128;
-    private static final int mediumFileLength = 1024 * 8;
-    private static final int largeFileLength = 1024 * 1024 * 2 - 1024 * 16;
+    public static final int smallFileLength = 128;
+    public static final int mediumFileLength = 1024 * 8;
+    public static final int largeFileLength = 1024 * 1024 * 2 - 1024 * 16;
 
     public static byte[] makeBytes(int length) {
         Random ran = new Random();

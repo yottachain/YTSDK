@@ -163,6 +163,9 @@ public class UploadBlock {
             if (res.getRES() != RES_OK) {
                 if (res.getRES() != UploadShardRes.RES_VNF_EXISTS) {// RES_NO_SPACE RES_VNF_EXISTS 
                     ls.add(res);
+                    if (res.getRES() == UploadShardRes.RES_NO_SPACE) {
+                        LOG.info("ERR 'NO_SPACE',id:" + res.getNODEID());
+                    }
                 }
             }
         }
