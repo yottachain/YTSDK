@@ -17,16 +17,17 @@ import java.util.List;
 public class SendShardTest {
 
     static Node node;
-
+//101 NodeID:QmRMtkMW7fZDvYeFSrnYBkAXu85oCM9v3efcRYptLGSRdk,ID:215,
+//ADDR:[/ip4/127.0.0.1/tcp/9001,/ip4/172.21.0.5/tcp/9001,/ip4/152.136.13.254/tcp/9001]
     public static void main(String[] args) throws Exception {
         start();
         node = new Node();
         List<String> ls = new ArrayList();
-        ls.add("/ip4/169.254.111.26/tcp/9001");
-        ls.add("/ip4/192.168.10.253/tcp/9001");
-        ls.add("/ip4/111.85.221.186/tcp/9001");
+        //ls.add("/ip4/169.254.111.26/tcp/9001");
+        ls.add("/ip4/172.21.0.5/tcp/9001");
+        ls.add("/ip4/152.136.13.254/tcp/9001");
         node.setAddrs(ls);
-        node.setNodeid("16Uiu2HAm48Eg2oEeYD4tt6TKzQqRY1LueJLsvXvmmXvrg5GLizVQ");
+        node.setNodeid("QmRMtkMW7fZDvYeFSrnYBkAXu85oCM9v3efcRYptLGSRdk");
         for (int ii = 0; ii < 1; ii++) {
             Sender s = new Sender();
             s.start();
@@ -100,7 +101,7 @@ public class SendShardTest {
                         break;
                     }
                 }
-                return;
+                
             }
         }
     }

@@ -9,6 +9,7 @@ import com.ytfs.service.packet.UploadShard2CResp;
 import com.ytfs.service.packet.UploadShardReq;
 import com.ytfs.common.GlobleThreadPool;
 import io.yottachain.nodemgmt.core.vo.Node;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import org.apache.log4j.Logger;
 
@@ -56,4 +57,15 @@ public class UploadShard implements Runnable {
         }
     }
 
+    private String getAddrString(List<String> ls) {
+        StringBuilder res = null;
+        for (String s : ls) {
+            if (res == null) {
+                res = (new StringBuilder("[")).append(s);
+            } else {
+                res.append(",").append(s);
+            }
+        }
+        return res == null ? "" : res.append("]").toString();
+    }
 }
