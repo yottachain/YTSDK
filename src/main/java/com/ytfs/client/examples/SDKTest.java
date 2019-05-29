@@ -19,7 +19,7 @@ public class SDKTest implements WrapperListener {
     @Override
     public Integer start(String[] strings) {
         try {
-            strings = new String[]{"e:/ww.rar"};
+            strings = new String[]{"e:/nosqlbooster4mongo-5.1.5.0.rar"};
             ClientInitor.init();
             String filepath = null;
             String newfilepath = null;
