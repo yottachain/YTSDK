@@ -9,6 +9,12 @@ public class MakeRandFile {
     public static final int mediumFileLength = 1024 * 8;
     public static final int largeFileLength = 1024 * 1024 * 2 - 1024 * 16;
 
+    /**
+     * 随机生成小文件
+     *
+     * @param length 文件大小
+     * @return
+     */
     public static byte[] makeBytes(int length) {
         Random ran = new Random();
         ByteBuffer buf = ByteBuffer.allocate(length);

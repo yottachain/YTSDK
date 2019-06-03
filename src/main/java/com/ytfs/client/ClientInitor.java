@@ -25,19 +25,45 @@ public class ClientInitor {
     private static final Logger LOG = Logger.getLogger(ClientInitor.class);
     private static final DiskCacheCleaner clean = new DiskCacheCleaner();
 
+    /**
+     * 初始化SDK
+     *
+     * @throws IOException
+     */
+    public static void init() throws IOException {
+        init(null);
+    }
+
+    /**
+     * 初始化SDK
+     *
+     * @param cfg
+     * @throws IOException
+     */
     public static void init(Configurator cfg) throws IOException {
-        load(cfg);
-        start();
+        String level = WrapperManager.getProperties().getProperty("wrapper.log4j.loglevel", "DEBUG");
+        LogConfigurator.configPath(level);
+        if (cfg == null) {
+            load();
+        } else {
+            load(cfg);
+        }
+        startP2p();
+        reguser();
         clean.start();
     }
 
-    private static void start() throws IOException {
-        String key = Base58.encode(UserConfig.KUSp);
+    /**
+     * 初始化p2p网络
+     *
+     * @throws IOException
+     */
+    private static void startP2p() throws IOException {
         Exception err = null;
         for (int ii = 0; ii < 10; ii++) {
             try {
                 int port = freePort();
-                P2PUtils.start(port, key);
+                P2PUtils.start(port, UserConfig.privateKey);
                 LOG.info("P2P initialization completed, port " + port);
                 err = null;
                 break;
@@ -54,6 +80,15 @@ public class ClientInitor {
         if (err != null) {
             throw new IOException(err);
         }
+    }
+
+    /**
+     * 启动后自动注册用户
+     *
+     * @throws IOException
+     */
+    private static void reguser() throws IOException {
+        Exception err = null;
         for (int ii = 0; ii < 10; ii++) {
             try {
                 RegUser.regist();
@@ -74,31 +109,23 @@ public class ClientInitor {
         }
     }
 
-    public static void init() throws IOException {
-        try {
-            String path = System.getProperty("logger.path", "log");
-            File dir = new File(path);
-            dir.mkdirs();
-            String level = WrapperManager.getProperties().getProperty("wrapper.log4j.loglevel", "INFO");
-            LogConfigurator.configPath(new File(dir, "log"), level);
-            load();
-        } catch (IOException e) {
-            LOG.error("Init err.", e);
-            System.exit(0);//循环初始化
-        }
-        start();
-        clean.start();
-    }
-
+    /**
+     * 关闭用户端
+     */
     public static void stop() {
         P2PUtils.stop();
         clean.interrupt();
         GlobleThreadPool.shutdown();
     }
 
+    /**
+     * 从Configurator加载配置
+     *
+     * @param cfg
+     * @throws IOException
+     */
     private static void load(Configurator cfg) throws IOException {
         superNode = new SuperNode(0, null, null, null, null);
-        //superNode.setId(cfg.getSuperNodeNum());
         superNode.setNodeid(cfg.getSuperNodeID());
         superNode.setAddrs(cfg.getSuperNodeAddrs());
         KUSp = Base58.decode(cfg.getKUSp());
@@ -116,6 +143,11 @@ public class ClientInitor {
         }
     }
 
+    /**
+     * 从本地配置文件ytfs.properties加载配置
+     *
+     * @throws IOException
+     */
     private static void load() throws IOException {
         String path = System.getProperty("ytfs.conf", "../conf/ytfs.properties");
         InputStream is = null;
@@ -139,7 +171,7 @@ public class ClientInitor {
         if (contractAccount == null || contractAccount.trim().isEmpty()) {
             throw new IOException("The 'contractAccount' parameter is not configured.");
         }
-        
+
         superNode = new SuperNode(0, null, null, null, null);
         String key = p.getProperty("superNodeKey");
         if (key == null || key.trim().isEmpty()) {
@@ -183,6 +215,12 @@ public class ClientInitor {
         }
     }
 
+    /**
+     * 监听本地随机端口以接收数据
+     *
+     * @return int
+     * @throws IOException
+     */
     private static int freePort() throws IOException {
         Socket socket = new Socket();
         try {

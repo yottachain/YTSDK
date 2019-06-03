@@ -1,8 +1,6 @@
 package com.ytfs.client.examples;
 
 import com.ytfs.common.net.P2PUtils;
-import com.ytfs.service.packet.DownloadShardReq;
-import com.ytfs.service.packet.DownloadShardResp;
 import com.ytfs.service.packet.UploadShard2CResp;
 import com.ytfs.service.packet.UploadShardReq;
 import io.yottachain.nodemgmt.core.vo.Node;
@@ -17,8 +15,7 @@ import java.util.List;
 public class SendShardTest {
 
     static Node node;
-//101 NodeID:QmRMtkMW7fZDvYeFSrnYBkAXu85oCM9v3efcRYptLGSRdk,ID:215,
-//ADDR:[/ip4/127.0.0.1/tcp/9001,/ip4/172.21.0.5/tcp/9001,/ip4/152.136.13.254/tcp/9001]
+
     public static void main(String[] args) throws Exception {
         start();
         node = new Node();
@@ -28,7 +25,7 @@ public class SendShardTest {
         ls.add("/ip4/152.136.13.254/tcp/9001");
         node.setAddrs(ls);
         node.setNodeid("QmRMtkMW7fZDvYeFSrnYBkAXu85oCM9v3efcRYptLGSRdk");
-        for (int ii = 0; ii < 1; ii++) {
+        for (int ii = 0; ii < 1; ii++) {//启动多个线程发送分片
             Sender s = new Sender();
             s.start();
         }
@@ -87,12 +84,11 @@ public class SendShardTest {
                     UploadShard2CResp res = (UploadShard2CResp) P2PUtils.requestNode(req, node);
                     System.out.println(res.getRES());
 
-                   // DownloadShardReq dreq = new DownloadShardReq();
+                    // DownloadShardReq dreq = new DownloadShardReq();
                     // byte[] VHF=Hex.decodeHex("87628f3d794b3bd032132b7f5c175a2b076929e22ae7aa2fe5baa14bcdf26585".toCharArray());
-                   // dreq.setVHF(VHF);
-                   // DownloadShardResp resp = (DownloadShardResp) P2PUtils.requestNode(dreq, node);
-
-                   // System.out.println(resp.getData().length);
+                    // dreq.setVHF(VHF);
+                    // DownloadShardResp resp = (DownloadShardResp) P2PUtils.requestNode(dreq, node);
+                    // System.out.println(resp.getData().length);
                     return;
                 } catch (Exception r) {
                     try {
@@ -101,7 +97,7 @@ public class SendShardTest {
                         break;
                     }
                 }
-                
+
             }
         }
     }

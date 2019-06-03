@@ -5,14 +5,12 @@ import static com.ytfs.common.conf.UserConfig.DOWNLOADSHARDTHREAD;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.service.packet.DownloadShardReq;
 import com.ytfs.service.packet.DownloadShardResp;
-import com.ytfs.common.ServiceException;
 import com.ytfs.common.GlobleThreadPool;
 import io.yottachain.nodemgmt.core.vo.Node;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.concurrent.ArrayBlockingQueue;
-import org.apache.commons.codec.binary.Hex;
 import org.apache.log4j.Logger;
 
 public class DownloadShare implements Runnable {

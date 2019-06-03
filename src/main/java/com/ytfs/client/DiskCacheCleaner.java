@@ -5,7 +5,7 @@ import java.io.File;
 
 public class DiskCacheCleaner extends Thread {
 
-    private static final long expiredTime = 1000 * 60 * 60 * 24 * 3;
+    private static final long expiredTime = 1000 * 60 * 60 * 24 * 3;//最长保留3天
 
     @Override
     public void run() {
@@ -20,6 +20,9 @@ public class DiskCacheCleaner extends Thread {
         }
     }
 
+    /**
+     * 清除本地缓存文件
+     */
     private void clear() {
         try {
             File[] files = UserConfig.tmpFilePath.listFiles();
@@ -36,6 +39,12 @@ public class DiskCacheCleaner extends Thread {
         }
     }
 
+    /**
+     * 3天前的文件删掉
+     *
+     * @param file
+     * @return
+     */
     private long getLastModified(File file) {
         File[] files = file.listFiles();
         long l = 0;
@@ -47,6 +56,11 @@ public class DiskCacheCleaner extends Thread {
         return l;
     }
 
+    /**
+     * 删除临时目录及文件(压缩加密时产生的缓存)
+     *
+     * @param file
+     */
     private void deleteDirectory(File file) {
         File[] files = file.listFiles();
         for (File f : files) {

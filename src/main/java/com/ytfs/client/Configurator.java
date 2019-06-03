@@ -4,27 +4,12 @@ import java.util.List;
 
 public class Configurator {
 
-    private int superNodeNum;   //超级节点编号 (0-31)
     private String superNodeID;  //超级节点id !=null trim
     private List<String> superNodeAddrs;  //超级节点地址
     private String username;
     private String contractAccount;
     private String KUSp;     //用户私钥
     private String tmpFilePath;
-
-    /**
-     * @return the superNodeNum
-     */
-    public int getSuperNodeNum() {
-        return superNodeNum;
-    }
-
-    /**
-     * @param superNodeNum the superNodeNum to set
-     */
-    public void setSuperNodeNum(int superNodeNum) {
-        this.superNodeNum = superNodeNum;
-    }
 
     /**
      * @return the superNodeID

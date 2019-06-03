@@ -30,7 +30,7 @@ public class RegUser {
         sn.setId(resp.getSuperNodeNum());
         sn.setNodeid(resp.getSuperNodeID());
         sn.setAddrs(resp.getSuperNodeAddrs());
-        LOG.info("当前用户超级节点："+sn.getId()+",ID:"+sn.getNodeid());
+        LOG.info("Current user supernode:"+sn.getId()+",ID:"+sn.getNodeid());
         superNode = sn;
     }
 
