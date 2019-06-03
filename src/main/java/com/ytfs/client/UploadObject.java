@@ -172,7 +172,7 @@ public class UploadObject {
             req.setVNU(vnu);
             req.setVHP(b.getVHP());
             req.setVHB(enc.getBlockEncrypted().getVHB());
-            req.setKEU(KeyStoreCoder.eccEncryped(ks, UserConfig.KUEp));
+            req.setKEU(KeyStoreCoder.aesEncryped(ks, UserConfig.AESKey));
             req.setKED(KeyStoreCoder.aesEncryped(ks, b.getKD()));
             req.setOriginalSize(b.getOriginalSize());
             req.setData(enc.getBlockEncrypted().getData());
@@ -204,7 +204,7 @@ public class UploadObject {
                 if (Arrays.equals(vhbs[ii], VHB)) {
                     UploadBlockDupReq req = new UploadBlockDupReq();
                     req.setVHB(VHB);
-                    byte[] keu = KeyStoreCoder.eccEncryped(ks, UserConfig.KUEp);
+                    byte[] keu = KeyStoreCoder.aesEncryped(ks, UserConfig.AESKey);
                     req.setKEU(keu);
                     return req;
                 }

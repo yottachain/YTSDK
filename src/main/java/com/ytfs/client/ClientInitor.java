@@ -5,8 +5,8 @@ import static com.ytfs.common.conf.UserConfig.*;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.GlobleThreadPool;
 import com.ytfs.common.LogConfigurator;
+import com.ytfs.common.codec.KeyStoreCoder;
 import io.jafka.jeos.util.Base58;
-import io.jafka.jeos.util.KeyUtil;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.io.File;
 import java.io.FileInputStream;
@@ -130,8 +130,7 @@ public class ClientInitor {
         superNode.setAddrs(cfg.getSuperNodeAddrs());
         KUSp = Base58.decode(cfg.getKUSp());
         privateKey = cfg.getKUSp();
-        String pubkey = KeyUtil.toPublicKey(cfg.getKUSp());
-        KUEp = Base58.decode(pubkey.substring(3));
+        AESKey = KeyStoreCoder.generateRandomKey(KUSp);
         username = cfg.getUsername();
         contractAccount = cfg.getContractAccount();
         tmpFilePath = new File(cfg.getTmpFilePath(), "ytfs.temp");
@@ -195,8 +194,7 @@ public class ClientInitor {
             String ss = p.getProperty("KUSp").trim();
             KUSp = Base58.decode(ss);
             privateKey = ss;
-            String pubkey = KeyUtil.toPublicKey(ss);
-            KUEp = Base58.decode(pubkey.substring(3));
+            AESKey = KeyStoreCoder.generateRandomKey(KUSp);
         } catch (Exception d) {
             throw new IOException("The 'KUSp' parameter is not configured.");
         }

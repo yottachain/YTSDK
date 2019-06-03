@@ -76,7 +76,7 @@ public class UploadBlock {
         req.setVBI(VBI);
         req.setVHP(block.getVHP());
         req.setVHB(rs.makeVHB());
-        req.setKEU(KeyStoreCoder.eccEncryped(ks, UserConfig.KUEp));
+        req.setKEU(KeyStoreCoder.aesEncryped(ks, UserConfig.AESKey));
         req.setKED(KeyStoreCoder.aesEncryped(ks, block.getKD()));
         req.setOriginalSize(block.getOriginalSize());
         req.setRealSize(block.getRealSize());
