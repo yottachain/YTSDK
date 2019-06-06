@@ -156,6 +156,7 @@ public class UploadBlock {
             }
         }
     }
+ 
 
     private UploadBlockSubReq doUploadShardRes() {
         List<UploadShardRes> ls = new ArrayList();
@@ -191,6 +192,6 @@ public class UploadBlock {
         bs.flip();
         byte[] sign = KeyStoreCoder.ecdsaSign(bs.array(), UserConfig.privateKey);
         req.setUSERSIGN(sign);
-        //LOG.info(req.getSHARDID() + " getUSERSIGN " + Hex.encodeHexString(req.getUSERSIGN()));
+        //LOG.info(req.getSHARDID() + " getUSERSIGN " + Hex.encodeHexString(req.getBPDSIGN()));
     }
 }

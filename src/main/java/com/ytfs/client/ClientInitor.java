@@ -52,10 +52,10 @@ public class ClientInitor {
         reguser();
         clean.start();
     }
-
+    
     /**
      * 初始化p2p网络
-     *
+     * 
      * @throws IOException
      */
     private static void startP2p() throws IOException {
