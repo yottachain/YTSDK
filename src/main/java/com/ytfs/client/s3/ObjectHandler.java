@@ -6,7 +6,8 @@ import com.ytfs.common.net.P2PUtils;
 import com.ytfs.service.packet.s3.*;
 import org.bson.types.ObjectId;
 
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class ObjectHandler {
@@ -19,16 +20,28 @@ public class ObjectHandler {
         req.setMeta(meta);
         P2PUtils.requestBPU(req, UserConfig.superNode);
     }
-    public static String listObject(Map<String,byte[]> map,String bucketName,String fileName,int limit) throws ServiceException {
-        ListObjectReq req = new ListObjectReq();
-        req.setBucketName(bucketName);
-        req.setLimit(limit);
-        req.setFileName(fileName);
-        ListObjectResp resp = (ListObjectResp) P2PUtils.requestBPU(req, UserConfig.superNode);
-        map.putAll(resp.getMap());
-        Map<ObjectId,String> lastMap = new HashMap<>();
-        System.out.println("resp.getFileName()====="+resp.getFileName()+"  ,resp.getObjectId()====="+resp.getObjectId());
-        return resp.getFileName();
+
+//    public static String listObject(Map<String,byte[]> map, String bucketName, String fileName, int limit) throws ServiceException {
+//        ListObjectReq req = new ListObjectReq();
+//        req.setBucketName(bucketName);
+//        req.setLimit(limit);
+//        req.setFileName(fileName);
+//        ListObjectResp resp = (ListObjectResp) P2PUtils.requestBPU(req, UserConfig.superNode);
+//        map.putAll(resp.getMap());
+//        Map<ObjectId,String> lastMap = new HashMap<>();
+//        System.out.println("resp.getFileName()====="+resp.getFileName()+"  ,resp.getObjectId()====="+resp.getObjectId());
+//        return resp.getFileName();
+//    }
+    public static List<Object> listBucket(String bucketName,String fileName,String prefix,boolean isVersion,ObjectId nextVersionId,int limit) throws ServiceException{
+            ListObjectReq req = new ListObjectReq();
+            req.setBucketName(bucketName);
+            req.setFileName(fileName);
+            req.setLimit(limit);
+            req.setPrefix(prefix);
+            req.setVersion(isVersion);
+            req.setNextVersionId(nextVersionId);
+            List<Object> objects = Collections.singletonList((ListObjectResp) P2PUtils.requestBPU(req, UserConfig.superNode));
+            return objects;
     }
     public static void deleteObject(String bucketName,String fileName) throws ServiceException {
         DeleteFileReq req = new DeleteFileReq();
