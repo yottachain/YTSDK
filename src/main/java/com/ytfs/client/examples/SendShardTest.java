@@ -21,10 +21,9 @@ public class SendShardTest {
         node = new Node();
         List<String> ls = new ArrayList();
         //ls.add("/ip4/169.254.111.26/tcp/9001");
-        ls.add("/ip4/172.21.0.5/tcp/9001");
-        ls.add("/ip4/152.136.13.254/tcp/9001");
+        ls.add("/ip4/123.138.109.106/tcp/22201");
         node.setAddrs(ls);
-        node.setNodeid("QmRMtkMW7fZDvYeFSrnYBkAXu85oCM9v3efcRYptLGSRdk");
+        node.setNodeid("16Uiu2HAmHSrR8B4q92xTihXzEbpHiFEiHzHHJVCf9Vw66zzceARw");
         for (int ii = 0; ii < 1; ii++) {//启动多个线程发送分片
             Sender s = new Sender();
             s.start();
