@@ -4,11 +4,10 @@ import com.ytfs.common.ServiceException;
 import com.ytfs.common.conf.UserConfig;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.service.packet.s3.*;
+import com.ytfs.service.packet.s3.entities.FileMetaMsg;
 import org.bson.types.ObjectId;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 public class ObjectHandler {
 
@@ -32,7 +31,7 @@ public class ObjectHandler {
 //        System.out.println("resp.getFileName()====="+resp.getFileName()+"  ,resp.getObjectId()====="+resp.getObjectId());
 //        return resp.getFileName();
 //    }
-    public static List<Object> listBucket(String bucketName,String fileName,String prefix,boolean isVersion,ObjectId nextVersionId,int limit) throws ServiceException{
+    public static List<FileMetaMsg> listBucket(String bucketName, String fileName, String prefix, boolean isVersion, ObjectId nextVersionId, int limit) throws ServiceException{
             ListObjectReq req = new ListObjectReq();
             req.setBucketName(bucketName);
             req.setFileName(fileName);
@@ -40,16 +39,17 @@ public class ObjectHandler {
             req.setPrefix(prefix);
             req.setVersion(isVersion);
             req.setNextVersionId(nextVersionId);
-            List<Object> objects = Collections.singletonList((ListObjectResp) P2PUtils.requestBPU(req, UserConfig.superNode));
-            return objects;
+            ListObjectResp resp = (ListObjectResp) P2PUtils.requestBPU(req, UserConfig.superNode);
+            List<FileMetaMsg> fileMetaMsgs = resp.getFileMetaMsgList();
+            return fileMetaMsgs;
     }
-    public static void deleteObject(String bucketName,String fileName) throws ServiceException {
+    public static void deleteObject(String bucketName,String fileName,String versionId) throws ServiceException {
         DeleteFileReq req = new DeleteFileReq();
         req.setBucketname(bucketName);
         req.setFileName(fileName);
         P2PUtils.requestBPU(req,UserConfig.superNode);
     }
-    public static boolean isExistObject(String bucketName,String fileName) throws ServiceException{
+    public static boolean isExistObject(String bucketName,String fileName,String versionId) throws ServiceException{
         boolean isExistObject = false;
         GetObjectReq req = new GetObjectReq();
         req.setBucketName(bucketName);
