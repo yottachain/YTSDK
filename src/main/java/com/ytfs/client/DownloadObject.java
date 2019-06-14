@@ -7,6 +7,8 @@ import com.ytfs.service.packet.DownloadObjectInitReq;
 import com.ytfs.service.packet.DownloadObjectInitResp;
 import com.ytfs.service.packet.ObjectRefer;
 import com.ytfs.service.packet.s3.DownloadFileReq;
+import org.bson.types.ObjectId;
+
 import java.io.InputStream;
 import java.util.List;
 
@@ -21,8 +23,8 @@ public class DownloadObject {
         init();
     }
 
-    public DownloadObject(String bucketName, String fileName) throws ServiceException {
-        init(bucketName, fileName);
+    public DownloadObject(String bucketName, String fileName,ObjectId versionId) throws ServiceException {
+        init(bucketName, fileName,versionId);
     }
 
     private void init() throws ServiceException {
@@ -33,10 +35,14 @@ public class DownloadObject {
         this.length = resp.getLength();
     }
 
-    private void init(String bucketName, String fileName) throws ServiceException {
+    private void init(String bucketName, String fileName, ObjectId versionId) throws ServiceException {
         DownloadFileReq req = new DownloadFileReq();
         req.setBucketname(bucketName);
         req.setFileName(fileName);
+        System.out.println("versionId=====" + versionId);
+        if(versionId != null) {
+            req.setVersionId(versionId);
+        }
         DownloadObjectInitResp resp = (DownloadObjectInitResp) P2PUtils.requestBPU(req, UserConfig.superNode);
         refers = ObjectRefer.parse(resp.getRefers());
         this.length = resp.getLength();
