@@ -42,7 +42,8 @@ public class ClientInitor {
      */
     public static void init(Configurator cfg) throws IOException {
         String level = WrapperManager.getProperties().getProperty("wrapper.log4j.loglevel", "DEBUG");
-        LogConfigurator.configPath(level);
+        String path = WrapperManager.getProperties().getProperty("wrapper.log4j.logfile");
+        LogConfigurator.configPath(new File(path), level);
         if (cfg == null) {
             load();
         } else {
@@ -52,10 +53,10 @@ public class ClientInitor {
         reguser();
         clean.start();
     }
-    
+
     /**
      * 初始化p2p网络
-     * 
+     *
      * @throws IOException
      */
     private static void startP2p() throws IOException {

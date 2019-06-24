@@ -16,7 +16,6 @@ import com.ytfs.service.packet.DownloadShardReq;
 import com.ytfs.service.packet.DownloadShardResp;
 import static com.ytfs.common.ServiceErrorCode.INTERNAL_ERROR;
 import static com.ytfs.common.ServiceErrorCode.INVALID_SHARD;
-import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.common.ServiceException;
 import io.yottachain.nodemgmt.core.vo.Node;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
@@ -86,11 +85,14 @@ public class DownloadBlock {
             if (count <= 0) {
                 break;
             }
-            if (count > initresp.getNodeids().length - nodeindex) {
+            if (nodeindex >= initresp.getNodeids().length) {
                 break;
             }
             int sendnum = 0;
             for (int ii = 0; ii < count; ii++) {
+                if (nodeindex >= initresp.getNodeids().length) {
+                    break;
+                }
                 Node n = map.get(initresp.getNodeids()[nodeindex]);
                 byte[] VHF = initresp.getVHF()[nodeindex];
                 DownloadShardReq req = new DownloadShardReq();

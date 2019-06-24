@@ -11,6 +11,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import org.apache.commons.codec.binary.Hex;
+import org.bson.internal.Base64;
 import org.tanukisoftware.wrapper.WrapperListener;
 import org.tanukisoftware.wrapper.WrapperManager;
 
@@ -19,8 +20,10 @@ public class SDKTest implements WrapperListener {
     @Override
     public Integer start(String[] strings) {
         try {
-            strings = new String[]{"e:/ysyy_v4.5.2.0_Setup_1001.exe"};
             ClientInitor.init();
+            /*
+            strings = new String[]{"e:/ysyy_v4.5.2.0_Setup_1001.exe"};
+            
             String filepath = null;
             String newfilepath = null;
             if (strings.length > 0) {
@@ -60,28 +63,33 @@ public class SDKTest implements WrapperListener {
             }
             VHW = upload.upload();
             System.out.println(Hex.encodeHexString(VHW) + " 上传完毕！准备下载......");
-
+            
+            
+            */
+            byte[] aa=Base64.decode("AAAAAg1gtvCNXcaprWOIpOqyqZKWpz+z5cKMRJNcFbe2gPkI");
+            byte[] VHW=new byte[32];
+            System.arraycopy(aa, 4, VHW, 0, 32);
             DownloadObject obj = new DownloadObject(VHW);
             FileOutputStream out = null;
-            if (newfilepath != null) {
-                out = new FileOutputStream(newfilepath);
-            }
+          //  if (newfilepath != null) {
+           //     out = new FileOutputStream(newfilepath);
+           // }
             MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
             InputStream is = obj.load();
             byte[] bs = new byte[1024 * 128];
             int len;
             while ((len = is.read(bs)) != -1) {
                 if (out != null) {
-                    out.write(bs, 0, len);
+                 //   out.write(bs, 0, len);
                 }
                 sha256.update(bs, 0, len);
             }
             byte[] VHW1 = sha256.digest();
             if (out != null) {
-                out.close();
-                System.out.println(Hex.encodeHexString(VHW1) + " 文件下载完毕，保存在：" + newfilepath);
+               // out.close();
+              //  System.out.println(Hex.encodeHexString(VHW1) + " 文件下载完毕，保存在：" + newfilepath);
             } else {
-                System.out.println(Hex.encodeHexString(VHW1) + " 文件下载完毕!");
+               // System.out.println(Hex.encodeHexString(VHW1) + " 文件下载完毕!");
             }
         } catch (Exception r) {
             r.printStackTrace();
