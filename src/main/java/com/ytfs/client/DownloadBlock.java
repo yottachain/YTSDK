@@ -81,14 +81,10 @@ public class DownloadBlock {
             map.put(n.getId(), n);
         }
         long l = System.currentTimeMillis();
-        int retrytimes = 0;
         while (true) {
             int count = len - shards.size();
             if (count <= 0) {
                 break;
-            }
-            if (retrytimes >= 5) {
-                throw new ServiceException(SERVER_ERROR);
             }
             if (count > initresp.getNodeids().length - nodeindex) {
                 break;
@@ -118,7 +114,6 @@ public class DownloadBlock {
                 }
             }
             resList.clear();
-            retrytimes++;
         }
         if (shards.size() >= len) {
             LOG.info("Download shardcount " + len + ",take time " + (System.currentTimeMillis() - l) + "ms");
