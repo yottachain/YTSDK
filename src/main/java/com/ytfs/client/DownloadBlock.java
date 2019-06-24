@@ -104,7 +104,7 @@ public class DownloadBlock {
                     LOG.warn("Node Offline,ID:" + initresp.getNodeids()[nodeindex - 1]);
                     continue;
                 }
-                DownloadShare.startDownloadShard(VHF, n, this);
+                DownloadShare.startDownloadShard(VHF, refer.getVBI(), n, this);
                 sendnum++;
             }
             synchronized (this) {
