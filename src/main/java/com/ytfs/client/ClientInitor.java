@@ -6,6 +6,7 @@ import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.GlobleThreadPool;
 import com.ytfs.common.LogConfigurator;
 import com.ytfs.common.codec.KeyStoreCoder;
+import com.ytfs.common.codec.ReadPrivateKey;
 import io.jafka.jeos.util.Base58;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.io.File;
@@ -43,7 +44,7 @@ public class ClientInitor {
     public static void init(Configurator cfg) throws IOException {
         String level = WrapperManager.getProperties().getProperty("wrapper.log4j.loglevel", "DEBUG");
         String path = WrapperManager.getProperties().getProperty("wrapper.log4j.logfile");
-        LogConfigurator.configPath(new File(path), level);
+        LogConfigurator.configPath(path == null ? null : new File(path), level);
         if (cfg == null) {
             load();
         } else {
@@ -129,9 +130,7 @@ public class ClientInitor {
         superNode = new SuperNode(0, null, null, null, null);
         superNode.setNodeid(cfg.getSuperNodeID());
         superNode.setAddrs(cfg.getSuperNodeAddrs());
-        KUSp = Base58.decode(cfg.getKUSp());
-        privateKey = cfg.getKUSp();
-        AESKey = KeyStoreCoder.generateRandomKey(KUSp);
+        exportPrivateKey(cfg.getKUSp());
         username = cfg.getUsername();
         contractAccount = cfg.getContractAccount();
         tmpFilePath = new File(cfg.getTmpFilePath(), "ytfs.temp");
@@ -140,6 +139,25 @@ public class ClientInitor {
         }
         if (!tmpFilePath.isDirectory()) {
             throw new IOException("The 'tmpFilePath' parameter is not configured.");
+        }
+    }
+
+    private static void exportPrivateKey(String password) throws IOException {
+        try {
+            KUSp = Base58.decode(password);
+            if (KUSp.length != 37) {
+                throw new Exception();
+            }
+            privateKey = password;
+            AESKey = KeyStoreCoder.generateRandomKey(KUSp);
+        } catch (Throwable r) {
+            String path = System.getProperty("ytfs.cert", "../conf/cert");
+            privateKey = ReadPrivateKey.getPrivateKey(path, password);
+            if (privateKey == null) {
+                throw new IOException();
+            }
+            KUSp = Base58.decode(privateKey);
+            AESKey = KeyStoreCoder.generateRandomKey(KUSp);
         }
     }
 
@@ -162,7 +180,6 @@ public class ClientInitor {
         Properties p = new Properties();
         p.load(is);
         is.close();
-
         username = p.getProperty("username");
         if (username == null || username.trim().isEmpty()) {
             throw new IOException("The 'username' parameter is not configured.");
@@ -171,7 +188,6 @@ public class ClientInitor {
         if (contractAccount == null || contractAccount.trim().isEmpty()) {
             throw new IOException("The 'contractAccount' parameter is not configured.");
         }
-
         superNode = new SuperNode(0, null, null, null, null);
         String key = p.getProperty("superNodeKey");
         if (key == null || key.trim().isEmpty()) {
@@ -191,14 +207,7 @@ public class ClientInitor {
         } else {
             superNode.setAddrs(ls);
         }
-        try {
-            String ss = p.getProperty("KUSp").trim();
-            KUSp = Base58.decode(ss);
-            privateKey = ss;
-            AESKey = KeyStoreCoder.generateRandomKey(KUSp);
-        } catch (Exception d) {
-            throw new IOException("The 'KUSp' parameter is not configured.");
-        }
+        exportPrivateKey(p.getProperty("KUSp").trim());
         try {
             String ss = p.getProperty("tmpFilePath", "").trim();
             File parent = new File(ss);

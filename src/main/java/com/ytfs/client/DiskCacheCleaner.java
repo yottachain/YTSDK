@@ -16,7 +16,6 @@ public class DiskCacheCleaner extends Thread {
             } catch (InterruptedException ex) {
                 break;
             }
-
         }
     }
 

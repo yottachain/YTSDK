@@ -3,8 +3,8 @@ package com.ytfs.client;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.conf.UserConfig;
 import com.ytfs.common.net.P2PUtils;
-import com.ytfs.service.packet.UserSpaceReq;
-import com.ytfs.service.packet.UserSpaceResp;
+import com.ytfs.service.packet.user.UserSpaceReq;
+import com.ytfs.service.packet.user.UserSpaceResp;
 
 public class LocalInterface {
 
