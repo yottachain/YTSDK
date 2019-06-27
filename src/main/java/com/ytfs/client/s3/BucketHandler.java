@@ -17,6 +17,13 @@ public class BucketHandler {
         P2PUtils.requestBPU(req, UserConfig.superNode);
     }
 
+    public static void updateBucket(String bucketName,byte[] meta) throws ServiceException {
+        UpdateBucketReq req = new UpdateBucketReq();
+        req.setMeta(meta);
+        req.setBucketName(bucketName);
+        P2PUtils.requestBPU(req, UserConfig.superNode);
+    }
+
     public static String[] listBucket() throws ServiceException {
         ListBucketReq req = new ListBucketReq();
         ListBucketResp resp = (ListBucketResp) P2PUtils.requestBPU(req, UserConfig.superNode);
@@ -38,4 +45,5 @@ public class BucketHandler {
         req.setBucketname(bucketName);
         P2PUtils.requestBPU(req, UserConfig.superNode);
     }
+
 }
