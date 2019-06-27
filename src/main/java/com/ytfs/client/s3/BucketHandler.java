@@ -5,6 +5,9 @@ import com.ytfs.common.conf.UserConfig;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.service.packet.s3.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class BucketHandler {
 
     public static void createBucket(String name,byte[] meta) throws ServiceException {
@@ -20,12 +23,14 @@ public class BucketHandler {
         return resp.getNames();
     }
 
-    public static GetBucketResp getBucketByName(String bucketName) throws ServiceException {
+    public static Map<String,byte[]> getBucketByName(String bucketName) throws ServiceException {
 
         GetBucketReq req = new GetBucketReq();
         req.setBucketName(bucketName);
-        GetBucketResp resp = (GetBucketResp) P2PUtils.requestBP(req,UserConfig.superNode);
-        return resp;
+        GetBucketResp resp = (GetBucketResp) P2PUtils.requestBPU(req,UserConfig.superNode);
+        Map<String,byte[]> map = new HashMap<>();
+        map.put(bucketName,resp.getMeta());
+        return map;
     }
 
     public static void deleteBucket(String bucketName) throws ServiceException {
