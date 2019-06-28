@@ -166,12 +166,11 @@ public class ClientInitor {
      * @throws IOException
      */
     private static void load() throws IOException {
-        String path = System.getProperty("ytfs.conf", "../conf/ytfs.properties");
+        String path = System.getProperty("ytfs.conf", "conf/ytfs.properties");
         InputStream is = null;
         try {
             is = new FileInputStream(path);
-        } catch (Exception r) {
-            is = ClientInitor.class.getResourceAsStream("/ytfs.properties");
+        } catch (Exception r) {  
         }
         if (is == null) {
             throw new IOException("No properties file could be found for ytfs service");

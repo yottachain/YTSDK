@@ -7,7 +7,6 @@ public class Configurator {
     private String superNodeID;  //超级节点id !=null trim
     private List<String> superNodeAddrs;  //超级节点地址
     private String username;
-    private String contractAccount;
     private String KUSp;     //用户私钥
     private String tmpFilePath;
 
@@ -80,19 +79,4 @@ public class Configurator {
     public void setUsername(String username) {
         this.username = username;
     }
-
-    /**
-     * @return the contractAccount
-     */
-    public String getContractAccount() {
-        return contractAccount;
-    }
-
-    /**
-     * @param contractAccount the contractAccount to set
-     */
-    public void setContractAccount(String contractAccount) {
-        this.contractAccount = contractAccount;
-    }
-
 }

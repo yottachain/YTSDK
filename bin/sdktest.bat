@@ -14,6 +14,7 @@ for /f "tokens=1,2,3 delims==" %%i in (ytfs.conf) do (
  if "%%i"=="wrapper.java.maxmemory" set java_opts=!java_opts! -Xmx%%jM
  if "%%i"=="wrapper.java.additional.1" set java_opts=!java_opts! %%j=%%k
  if "%%i"=="wrapper.java.additional.2" set java_opts=!java_opts! %%j=%%k
+ if "%%i"=="wrapper.java.additional.3" set java_opts=!java_opts! %%j=%%k
  if "%%i"=="wrapper.java.classpath.1" set classpath=%%j
 )
 set java_opts=!java_opts! -Dfile.encoding=GBK

@@ -24,6 +24,9 @@ do
     elif [[ $var == 'wrapper.java.additional.2' ]]
     then
         java_opts="$java_opts ${val:0:${#val}-1}"
+    elif [[ $var == 'wrapper.java.additional.3' ]]
+    then
+        java_opts="$java_opts ${val:0:${#val}-1}"
     elif [[ $var == 'wrapper.java.classpath.1' ]]
     then
         classpath=${val:0:${#val}-1}
