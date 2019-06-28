@@ -112,7 +112,7 @@ public class UploadObject {
         sub.setVNU(VNU);
         try {
             byte[] signData = EOSRequest.makeSubBalanceRequest(bs, UserConfig.username,
-                    UserConfig.privateKey, UserConfig.contractAccount, resp.getFirstCost(), resp.getUserid());
+                    UserConfig.privateKey, resp.getContractAccount(), resp.getFirstCost(), resp.getUserid());
             sub.setSignData(signData);
         } catch (Exception e) {
             throw new ServiceException(SERVER_ERROR);

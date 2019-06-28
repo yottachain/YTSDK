@@ -20,7 +20,7 @@ public class SDKTest implements WrapperListener {
     public Integer start(String[] strings) {
         try {
             ClientInitor.init();
-            //strings = new String[]{"e:/ysyy_v4.5.2.0_Setup_1001.exe"};
+            strings = new String[]{"e:/qq.mp4"};
             String filepath = null;
             String newfilepath = null;
             if (strings.length > 0) {

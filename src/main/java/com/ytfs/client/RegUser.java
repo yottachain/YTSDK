@@ -28,7 +28,7 @@ public class RegUser {
             PreRegUserResp presp = (PreRegUserResp) P2PUtils.requestBPU(preq, UserConfig.superNode);
             RegUserReq req = new RegUserReq();
             byte[] signData = EOSRequest.makeGetBalanceRequest(presp.getSignArg(), UserConfig.username,
-                    UserConfig.privateKey, UserConfig.contractAccount);
+                    UserConfig.privateKey, presp.getContractAccount());
             req.setSigndata(signData);
             req.setUsername(UserConfig.username);
             RegUserResp resp = (RegUserResp) P2PUtils.requestBPU(req, UserConfig.superNode);

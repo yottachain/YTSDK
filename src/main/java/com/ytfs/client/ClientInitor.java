@@ -132,7 +132,6 @@ public class ClientInitor {
         superNode.setAddrs(cfg.getSuperNodeAddrs());
         exportPrivateKey(cfg.getKUSp());
         username = cfg.getUsername();
-        contractAccount = cfg.getContractAccount();
         tmpFilePath = new File(cfg.getTmpFilePath(), "ytfs.temp");
         if (!tmpFilePath.exists()) {
             tmpFilePath.mkdirs();
@@ -183,10 +182,6 @@ public class ClientInitor {
         username = p.getProperty("username");
         if (username == null || username.trim().isEmpty()) {
             throw new IOException("The 'username' parameter is not configured.");
-        }
-        contractAccount = p.getProperty("contractAccount");
-        if (contractAccount == null || contractAccount.trim().isEmpty()) {
-            throw new IOException("The 'contractAccount' parameter is not configured.");
         }
         superNode = new SuperNode(0, null, null, null, null);
         String key = p.getProperty("superNodeKey");
