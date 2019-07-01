@@ -74,19 +74,22 @@ public class UploadObject {
                     }
                 }
                 if (!uploaded) {
-                    ServiceException err = null;
-                    for (int i = 0; i < 3; i++) {
+                    b.calculate();
+                    SuperNode node = SuperNodeList.getBlockSuperNode(b.getVHP());
+                    LOG.info("Start upload block " + ii + " to sn " + node.getId() + "...");
+                    int errtimes = 0;
+                    for (;;) {
                         try {
-                            upload(b, res.getVNU(), ii);
-                            err = null;
+                            upload(b, res.getVNU(), ii, node);
                             break;
                         } catch (ServiceException e) {
-                            err = e;
-                            Thread.sleep(5000);
+                            errtimes++;
+                            if (errtimes < 3) {
+                                Thread.sleep(5000);
+                            } else {
+                                throw e;
+                            }
                         }
-                    }
-                    if (err != null) {
-                        throw err;
                     }
                 }
                 ii++;
@@ -121,9 +124,7 @@ public class UploadObject {
     }
 
     //上传块
-    private void upload(Block b, ObjectId vnu, short id) throws ServiceException, IOException, InterruptedException {
-        b.calculate();
-        SuperNode node = SuperNodeList.getBlockSuperNode(b.getVHP());
+    private void upload(Block b, ObjectId vnu, short id, SuperNode node) throws ServiceException, IOException, InterruptedException {
         BlockEncrypted be = new BlockEncrypted(b.getRealSize());
         UploadBlockInitReq req = new UploadBlockInitReq(vnu, b.getVHP(), be.getShardCount(), id);
         Object resp = P2PUtils.requestBPU(req, node);
