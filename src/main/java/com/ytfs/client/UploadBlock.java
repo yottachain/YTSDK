@@ -82,7 +82,7 @@ public class UploadBlock {
         req.setRealSize(block.getRealSize());
         req.setRsShard(rs.getShardList().get(0).isRsShard());
         P2PUtils.requestBPU(req, bpdNode);
-        LOG.info("Upload block " + id + ",VBI:" +  VBI);
+        LOG.info("Upload block " + id + "/" +  VBI+ " OK.");
     }
 
     private void firstUpload() throws InterruptedException {

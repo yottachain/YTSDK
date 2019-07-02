@@ -49,19 +49,21 @@ public class DownloadBlock {
         Object resp = P2PUtils.requestBPU(req, pbd);
         if (resp instanceof DownloadBlockDBResp) {
             this.data = aesDBDecode(((DownloadBlockDBResp) resp).getData());
+            LOG.debug("Download block " + refer.getId() + "/" + refer.getVBI() + " from DB.");
         } else {
             DownloadBlockInitResp initresp = (DownloadBlockInitResp) resp;
             if (initresp.getVNF() < 0) {
                 this.data = loadCopyShard(initresp);
+                LOG.info("Download block " + refer.getId() + "/" + refer.getVBI() + " copy.");
             } else {
                 try {
                     this.data = loadRSShard(initresp);
+                    LOG.info("Download block " + refer.getId() + "/" + refer.getVBI() + " RS shards.");
                 } catch (InterruptedException e) {
                     throw new ServiceException(INTERNAL_ERROR, e.getMessage());
                 }
             }
         }
-        LOG.info("Download block " + refer.getId() + ",VBI:" + refer.getVBI());
     }
 
     void onResponse(DownloadShardResp res) {
@@ -155,7 +157,7 @@ public class DownloadBlock {
                 t = e;
             }
         }
-        LOG.error("Download shardcount " + count + " ERR.");
+        LOG.error("Download copy shardcount " + count + " ERR.");
         throw t == null ? new ServiceException(INVALID_SHARD) : t;
     }
 

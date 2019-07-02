@@ -13,7 +13,7 @@ public class LargeFileTest {
     public static void main(String[] args) {
         try {
             ClientInitor.init();
-            UploadObject upload = new UploadObject(filepath);
+            UploadObjectSlow upload = new UploadObjectSlow(filepath);
             byte[] VHW = upload.upload();
             System.out.println(Hex.encodeHexString(VHW) + " 上传完毕！准备下载......");
 

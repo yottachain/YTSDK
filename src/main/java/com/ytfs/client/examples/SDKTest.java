@@ -21,7 +21,7 @@ public class SDKTest implements WrapperListener {
         try {
             ClientInitor.init();
             if (strings.length < 1) {
-                strings = new String[]{"d:/DELPHI7企业版.ISO"};
+                strings = new String[]{"d:/bc-java-master.zip"};
             }
             String filepath = null;
             String newfilepath = null;
