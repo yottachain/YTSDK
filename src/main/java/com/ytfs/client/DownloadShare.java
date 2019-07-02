@@ -73,18 +73,18 @@ public class DownloadShare implements Runnable {
             try {
                 resp = (DownloadShardResp) P2PUtils.requestNode(req, node);
                 if (!verify(resp, req.getVHF())) {
-                    LOG.error("Download VHF inconsistency:" + VBI + "/" + Base58.encode(req.getVHF()) + " to " + node.getId());
+                    LOG.error("Download VHF inconsistency:" + VBI + "/" + Base58.encode(req.getVHF()) + " from " + node.getId());
                     downloadBlock.onResponse(new DownloadShardResp());
                 } else {
                     downloadBlock.onResponse(resp);
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("Download VHF:" + VBI + "/" + Base58.encode(req.getVHF()) + " to " + node.getId());
+                        LOG.debug("Download OK:" + VBI + "/" + Base58.encode(req.getVHF()) + " from " + node.getId());
                     }
                 }
             } catch (Throwable ex) {
                 downloadBlock.onResponse(new DownloadShardResp());
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Fail2Download VHF:" + VBI + "/" + Base58.encode(req.getVHF()) + " to " + node.getId());
+                    LOG.debug("Download ERR:" + VBI + "/" + Base58.encode(req.getVHF()) + " from " + node.getId());
                 }
             }
         } finally {

@@ -62,7 +62,7 @@ public class UploadBlock {
             int len = rs.getShardList().size();
             firstUpload();
             subUpload();
-            completeUploadBlock(ks);           
+            completeUploadBlock(ks);
             LOG.info("Upload shardcount " + len + ",take time " + (System.currentTimeMillis() - l) + "ms");
         } catch (Exception r) {
             LOG.error("", r);
@@ -82,7 +82,7 @@ public class UploadBlock {
         req.setRealSize(block.getRealSize());
         req.setRsShard(rs.getShardList().get(0).isRsShard());
         P2PUtils.requestBPU(req, bpdNode);
-        LOG.info("Upload block " + id + ",VBI:" + VBI);       
+        LOG.info("Upload block " + id + ",VBI:" +  VBI);
     }
 
     private void firstUpload() throws InterruptedException {
@@ -156,7 +156,6 @@ public class UploadBlock {
             }
         }
     }
- 
 
     private UploadBlockSubReq doUploadShardRes() {
         List<UploadShardRes> ls = new ArrayList();

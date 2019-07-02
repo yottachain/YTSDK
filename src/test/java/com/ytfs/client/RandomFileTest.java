@@ -14,9 +14,9 @@ public class RandomFileTest {
         //测试小文件
         //test(new UploadObject(MakeRandFile.makeSmallFile()));
         //测试多副本
-        //test(new UploadObject(MakeRandFile.makeMediumFile()));
+        test(new UploadObject(MakeRandFile.makeMediumFile()));
         //测试rs模式
-        test(new UploadObject(MakeRandFile.makeLargeFile()));
+        //test(new UploadObject(MakeRandFile.makeLargeFile()));
     }
 
     public static void test(UploadObject upload) {
@@ -26,7 +26,7 @@ public class RandomFileTest {
 
             DownloadObject obj = new DownloadObject(VHW);
             MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
-            InputStream is = obj.load();
+            InputStream is = obj.load(0, 1111111111111L);
             byte[] bs = new byte[1024 * 128];
             int len;
             while ((len = is.read(bs)) != -1) {

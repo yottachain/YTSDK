@@ -126,7 +126,7 @@ public class DownloadBlock {
             dec.decrypt();
             return dec.getSrcData();
         } else {
-            LOG.error("Download shardcount " + shards.size() + ",Not enough shards present.");
+            LOG.error("Download shardcount " + shards.size() + "/" + initresp.getVNF() + ",Not enough shards present.");
             throw new ServiceException(INTERNAL_ERROR);
         }
     }
