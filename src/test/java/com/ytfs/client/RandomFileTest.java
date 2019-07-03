@@ -14,9 +14,9 @@ public class RandomFileTest {
         //测试小文件
         //test(new UploadObject(MakeRandFile.makeSmallFile()));
         //测试多副本
-        test(new UploadObject(MakeRandFile.makeMediumFile()));
+        //test(new UploadObject(MakeRandFile.makeMediumFile()));
         //测试rs模式
-        //test(new UploadObject(MakeRandFile.makeLargeFile()));
+        test(new UploadObject(MakeRandFile.makeLargeFile()));
     }
 
     public static void test(UploadObject upload) {

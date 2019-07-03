@@ -51,6 +51,9 @@ public class UploadObject extends UploadObjectAbstract {
                 }
                 if (!uploaded) {
                     b.calculate();
+                    if (b.getRealSize() > UserConfig.Default_Block_Size) {
+                        LOG.fatal("Block length too large.");
+                    }
                     SuperNode node = SuperNodeList.getBlockSuperNode(b.getVHP());
                     LOG.info("Start upload block " + ii + " to sn " + node.getId() + "...");
                     int errtimes = 0;
@@ -71,7 +74,7 @@ public class UploadObject extends UploadObjectAbstract {
                 ii++;
             }
             complete();
-        } 
+        }
         return VHW;
     }
 }
