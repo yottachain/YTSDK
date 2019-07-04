@@ -12,6 +12,7 @@ import io.jafka.jeos.util.Base58;
 import io.yottachain.nodemgmt.core.vo.Node;
 import java.util.concurrent.ArrayBlockingQueue;
 import org.apache.log4j.Logger;
+import org.bson.types.ObjectId;
 
 public class UploadShard implements Runnable {
 
@@ -27,17 +28,19 @@ public class UploadShard implements Runnable {
         }
     }
 
-    static void startUploadShard(UploadShardReq req, ShardNode node, UploadBlock uploadBlock) throws InterruptedException {
+    static void startUploadShard(UploadShardReq req, ShardNode node, UploadBlock uploadBlock, ObjectId VNU) throws InterruptedException {
         UploadShard uploader = queue.take();
         uploader.node = node.getNode();
         uploader.req = req;
         uploader.uploadBlock = uploadBlock;
+        uploader.VNU = VNU;
         GlobleThreadPool.execute(uploader);
     }
 
     private UploadShardReq req;
     private Node node;
     private UploadBlock uploadBlock;
+    private ObjectId VNU;
 
     @Override
     public void run() {
@@ -46,15 +49,15 @@ public class UploadShard implements Runnable {
             res.setSHARDID(req.getSHARDID());
             res.setNODEID(node.getId());
             try {
-                UploadShard2CResp resp = (UploadShard2CResp) P2PUtils.requestNode(req, node);
+                UploadShard2CResp resp = (UploadShard2CResp) P2PUtils.requestNode(req, node,VNU.toString());
                 res.setRES(resp.getRES());
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Upload OK:" + req.getVBI() + "/(" + req.getSHARDID() + ")" + Base58.encode(req.getVHF()) + " to " + node.getId() + ",RES:" + resp.getRES());
+                    LOG.debug("[" + VNU + "] Upload OK:" + req.getVBI() + "/(" + req.getSHARDID() + ")" + Base58.encode(req.getVHF()) + " to " + node.getId() + ",RES:" + resp.getRES());
                 }
             } catch (Throwable ex) {
                 res.setRES(RES_NETIOERR);
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Upload ERR:" + req.getVBI() + "/(" + req.getSHARDID() + ")" + Base58.encode(req.getVHF()) + " to " + node.getId());
+                    LOG.debug("[" + VNU + "] Upload ERR:" + req.getVBI() + "/(" + req.getSHARDID() + ")" + Base58.encode(req.getVHF()) + " to " + node.getId());
                 }
             }
             uploadBlock.onResponse(res);

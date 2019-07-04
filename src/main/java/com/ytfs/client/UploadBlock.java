@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.log4j.Logger;
+import org.bson.types.ObjectId;
 
 public class UploadBlock {
 
@@ -32,16 +33,18 @@ public class UploadBlock {
     private final short id;
     private final ShardNode[] nodes;
     private final long VBI;
+    private final ObjectId VNU;
     private final SuperNode bpdNode;
     private final List<UploadShardRes> resList = new ArrayList();
     private final Map<Integer, Shard> map = new HashMap();
 
-    public UploadBlock(Block block, short id, ShardNode[] nodes, long VBI, SuperNode bpdNode) {
+    public UploadBlock(Block block, short id, ShardNode[] nodes, long VBI, SuperNode bpdNode, ObjectId VNU) {
         this.block = block;
         this.id = id;
         this.nodes = nodes;
         this.VBI = VBI;
         this.bpdNode = bpdNode;
+        this.VNU = VNU;
     }
 
     void onResponse(UploadShardRes res) {
@@ -63,9 +66,9 @@ public class UploadBlock {
             firstUpload();
             subUpload();
             completeUploadBlock(ks);
-            LOG.info("Upload shardcount " + len + ",take time " + (System.currentTimeMillis() - l) + "ms");
+            LOG.info("[" + VNU + "] Upload shardcount " + len + ",take time " + (System.currentTimeMillis() - l) + "ms");
         } catch (Exception r) {
-            LOG.error("", r);
+            LOG.error("[" + VNU + "]", r);
             throw new ServiceException(SERVER_ERROR);
         }
     }
@@ -81,8 +84,8 @@ public class UploadBlock {
         req.setOriginalSize(block.getOriginalSize());
         req.setRealSize(block.getRealSize());
         req.setRsShard(rs.getShardList().get(0).isRsShard());
-        P2PUtils.requestBPU(req, bpdNode);
-        LOG.info("Upload block " + id + "/" + VBI + " OK.");
+        P2PUtils.requestBPU(req, bpdNode,VNU.toString());
+        LOG.info("[" + VNU + "] Upload block " + id + "/" + VBI + " OK.");
     }
 
     private void firstUpload() throws InterruptedException {
@@ -99,7 +102,7 @@ public class UploadBlock {
             req.setVBI(VBI);
             req.setVHF(sd.getVHF());
             sign(req, nodes[nodeindex].getNodeId());
-            UploadShard.startUploadShard(req, n, this);
+            UploadShard.startUploadShard(req, n, this,VNU);
             nodeindex++;
         }
         synchronized (this) {
@@ -128,7 +131,7 @@ public class UploadBlock {
                     throw new ServiceException(SERVER_ERROR);
                 }
             }
-            UploadBlockSubResp resp = (UploadBlockSubResp) P2PUtils.requestBPU(uloadBlockSubReq, bpdNode);
+            UploadBlockSubResp resp = (UploadBlockSubResp) P2PUtils.requestBPU(uloadBlockSubReq, bpdNode, VNU.toString());
             if (resp.getNodes() == null || resp.getNodes().length == 0) {//OK
                 break;
             }
@@ -148,7 +151,7 @@ public class UploadBlock {
             req.setVBI(VBI);
             req.setVHF(sd.getVHF());
             sign(req, n.getNodeId());
-            UploadShard.startUploadShard(req, n, this);
+            UploadShard.startUploadShard(req, n, this,VNU);
         }
         synchronized (this) {
             while (resList.size() != shardNodes.length) {
@@ -164,7 +167,7 @@ public class UploadBlock {
                 if (res.getRES() != UploadShardRes.RES_VNF_EXISTS) {// RES_NO_SPACE RES_VNF_EXISTS 
                     ls.add(res);
                     if (res.getRES() == UploadShardRes.RES_NO_SPACE) {
-                        LOG.info("ERR 'NO_SPACE',id:" + res.getNODEID());
+                        LOG.info("[" + VNU + "] ERR 'NO_SPACE',id:" + res.getNODEID());
                     }
                 }
             }

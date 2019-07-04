@@ -44,7 +44,7 @@ public abstract class UploadObjectAbstract {
     protected final void complete() throws ServiceException {
         UploadObjectEndReq req = new UploadObjectEndReq();
         req.setVHW(VHW);
-        UploadObjectEndResp resp = (UploadObjectEndResp) P2PUtils.requestBPU(req, UserConfig.superNode);
+        UploadObjectEndResp resp = (UploadObjectEndResp) P2PUtils.requestBPU(req, UserConfig.superNode, VNU.toString());
         byte[] bs = resp.getSignArg();
         SubBalanceReq sub = new SubBalanceReq();
         sub.setVNU(VNU);
@@ -55,16 +55,16 @@ public abstract class UploadObjectAbstract {
         } catch (Exception e) {
             throw new ServiceException(SERVER_ERROR);
         }
-        P2PUtils.requestBPU(sub, UserConfig.superNode);
-        LOG.info("Upload object OK:" + VNU);
+        P2PUtils.requestBPU(sub, UserConfig.superNode, VNU.toString());
     }
 
     //上传块
     protected final void upload(Block b, short id, SuperNode node) throws ServiceException, IOException, InterruptedException {
         BlockEncrypted be = new BlockEncrypted(b.getRealSize());
         UploadBlockInitReq req = new UploadBlockInitReq(VNU, b.getVHP(), be.getShardCount(), id);
-        Object resp = P2PUtils.requestBPU(req, node);
+        Object resp = P2PUtils.requestBPU(req, node, VNU.toString());
         if (resp instanceof VoidResp) {//已经上传
+            LOG.info("[" + VNU + "] Block " + id + " is being uploaded.");
             return;
         }
         if (resp instanceof UploadBlockDupResp) {//重复,resp.getExist()=0已经上传     
@@ -75,15 +75,15 @@ public abstract class UploadObjectAbstract {
                 uploadBlockDupReq.setOriginalSize(b.getOriginalSize());
                 uploadBlockDupReq.setRealSize(b.getRealSize());
                 uploadBlockDupReq.setVNU(VNU);
-                P2PUtils.requestBPU(uploadBlockDupReq, node);
-                LOG.info("Block " + id + " is a repetitive block:" + Base58.encode(b.getVHP()));
+                P2PUtils.requestBPU(uploadBlockDupReq, node, VNU.toString());
+                LOG.info("[" + VNU + "] Block " + id + " is a repetitive block:" + Base58.encode(b.getVHP()));
             } else {
                 if (!be.needEncode()) {
                     UploadBlockToDB(b, id, node);
                 } else {//请求分配节点
                     UploadBlockInit2Req req2 = new UploadBlockInit2Req(req);
-                    UploadBlockInitResp resp1 = (UploadBlockInitResp) P2PUtils.requestBPU(req2, node);
-                    UploadBlock ub = new UploadBlock(b, id, resp1.getNodes(), resp1.getVBI(), node);
+                    UploadBlockInitResp resp1 = (UploadBlockInitResp) P2PUtils.requestBPU(req2, node, VNU.toString());
+                    UploadBlock ub = new UploadBlock(b, id, resp1.getNodes(), resp1.getVBI(), node, VNU);
                     ub.upload();
                 }
             }
@@ -93,7 +93,7 @@ public abstract class UploadObjectAbstract {
                 UploadBlockToDB(b, id, node);
             } else {
                 UploadBlockInitResp resp1 = (UploadBlockInitResp) resp;
-                UploadBlock ub = new UploadBlock(b, id, resp1.getNodes(), resp1.getVBI(), node);
+                UploadBlock ub = new UploadBlock(b, id, resp1.getNodes(), resp1.getVBI(), node, VNU);
                 ub.upload();
             }
         }
@@ -114,8 +114,8 @@ public abstract class UploadObjectAbstract {
             req.setKED(KeyStoreCoder.aesEncryped(ks, b.getKD()));
             req.setOriginalSize(b.getOriginalSize());
             req.setData(enc.getBlockEncrypted().getData());
-            P2PUtils.requestBPU(req, node);
-            LOG.info("Upload block " + id + " to DB,VHP:" + Base58.encode(b.getVHP()));
+            P2PUtils.requestBPU(req, node, VNU.toString());
+            LOG.info("[" + VNU + "] Upload block " + id + " to DB,VHP:" + Base58.encode(b.getVHP()));
         } catch (Exception e) {
             LOG.error("", e);
             throw new ServiceException(SERVER_ERROR);
