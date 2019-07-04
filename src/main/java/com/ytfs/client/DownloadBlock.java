@@ -42,7 +42,7 @@ public class DownloadBlock {
     }
 
     public void load() throws ServiceException {
-        ks = KeyStoreCoder.aesDecryped(refer.getKEU(), UserConfig.AESKey);
+        ks = KeyStoreCoder.aesDecryped(refer.getKEU(), UserConfig.AESKey);    
         DownloadBlockInitReq req = new DownloadBlockInitReq();
         req.setVBI(refer.getVBI());
         SuperNode pbd = SuperNodeList.getBlockSuperNode(refer.getSuperID());

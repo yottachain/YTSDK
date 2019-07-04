@@ -18,6 +18,9 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.log4j.Logger;
 import org.tanukisoftware.wrapper.WrapperManager;
 
@@ -148,7 +151,7 @@ public class ClientInitor {
                 throw new Exception();
             }
             privateKey = password;
-            AESKey = KeyStoreCoder.generateRandomKey(KUSp);
+            AESKey = KeyStoreCoder.generateUserKey(KUSp);
         } catch (Throwable r) {
             String path = System.getProperty("ytfs.cert", "../conf/cert");
             privateKey = ReadPrivateKey.getPrivateKey(path, password);
@@ -156,7 +159,7 @@ public class ClientInitor {
                 throw new IOException();
             }
             KUSp = Base58.decode(privateKey);
-            AESKey = KeyStoreCoder.generateRandomKey(KUSp);
+            AESKey = KeyStoreCoder.generateUserKey(KUSp);
         }
     }
 
@@ -170,7 +173,7 @@ public class ClientInitor {
         InputStream is = null;
         try {
             is = new FileInputStream(path);
-        } catch (Exception r) {  
+        } catch (Exception r) {
         }
         if (is == null) {
             throw new IOException("No properties file could be found for ytfs service");

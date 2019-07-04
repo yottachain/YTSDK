@@ -21,7 +21,7 @@ public class SDKTest implements WrapperListener {
         try {
             ClientInitor.init();
             if (strings.length < 1) {
-                strings = new String[]{"e:/ladon-s3-server.zip"};
+                strings = new String[]{"d:/bson-3.8.2.jar"};
             }
             String filepath = null;
             String newfilepath = null;
