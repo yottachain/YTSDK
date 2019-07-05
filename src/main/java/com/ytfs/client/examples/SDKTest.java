@@ -21,7 +21,7 @@ public class SDKTest implements WrapperListener {
         try {
             ClientInitor.init();
             if (strings.length < 1) {
-                strings = new String[]{"E:/httpwatch_3295.zip"};
+                strings = new String[]{"E:/Lab-OA.rar"};
             }
             String filepath = null;
             String newfilepath = null;
