@@ -68,8 +68,7 @@ public class UploadBlock {
             completeUploadBlock(ks);
             LOG.info("[" + VNU + "]Upload shardcount " + len + ",take time " + (System.currentTimeMillis() - l) + "ms");
         } catch (Exception r) {
-            LOG.error("[" + VNU + "]", r);
-            throw new ServiceException(SERVER_ERROR);
+            throw r instanceof ServiceException ? (ServiceException) r : new ServiceException(SERVER_ERROR);
         }
     }
 
@@ -84,7 +83,7 @@ public class UploadBlock {
         req.setOriginalSize(block.getOriginalSize());
         req.setRealSize(block.getRealSize());
         req.setRsShard(rs.getShardList().get(0).isRsShard());
-        P2PUtils.requestBPU(req, bpdNode,VNU.toString());
+        P2PUtils.requestBPU(req, bpdNode, VNU.toString());
         LOG.info("[" + VNU + "]Upload block " + id + "/" + VBI + " OK.");
     }
 
@@ -102,7 +101,7 @@ public class UploadBlock {
             req.setVBI(VBI);
             req.setVHF(sd.getVHF());
             sign(req, nodes[nodeindex].getNodeId());
-            UploadShard.startUploadShard(req, n, this,VNU);
+            UploadShard.startUploadShard(req, n, this, VNU);
             nodeindex++;
         }
         synchronized (this) {
@@ -128,6 +127,7 @@ public class UploadBlock {
                     retrycount++;
                 }
                 if (retrycount >= 5) {
+                    LOG.error("[" + VNU + "]Upload block " + id + "/" + VBI + " 5 retries were unsuccessful.");
                     throw new ServiceException(SERVER_ERROR);
                 }
             }
@@ -135,6 +135,7 @@ public class UploadBlock {
             if (resp.getNodes() == null || resp.getNodes().length == 0) {//OK
                 break;
             }
+            LOG.info("[" + VNU + "]Upload block " + id + "/" + VBI + " retrying,remaining " + resp.getNodes().length + " shards.");
             secondUpload(resp);
         }
     }
@@ -151,7 +152,7 @@ public class UploadBlock {
             req.setVBI(VBI);
             req.setVHF(sd.getVHF());
             sign(req, n.getNodeId());
-            UploadShard.startUploadShard(req, n, this,VNU);
+            UploadShard.startUploadShard(req, n, this, VNU);
         }
         synchronized (this) {
             while (resList.size() != shardNodes.length) {

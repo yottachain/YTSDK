@@ -49,15 +49,19 @@ public class UploadShard implements Runnable {
             res.setSHARDID(req.getSHARDID());
             res.setNODEID(node.getId());
             try {
-                UploadShard2CResp resp = (UploadShard2CResp) P2PUtils.requestNode(req, node,VNU.toString());
+                UploadShard2CResp resp = (UploadShard2CResp) P2PUtils.requestNode(req, node, VNU.toString());
                 res.setRES(resp.getRES());
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("[" + VNU + "]Upload OK:" + req.getVBI() + "/(" + req.getSHARDID() + ")" + Base58.encode(req.getVHF()) + " to " + node.getId() + ",RES:" + resp.getRES());
+                    if (resp.getRES() == UploadShardRes.RES_OK || resp.getRES() == UploadShardRes.RES_VNF_EXISTS) {
+                        LOG.debug("[" + VNU + "]Upload OK:" + req.getVBI() + "/(" + req.getSHARDID() + ")" + Base58.encode(req.getVHF()) + " to " + node.getId() + ",RES:" + resp.getRES());
+                    }else{
+                        LOG.error("[" + VNU + "]Upload ERR:" + req.getVBI() + "/(" + req.getSHARDID() + ")" + Base58.encode(req.getVHF()) + " to " + node.getId() + ",RES:" + resp.getRES());
+                    }
                 }
             } catch (Throwable ex) {
                 res.setRES(RES_NETIOERR);
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("[" + VNU + "]Upload ERR:" + req.getVBI() + "/(" + req.getSHARDID() + ")" + Base58.encode(req.getVHF()) + " to " + node.getId());
+                    LOG.error("[" + VNU + "]Upload ERR:" + req.getVBI() + "/(" + req.getSHARDID() + ")" + Base58.encode(req.getVHF()) + " to " + node.getId());
                 }
             }
             uploadBlock.onResponse(res);
