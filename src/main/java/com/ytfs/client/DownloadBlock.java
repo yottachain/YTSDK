@@ -42,23 +42,23 @@ public class DownloadBlock {
     }
 
     public void load() throws ServiceException {
-        ks = KeyStoreCoder.aesDecryped(refer.getKEU(), UserConfig.AESKey);    
+        ks = KeyStoreCoder.aesDecryped(refer.getKEU(), UserConfig.AESKey);
         DownloadBlockInitReq req = new DownloadBlockInitReq();
         req.setVBI(refer.getVBI());
         SuperNode pbd = SuperNodeList.getBlockSuperNode(refer.getSuperID());
         Object resp = P2PUtils.requestBPU(req, pbd);
         if (resp instanceof DownloadBlockDBResp) {
             this.data = aesDBDecode(((DownloadBlockDBResp) resp).getData());
-            LOG.debug("Download block " + refer.getId() + "/" + refer.getVBI() + " from DB.");
+            LOG.debug("[" + refer.getVBI() + "]Download block " + refer.getId() + " from DB.");
         } else {
             DownloadBlockInitResp initresp = (DownloadBlockInitResp) resp;
             if (initresp.getVNF() < 0) {
                 this.data = loadCopyShard(initresp);
-                LOG.info("Download block " + refer.getId() + "/" + refer.getVBI() + " copy.");
+                LOG.info("[" + refer.getVBI() + "]Download block " + refer.getId() + " copy.");
             } else {
                 try {
                     this.data = loadRSShard(initresp);
-                    LOG.info("Download block " + refer.getId() + "/" + refer.getVBI() + " RS shards.");
+                    LOG.info("[" + refer.getVBI() + "]Download block " + refer.getId() + " RS shards.");
                 } catch (InterruptedException e) {
                     throw new ServiceException(INTERNAL_ERROR, e.getMessage());
                 }
@@ -101,7 +101,7 @@ public class DownloadBlock {
                 req.setVHF(VHF);
                 nodeindex++;
                 if (n == null) {
-                    LOG.warn("Node Offline,ID:" + initresp.getNodeids()[nodeindex - 1]);
+                    LOG.warn("[" + refer.getVBI() + "]Node Offline,ID:" + initresp.getNodeids()[nodeindex - 1]);
                     continue;
                 }
                 DownloadShare.startDownloadShard(VHF, refer.getVBI(), n, this);
@@ -120,7 +120,7 @@ public class DownloadBlock {
             resList.clear();
         }
         if (shards.size() >= len) {
-            LOG.info("Download shardcount " + len + ",take time " + (System.currentTimeMillis() - l) + "ms");
+            LOG.info("[" + refer.getVBI() + "]Download shardcount " + len + ",take time " + (System.currentTimeMillis() - l) + "ms");
             BlockEncrypted be = new BlockEncrypted(refer.getRealSize());
             ShardRSDecoder rsdec = new ShardRSDecoder(shards, be.getEncryptedBlockSize());
             be = rsdec.decode();
@@ -128,7 +128,7 @@ public class DownloadBlock {
             dec.decrypt();
             return dec.getSrcData();
         } else {
-            LOG.error("Download shardcount " + shards.size() + "/" + initresp.getVNF() + ",Not enough shards present.");
+            LOG.error("[" + refer.getVBI() + "]Download shardcount " + shards.size() + "/" + initresp.getVNF() + ",Not enough shards present.");
             throw new ServiceException(INTERNAL_ERROR);
         }
     }
@@ -149,7 +149,7 @@ public class DownloadBlock {
                 byte[] VHF = initresp.getVHF()[index];
                 req.setVHF(VHF);
                 DownloadShardResp resp = (DownloadShardResp) P2PUtils.requestNode(req, n);
-                if (DownloadShare.verify(resp, VHF)) {
+                if (DownloadShare.verify(resp, VHF,refer.getVBI())) {
                     return aesCopyDecode(resp.getData());
                 }
                 index++;
@@ -157,7 +157,7 @@ public class DownloadBlock {
                 t = e;
             }
         }
-        LOG.error("Download copy shardcount " + count + " ERR.");
+        LOG.error("[" + refer.getVBI() + "]Download copy shardcount " + count + " ERR.");
         throw t == null ? new ServiceException(INVALID_SHARD) : t;
     }
 

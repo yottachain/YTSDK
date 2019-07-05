@@ -44,10 +44,10 @@ public class DownloadShare implements Runnable {
     private Node node;
     private DownloadBlock downloadBlock;
 
-    static boolean verify(DownloadShardResp resp, byte[] VHF) {
+    static boolean verify(DownloadShardResp resp, byte[] VHF, long vbi) {
         byte[] data = resp.getData();
         if (data == null) {
-            LOG.error("VHF Non-existent.");
+            LOG.error("[" + vbi + "]VHF:(" + Base58.encode(VHF) + ") Non-existent.");
             return false;
         }
         if (data.length < UserConfig.Default_Shard_Size) {
@@ -72,19 +72,19 @@ public class DownloadShare implements Runnable {
             DownloadShardResp resp;
             try {
                 resp = (DownloadShardResp) P2PUtils.requestNode(req, node);
-                if (!verify(resp, req.getVHF())) {
-                    LOG.error("Download VHF inconsistency:" + VBI + "/" + Base58.encode(req.getVHF()) + " from " + node.getId());
+                if (!verify(resp, req.getVHF(), VBI)) {
+                    LOG.error("[" + VBI + "]Download VHF inconsistency:" + Base58.encode(req.getVHF()) + " from " + node.getId());
                     downloadBlock.onResponse(new DownloadShardResp());
                 } else {
                     downloadBlock.onResponse(resp);
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("Download OK:" + VBI + "/" + Base58.encode(req.getVHF()) + " from " + node.getId());
+                        LOG.debug("[" + VBI + "]Download OK:" + Base58.encode(req.getVHF()) + " from " + node.getId());
                     }
                 }
             } catch (Throwable ex) {
                 downloadBlock.onResponse(new DownloadShardResp());
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Download ERR:" + VBI + "/" + Base58.encode(req.getVHF()) + " from " + node.getId());
+                    LOG.debug("[" + VBI + "]Download ERR:" + Base58.encode(req.getVHF()) + " from " + node.getId());
                 }
             }
         } finally {

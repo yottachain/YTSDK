@@ -66,7 +66,7 @@ public class UploadBlock {
             firstUpload();
             subUpload();
             completeUploadBlock(ks);
-            LOG.info("[" + VNU + "] Upload shardcount " + len + ",take time " + (System.currentTimeMillis() - l) + "ms");
+            LOG.info("[" + VNU + "]Upload shardcount " + len + ",take time " + (System.currentTimeMillis() - l) + "ms");
         } catch (Exception r) {
             LOG.error("[" + VNU + "]", r);
             throw new ServiceException(SERVER_ERROR);
@@ -85,7 +85,7 @@ public class UploadBlock {
         req.setRealSize(block.getRealSize());
         req.setRsShard(rs.getShardList().get(0).isRsShard());
         P2PUtils.requestBPU(req, bpdNode,VNU.toString());
-        LOG.info("[" + VNU + "] Upload block " + id + "/" + VBI + " OK.");
+        LOG.info("[" + VNU + "]Upload block " + id + "/" + VBI + " OK.");
     }
 
     private void firstUpload() throws InterruptedException {
@@ -167,7 +167,7 @@ public class UploadBlock {
                 if (res.getRES() != UploadShardRes.RES_VNF_EXISTS) {// RES_NO_SPACE RES_VNF_EXISTS 
                     ls.add(res);
                     if (res.getRES() == UploadShardRes.RES_NO_SPACE) {
-                        LOG.info("[" + VNU + "] ERR 'NO_SPACE',id:" + res.getNODEID());
+                        LOG.info("[" + VNU + "]ERR 'NO_SPACE',id:" + res.getNODEID());
                     }
                 }
             }

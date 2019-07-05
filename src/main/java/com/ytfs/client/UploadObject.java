@@ -34,7 +34,7 @@ public class UploadObject extends UploadObjectAbstract {
         req.setLength(ytfile.getLength());
         UploadObjectInitResp res = (UploadObjectInitResp) P2PUtils.requestBPU(req, UserConfig.superNode);
         VNU = res.getVNU();
-        LOG.info("[" + VNU + "] Start upload object...");
+        LOG.info("[" + VNU + "]Start upload object...");
         if (!res.isRepeat()) {
             short[] refers = res.getBlocks();
             short ii = 0;
@@ -44,7 +44,7 @@ public class UploadObject extends UploadObjectAbstract {
                 if (res.getBlocks() != null) { //检查是否已经上传
                     for (short refer : refers) {
                         if (ii == refer) {
-                            LOG.info("[" + VNU + "] Block " + ii + " has been uploaded.");
+                            LOG.info("[" + VNU + "]Block " + ii + " has been uploaded.");
                             uploaded = true;
                             break;
                         }
@@ -53,10 +53,10 @@ public class UploadObject extends UploadObjectAbstract {
                 if (!uploaded) {
                     b.calculate();
                     if (b.getRealSize() > UserConfig.Default_Block_Size) {
-                        LOG.fatal("[" + VNU + "] Block length too large.");
+                        LOG.fatal("[" + VNU + "]Block length too large.");
                     }
                     SuperNode node = SuperNodeList.getBlockSuperNode(b.getVHP());
-                    LOG.info("[" + VNU + "] Start upload block " + ii + " to sn " + node.getId() + "...");
+                    LOG.info("[" + VNU + "]Start upload block " + ii + " to sn " + node.getId() + "...");
                     int errtimes = 0;
                     for (;;) {
                         try {
@@ -75,9 +75,9 @@ public class UploadObject extends UploadObjectAbstract {
                 ii++;
             }
             complete();
-            LOG.info("[" + VNU + "] Upload object OK.");
+            LOG.info("[" + VNU + "]Upload object OK.");
         } else {
-            LOG.info("[" + VNU + "] Already exists.");
+            LOG.info("[" + VNU + "]Already exists.");
         }
         return VHW;
     }

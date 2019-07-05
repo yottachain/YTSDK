@@ -52,12 +52,12 @@ public class UploadShard implements Runnable {
                 UploadShard2CResp resp = (UploadShard2CResp) P2PUtils.requestNode(req, node,VNU.toString());
                 res.setRES(resp.getRES());
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("[" + VNU + "] Upload OK:" + req.getVBI() + "/(" + req.getSHARDID() + ")" + Base58.encode(req.getVHF()) + " to " + node.getId() + ",RES:" + resp.getRES());
+                    LOG.debug("[" + VNU + "]Upload OK:" + req.getVBI() + "/(" + req.getSHARDID() + ")" + Base58.encode(req.getVHF()) + " to " + node.getId() + ",RES:" + resp.getRES());
                 }
             } catch (Throwable ex) {
                 res.setRES(RES_NETIOERR);
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("[" + VNU + "] Upload ERR:" + req.getVBI() + "/(" + req.getSHARDID() + ")" + Base58.encode(req.getVHF()) + " to " + node.getId());
+                    LOG.debug("[" + VNU + "]Upload ERR:" + req.getVBI() + "/(" + req.getSHARDID() + ")" + Base58.encode(req.getVHF()) + " to " + node.getId());
                 }
             }
             uploadBlock.onResponse(res);
