@@ -65,7 +65,8 @@ public abstract class UploadObjectAbstract {
         Object resp = P2PUtils.requestBPU(req, node, VNU.toString());
         if (resp instanceof VoidResp) {//已经上传
             LOG.info("[" + VNU + "]Block " + id + " is being uploaded.");
-            return;
+            Thread.sleep(10000);
+            throw new ServiceException(SERVER_ERROR);
         }
         if (resp instanceof UploadBlockDupResp) {//重复,resp.getExist()=0已经上传     
             UploadBlockDupReq uploadBlockDupReq = checkResp((UploadBlockDupResp) resp, b);
