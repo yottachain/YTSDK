@@ -14,7 +14,6 @@ import com.ytfs.service.packet.DownloadBlockInitReq;
 import com.ytfs.service.packet.DownloadBlockInitResp;
 import com.ytfs.service.packet.DownloadShardReq;
 import com.ytfs.service.packet.DownloadShardResp;
-import static com.ytfs.common.ServiceErrorCode.INTERNAL_ERROR;
 import static com.ytfs.common.ServiceErrorCode.INVALID_SHARD;
 import com.ytfs.common.ServiceException;
 import io.yottachain.nodemgmt.core.vo.Node;
@@ -24,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.log4j.Logger;
+import static com.ytfs.common.ServiceErrorCode.COMM_ERROR;
 
 public class DownloadBlock {
 
@@ -60,7 +60,7 @@ public class DownloadBlock {
                     this.data = loadRSShard(initresp);
                     LOG.info("[" + refer.getVBI() + "]Download block " + refer.getId() + " RS shards.");
                 } catch (InterruptedException e) {
-                    throw new ServiceException(INTERNAL_ERROR, e.getMessage());
+                    throw new ServiceException(COMM_ERROR, e.getMessage());
                 }
             }
         }
@@ -129,7 +129,7 @@ public class DownloadBlock {
             return dec.getSrcData();
         } else {
             LOG.error("[" + refer.getVBI() + "]Download shardcount " + shards.size() + "/" + initresp.getVNF() + ",Not enough shards present.");
-            throw new ServiceException(INTERNAL_ERROR);
+            throw new ServiceException(COMM_ERROR);
         }
     }
 
