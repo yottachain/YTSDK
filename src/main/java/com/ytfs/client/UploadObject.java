@@ -56,7 +56,7 @@ public class UploadObject extends UploadObjectAbstract {
                         LOG.fatal("[" + VNU + "]Block length too large.");
                     }
                     SuperNode node = SuperNodeList.getBlockSuperNode(b.getVHP());
-                    LOG.info("[" + VNU + "]Start upload block " + ii + " to sn " + node.getId() + "...");
+                    LOG.info("[" + VNU + "]Start upload block " + ii + " to sn " + node.getId() + "...");                   
                     int errtimes = 0;
                     for (;;) {
                         try {
