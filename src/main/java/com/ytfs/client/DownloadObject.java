@@ -23,15 +23,15 @@ public class DownloadObject {
         init();
     }
 
-    public DownloadObject(String bucketName, String fileName,ObjectId versionId) throws ServiceException {
-        init(bucketName, fileName,versionId);
+    public DownloadObject(String bucketName, String fileName, ObjectId versionId) throws ServiceException {
+        init(bucketName, fileName, versionId);
     }
 
     private void init() throws ServiceException {
         DownloadObjectInitReq req = new DownloadObjectInitReq();
         req.setVHW(VHW);
         DownloadObjectInitResp resp = (DownloadObjectInitResp) P2PUtils.requestBPU(req, UserConfig.superNode);
-        refers = ObjectRefer.parse(resp.getRefers());
+        refers = ObjectRefer.parse(resp.getOldRefers(), resp.getRefers());
         this.length = resp.getLength();
     }
 
@@ -39,12 +39,11 @@ public class DownloadObject {
         DownloadFileReq req = new DownloadFileReq();
         req.setBucketname(bucketName);
         req.setFileName(fileName);
-        System.out.println("versionId=====" + versionId);
-        if(versionId != null) {
+        if (versionId != null) {
             req.setVersionId(versionId);
         }
         DownloadObjectInitResp resp = (DownloadObjectInitResp) P2PUtils.requestBPU(req, UserConfig.superNode);
-        refers = ObjectRefer.parse(resp.getRefers());
+        refers = ObjectRefer.parse(resp.getOldRefers(), resp.getRefers());
         this.length = resp.getLength();
     }
 

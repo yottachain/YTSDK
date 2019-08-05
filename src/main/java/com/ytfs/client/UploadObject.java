@@ -50,7 +50,7 @@ public class UploadObject extends UploadObjectAbstract {
                         }
                     }
                 }
-                if (!uploaded) {
+                if (!uploaded) {                    
                     b.calculate();
                     if (b.getRealSize() > UserConfig.Default_Block_Size) {
                         LOG.fatal("[" + VNU + "]Block length too large.");

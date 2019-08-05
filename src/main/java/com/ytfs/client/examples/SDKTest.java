@@ -21,7 +21,7 @@ public class SDKTest implements WrapperListener {
         try {
             ClientInitor.init();
             if (strings.length < 1) {
-                strings = new String[]{"E:/linuxmint-17.2-cinnamon-64bit.iso"};
+                strings = new String[]{"d:/ReedSolomon-master.zip"};
             }
             String filepath = null;
             String newfilepath = null;

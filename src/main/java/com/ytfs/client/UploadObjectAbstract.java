@@ -59,14 +59,13 @@ public abstract class UploadObjectAbstract {
     }
 
     //上传块
-    protected final void upload(Block b, short id, SuperNode node) throws ServiceException, IOException, InterruptedException {
+    public final void upload(Block b, short id, SuperNode node) throws ServiceException, IOException, InterruptedException {
         BlockEncrypted be = new BlockEncrypted(b.getRealSize());
         UploadBlockInitReq req = new UploadBlockInitReq(VNU, b.getVHP(), be.getShardCount(), id);
         Object resp = P2PUtils.requestBPU(req, node, VNU.toString());
         if (resp instanceof VoidResp) {//已经上传
-            LOG.info("[" + VNU + "]Block " + id + " is being uploaded.");
-            Thread.sleep(10000);
-            throw new ServiceException(SERVER_ERROR);
+            LOG.info("[" + VNU + "]Block " + id + " has been uploaded.");
+            return;
         }
         if (resp instanceof UploadBlockDupResp) {//重复,resp.getExist()=0已经上传     
             UploadBlockDupReq uploadBlockDupReq = checkResp((UploadBlockDupResp) resp, b);

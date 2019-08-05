@@ -20,6 +20,17 @@ public class ObjectHandler {
         P2PUtils.requestBPU(req, UserConfig.superNode);
     }
 
+//    public static String listObject(Map<String,byte[]> map, String bucketName, String fileName, int limit) throws ServiceException {
+//        ListObjectReq req = new ListObjectReq();
+//        req.setBucketName(bucketName);
+//        req.setLimit(limit);
+//        req.setFileName(fileName);
+//        ListObjectResp resp = (ListObjectResp) P2PUtils.requestBPU(req, UserConfig.superNode);
+//        map.putAll(resp.getMap());
+//        Map<ObjectId,String> lastMap = new HashMap<>();
+//        System.out.println("resp.getFileName()====="+resp.getFileName()+"  ,resp.getObjectId()====="+resp.getObjectId());
+//        return resp.getFileName();
+//    }
     public static List<FileMetaMsg> listBucket(String bucketName, String fileName, String prefix, boolean isVersion, ObjectId nextVersionId, int limit) throws ServiceException{
             ListObjectReq req = new ListObjectReq();
             req.setBucketName(bucketName);
@@ -32,14 +43,13 @@ public class ObjectHandler {
             List<FileMetaMsg> fileMetaMsgs = resp.getFileMetaMsgList();
             return fileMetaMsgs;
     }
-    public static void deleteObject(String bucketName,String fileName,ObjectId versionId) throws ServiceException {
+    public static void deleteObject(String bucketName,String fileName,String versionId) throws ServiceException {
         DeleteFileReq req = new DeleteFileReq();
         req.setBucketname(bucketName);
         req.setFileName(fileName);
-        req.setVNU(versionId);
         P2PUtils.requestBPU(req,UserConfig.superNode);
     }
-    public static boolean isExistObject(String bucketName,String fileName,ObjectId versionId) throws ServiceException{
+    public static boolean isExistObject(String bucketName,String fileName,String versionId) throws ServiceException{
         boolean isExistObject = false;
         GetObjectReq req = new GetObjectReq();
         req.setBucketName(bucketName);
