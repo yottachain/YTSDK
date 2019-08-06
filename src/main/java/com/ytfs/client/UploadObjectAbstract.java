@@ -59,7 +59,7 @@ public abstract class UploadObjectAbstract {
     }
 
     //上传块
-    public final void upload(Block b, short id, SuperNode node) throws ServiceException, IOException, InterruptedException {
+    public final void upload(Block b, short id, SuperNode node) throws ServiceException, InterruptedException {
         BlockEncrypted be = new BlockEncrypted(b.getRealSize());
         UploadBlockInitReq req = new UploadBlockInitReq(VNU, b.getVHP(), be.getShardCount(), id);
         Object resp = P2PUtils.requestBPU(req, node, VNU.toString());

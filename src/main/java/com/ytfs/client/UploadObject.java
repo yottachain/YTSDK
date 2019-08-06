@@ -1,22 +1,24 @@
 package com.ytfs.client;
 
+import com.ytfs.common.GlobleThreadPool;
 import com.ytfs.common.conf.UserConfig;
 import com.ytfs.common.codec.Block;
 import com.ytfs.common.net.P2PUtils;
-import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.codec.YTFileEncoder;
 import com.ytfs.service.packet.UploadObjectInitReq;
 import com.ytfs.service.packet.UploadObjectInitResp;
-import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.log4j.Logger;
 
 public class UploadObject extends UploadObjectAbstract {
 
     private static final Logger LOG = Logger.getLogger(UploadObject.class);
-
     private final YTFileEncoder ytfile;
+    ServiceException err = null;
+    final List<UploadBlockExecuter> execlist = new ArrayList();
 
     public UploadObject(byte[] data) throws IOException {
         ytfile = new YTFileEncoder(data);
@@ -50,29 +52,25 @@ public class UploadObject extends UploadObjectAbstract {
                         }
                     }
                 }
-                if (!uploaded) {                    
-                    b.calculate();
-                    if (b.getRealSize() > UserConfig.Default_Block_Size) {
-                        LOG.fatal("[" + VNU + "]Block length too large.");
-                    }
-                    SuperNode node = SuperNodeList.getBlockSuperNode(b.getVHP());
-                    LOG.info("[" + VNU + "]Start upload block " + ii + " to sn " + node.getId() + "...");                   
-                    int errtimes = 0;
-                    for (;;) {
-                        try {
-                            upload(b, ii, node);
-                            break;
-                        } catch (ServiceException e) {
-                            errtimes++;
-                            if (errtimes < 3) {
-                                Thread.sleep(5000);
-                            } else {
-                                throw e;
-                            }
+                if (err != null) {
+                    throw err;
+                }
+                if (!uploaded) {
+                    synchronized (execlist) {
+                        while (execlist.size() >= UserConfig.UPLOADBLOCKTHREAD) {
+                            execlist.wait();
                         }
+                        if (err != null) {
+                            throw err;
+                        }
+                        UploadBlockExecuter exec = new UploadBlockExecuter(this, b, ii);
+                        GlobleThreadPool.execute(exec);
                     }
                 }
                 ii++;
+            }
+            if (err != null) {
+                throw err;
             }
             complete();
             LOG.info("[" + VNU + "]Upload object OK.");
