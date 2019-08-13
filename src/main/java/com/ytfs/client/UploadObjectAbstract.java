@@ -81,6 +81,7 @@ public abstract class UploadObjectAbstract {
                 if (!be.needEncode()) {
                     UploadBlockToDB(b, id, node);
                 } else {//请求分配节点
+                    LOG.info("[" + VNU + "]Block " + id + " is initialized.");
                     UploadBlockInit2Req req2 = new UploadBlockInit2Req(req);
                     UploadBlockInitResp resp1 = (UploadBlockInitResp) P2PUtils.requestBPU(req2, node, VNU.toString());
                     UploadBlock ub = new UploadBlock(b, id, resp1.getNodes(), resp1.getVBI(), node, VNU);
@@ -92,6 +93,7 @@ public abstract class UploadObjectAbstract {
             if (!be.needEncode()) {
                 UploadBlockToDB(b, id, node);
             } else {
+                LOG.info("[" + VNU + "]Block " + id + " is initialized.");
                 UploadBlockInitResp resp1 = (UploadBlockInitResp) resp;
                 UploadBlock ub = new UploadBlock(b, id, resp1.getNodes(), resp1.getVBI(), node, VNU);
                 ub.upload();
