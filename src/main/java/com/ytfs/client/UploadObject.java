@@ -69,6 +69,11 @@ public class UploadObject extends UploadObjectAbstract {
                 }
                 ii++;
             }
+            synchronized (execlist) {
+                while (execlist.size() > 0) {
+                    execlist.wait(5000);
+                }
+            }
             if (err != null) {
                 throw err;
             }

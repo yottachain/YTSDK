@@ -45,7 +45,7 @@ public class DownloadBlock {
         ks = KeyStoreCoder.aesDecryped(refer.getKEU(), UserConfig.AESKey);
         DownloadBlockInitReq req = new DownloadBlockInitReq();
         req.setVBI(refer.getVBI());
-        SuperNode pbd = SuperNodeList.getBlockSuperNode(refer.getSuperID());
+        SuperNode pbd = SuperNodeList.getSuperNode(refer.getSuperID());
         Object resp = P2PUtils.requestBPU(req, pbd);
         if (resp instanceof DownloadBlockDBResp) {
             this.data = aesDBDecode(((DownloadBlockDBResp) resp).getData());
