@@ -18,19 +18,20 @@ public class DownloadShare implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(DownloadShare.class);
 
-    private static final ArrayBlockingQueue<DownloadShare> queue;
+    private static ArrayBlockingQueue<DownloadShare> queue = null;
 
-    static {
-        int num = DOWNLOADSHARDTHREAD > 255 ? 255 : DOWNLOADSHARDTHREAD;
-        num = num < 5 ? 5 : num;
-        queue = new ArrayBlockingQueue(num);
-        for (int ii = 0; ii < num; ii++) {
-            queue.add(new DownloadShare());
+    private static synchronized ArrayBlockingQueue<DownloadShare> getQueue() {
+        if (queue == null) {
+            queue = new ArrayBlockingQueue(DOWNLOADSHARDTHREAD);
+            for (int ii = 0; ii < DOWNLOADSHARDTHREAD; ii++) {
+                queue.add(new DownloadShare());
+            }
         }
+        return queue;
     }
 
     static void startDownloadShard(byte[] VHF, long VBI, Node node, DownloadBlock downloadBlock) throws InterruptedException {
-        DownloadShare downloader = queue.take();
+        DownloadShare downloader = getQueue().take();
         downloader.req = new DownloadShardReq();
         downloader.req.setVHF(VHF);
         downloader.downloadBlock = downloadBlock;
@@ -88,7 +89,7 @@ public class DownloadShare implements Runnable {
                 }
             }
         } finally {
-            queue.add(this);
+            getQueue().add(this);
         }
     }
 }

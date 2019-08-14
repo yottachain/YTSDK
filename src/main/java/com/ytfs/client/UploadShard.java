@@ -17,19 +17,20 @@ import org.bson.types.ObjectId;
 public class UploadShard implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(UploadShard.class);
-    private static final ArrayBlockingQueue<UploadShard> queue;
+    private static ArrayBlockingQueue<UploadShard> queue = null;
 
-    static {
-        queue = new ArrayBlockingQueue(UPLOADSHARDTHREAD);
-        for (int ii = 0; ii < UPLOADSHARDTHREAD; ii++) {
-            queue.add(new UploadShard());
+    private static synchronized ArrayBlockingQueue<UploadShard> getQueue() {
+        if (queue == null) {
+            queue = new ArrayBlockingQueue(UPLOADSHARDTHREAD);
+            for (int ii = 0; ii < UPLOADSHARDTHREAD; ii++) {
+                queue.add(new UploadShard());
+            }
         }
+        return queue;
     }
-    //private void sync
-    
 
     static void startUploadShard(UploadShardReq req, ShardNode node, UploadBlock uploadBlock, ObjectId VNU) throws InterruptedException {
-        UploadShard uploader = queue.take();
+        UploadShard uploader = getQueue().take();
         uploader.node = node.getNode();
         uploader.req = req;
         uploader.uploadBlock = uploadBlock;
@@ -72,7 +73,7 @@ public class UploadShard implements Runnable {
             }
             uploadBlock.onResponse(res);
         } finally {
-            queue.add(this);
+            getQueue().add(this);
         }
     }
 }
