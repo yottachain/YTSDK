@@ -65,14 +65,15 @@ public class UploadBlock {
             int len = rs.getShardList().size();
             firstUpload();
             subUpload();
+            LOG.info("[" + VNU + "]Upload block " + id + "/" + VBI + ",shardcount " + len + ",take times " + (System.currentTimeMillis() - l) + "ms");
             completeUploadBlock(ks);
-            LOG.info("[" + VNU + "]Upload shardcount " + len + ",take time " + (System.currentTimeMillis() - l) + "ms");
         } catch (Exception r) {
             throw r instanceof ServiceException ? (ServiceException) r : new ServiceException(SERVER_ERROR);
         }
     }
 
     private void completeUploadBlock(byte[] ks) throws ServiceException {
+        long l = System.currentTimeMillis();
         UploadBlockEndReq req = new UploadBlockEndReq();
         req.setId(id);
         req.setVBI(VBI);
@@ -84,7 +85,7 @@ public class UploadBlock {
         req.setRealSize(block.getRealSize());
         req.setRsShard(rs.getShardList().get(0).isRsShard());
         P2PUtils.requestBPU(req, bpdNode, VNU.toString());
-        LOG.info("[" + VNU + "]Upload block " + id + "/" + VBI + " OK.");
+        LOG.info("[" + VNU + "]Upload block " + id + "/" + VBI + " OK,take times " + (System.currentTimeMillis() - l) + "ms");
     }
 
     private void firstUpload() throws InterruptedException {

@@ -60,6 +60,7 @@ public abstract class UploadObjectAbstract {
 
     //上传块
     public final void upload(Block b, short id, SuperNode node) throws ServiceException, InterruptedException {
+        long l = System.currentTimeMillis();
         BlockEncrypted be = new BlockEncrypted(b.getRealSize());
         UploadBlockInitReq req = new UploadBlockInitReq(VNU, b.getVHP(), be.getShardCount(), id);
         Object resp = P2PUtils.requestBPU(req, node, VNU.toString());
@@ -81,10 +82,10 @@ public abstract class UploadObjectAbstract {
                 if (!be.needEncode()) {
                     UploadBlockToDB(b, id, node);
                 } else {//请求分配节点
-                    LOG.info("[" + VNU + "]Block " + id + " is initialized.");
                     UploadBlockInit2Req req2 = new UploadBlockInit2Req(req);
                     UploadBlockInitResp resp1 = (UploadBlockInitResp) P2PUtils.requestBPU(req2, node, VNU.toString());
                     UploadBlock ub = new UploadBlock(b, id, resp1.getNodes(), resp1.getVBI(), node, VNU);
+                    LOG.info("[" + VNU + "]Block " + id + "/" + resp1.getVBI() + " is initialized,take times " + (System.currentTimeMillis() - l) + "ms");
                     ub.upload();
                 }
             }
@@ -93,9 +94,9 @@ public abstract class UploadObjectAbstract {
             if (!be.needEncode()) {
                 UploadBlockToDB(b, id, node);
             } else {
-                LOG.info("[" + VNU + "]Block " + id + " is initialized.");
                 UploadBlockInitResp resp1 = (UploadBlockInitResp) resp;
                 UploadBlock ub = new UploadBlock(b, id, resp1.getNodes(), resp1.getVBI(), node, VNU);
+                LOG.info("[" + VNU + "]Block " + id + "/" + resp1.getVBI() + " is initialized,take times " + (System.currentTimeMillis() - l) + "ms");
                 ub.upload();
             }
         }
