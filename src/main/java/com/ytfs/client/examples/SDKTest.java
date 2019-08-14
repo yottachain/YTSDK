@@ -21,7 +21,7 @@ public class SDKTest implements WrapperListener {
         try {
             ClientInitor.init();
             if (strings.length < 1) {
-                strings = new String[]{"d:/XP_64bit语言包.iso"};
+                strings = new String[]{"d:/XP_64bit.iso"};
             }
             String filepath = null;
             String newfilepath = null;

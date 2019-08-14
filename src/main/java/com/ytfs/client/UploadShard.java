@@ -20,13 +20,13 @@ public class UploadShard implements Runnable {
     private static final ArrayBlockingQueue<UploadShard> queue;
 
     static {
-        int num = UPLOADSHARDTHREAD > 255 ? 255 : UPLOADSHARDTHREAD;
-        num = num < 5 ? 5 : num;
-        queue = new ArrayBlockingQueue(num);
-        for (int ii = 0; ii < num; ii++) {
+        queue = new ArrayBlockingQueue(UPLOADSHARDTHREAD);
+        for (int ii = 0; ii < UPLOADSHARDTHREAD; ii++) {
             queue.add(new UploadShard());
         }
     }
+    //private void sync
+    
 
     static void startUploadShard(UploadShardReq req, ShardNode node, UploadBlock uploadBlock, ObjectId VNU) throws InterruptedException {
         UploadShard uploader = queue.take();

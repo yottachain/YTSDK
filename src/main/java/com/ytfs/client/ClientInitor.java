@@ -139,6 +139,9 @@ public class ClientInitor {
         if (!tmpFilePath.isDirectory()) {
             throw new IOException("The 'tmpFilePath' parameter is not configured.");
         }
+        DOWNLOADSHARDTHREAD = cfg.getDownloadThread();
+        UPLOADBLOCKTHREAD = cfg.getUploadBlockThreadNum();
+        UPLOADSHARDTHREAD = cfg.getUploadShardThreadNum();
     }
 
     private static void exportPrivateKey(String password) throws IOException {
@@ -215,6 +218,13 @@ public class ClientInitor {
         if (!tmpFilePath.isDirectory()) {
             throw new IOException("The 'tmpFilePath' parameter is not configured.");
         }
+        Configurator cfg = new Configurator();
+        cfg.setDownloadThread(p.getProperty("downloadThread"));
+        cfg.setUploadBlockThreadNum(p.getProperty("uploadBlockThreadNum"));
+        cfg.setUploadShardThreadNum(p.getProperty("uploadShardThreadNum"));
+        DOWNLOADSHARDTHREAD = cfg.getDownloadThread();
+        UPLOADBLOCKTHREAD = cfg.getUploadBlockThreadNum();
+        UPLOADSHARDTHREAD = cfg.getUploadShardThreadNum();
     }
 
     /**
