@@ -85,7 +85,7 @@ public abstract class UploadObjectAbstract {
                     UploadBlockInit2Req req2 = new UploadBlockInit2Req(req);
                     UploadBlockInitResp resp1 = (UploadBlockInitResp) P2PUtils.requestBPU(req2, node, VNU.toString());
                     UploadBlock ub = new UploadBlock(b, id, resp1.getNodes(), resp1.getVBI(), node, VNU);
-                    LOG.info("[" + VNU + "]Block " + id + "/" + resp1.getVBI() + " is initialized,take times " + (System.currentTimeMillis() - l) + "ms");
+                    LOG.info("[" + VNU + "]Block " + id + "/" + resp1.getVBI() + " is initialized at sn " + node.getId() + ",take times " + (System.currentTimeMillis() - l) + "ms");
                     ub.upload();
                 }
             }
@@ -96,7 +96,7 @@ public abstract class UploadObjectAbstract {
             } else {
                 UploadBlockInitResp resp1 = (UploadBlockInitResp) resp;
                 UploadBlock ub = new UploadBlock(b, id, resp1.getNodes(), resp1.getVBI(), node, VNU);
-                LOG.info("[" + VNU + "]Block " + id + "/" + resp1.getVBI() + " is initialized,take times " + (System.currentTimeMillis() - l) + "ms");
+                LOG.info("[" + VNU + "]Block " + id + "/" + resp1.getVBI() + " is initialized at sn " + node.getId() + ",take times " + (System.currentTimeMillis() - l) + "ms");
                 ub.upload();
             }
         }
