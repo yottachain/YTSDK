@@ -20,6 +20,22 @@ public class ObjectHandler {
         P2PUtils.requestBPU(req, UserConfig.superNode);
     }
 
+    public static FileMetaMsg copyObject(String srcBucket,String srcObjectKey,String destBucket,String destObjectKey) throws ServiceException{
+        CopyObjectReq req = new CopyObjectReq();
+        req.setSrcBucket(srcBucket);
+        req.setSrcObjectKey(srcObjectKey);
+        req.setDestBucket(destBucket);
+        req.setDestObjectKey(destObjectKey);
+        CopyObjectResp resp = (CopyObjectResp)P2PUtils.requestBPU(req,UserConfig.superNode);
+        FileMetaMsg fileMeta = new FileMetaMsg();
+        fileMeta.setBucketId(resp.getBucketId());
+        fileMeta.setFileName(resp.getFileName());
+        fileMeta.setMeta(resp.getMeta());
+        fileMeta.setVersionId(resp.getVersionId());
+
+        return fileMeta;
+    }
+
 //    public static String listObject(Map<String,byte[]> map, String bucketName, String fileName, int limit) throws ServiceException {
 //        ListObjectReq req = new ListObjectReq();
 //        req.setBucketName(bucketName);
@@ -43,13 +59,14 @@ public class ObjectHandler {
             List<FileMetaMsg> fileMetaMsgs = resp.getFileMetaMsgList();
             return fileMetaMsgs;
     }
-    public static void deleteObject(String bucketName,String fileName,String versionId) throws ServiceException {
+    public static void deleteObject(String bucketName,String fileName,ObjectId versionId) throws ServiceException {
         DeleteFileReq req = new DeleteFileReq();
         req.setBucketname(bucketName);
         req.setFileName(fileName);
+        req.setVNU(versionId);
         P2PUtils.requestBPU(req,UserConfig.superNode);
     }
-    public static boolean isExistObject(String bucketName,String fileName,String versionId) throws ServiceException{
+    public static boolean isExistObject(String bucketName,String fileName,ObjectId versionId) throws ServiceException{
         boolean isExistObject = false;
         GetObjectReq req = new GetObjectReq();
         req.setBucketName(bucketName);
