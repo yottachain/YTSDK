@@ -5,23 +5,23 @@ import com.ytfs.service.packet.UploadShardRes;
 import static com.ytfs.service.packet.UploadShardRes.RES_OK;
 import com.ytfs.common.codec.Block;
 import com.ytfs.common.codec.BlockAESEncryptor;
-import com.ytfs.service.packet.UploadShardReq;
 import com.ytfs.common.codec.KeyStoreCoder;
 import com.ytfs.common.codec.Shard;
 import com.ytfs.common.codec.ShardRSEncoder;
 import com.ytfs.common.net.P2PUtils;
 import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.common.ServiceException;
+import static com.ytfs.common.conf.ServerConfig.Excess_Shard_Index;
 import com.ytfs.service.packet.ShardNode;
 import com.ytfs.service.packet.UploadBlockEndReq;
 import com.ytfs.service.packet.UploadBlockSubReq;
 import com.ytfs.service.packet.UploadBlockSubResp;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 
@@ -32,9 +32,10 @@ public class UploadBlock {
     private final Block block;
     private final short id;
     private final ShardNode[] nodes;
-    private final long VBI;
-    private final ObjectId VNU;
-    private final SuperNode bpdNode;
+    protected final long VBI;
+    protected final ObjectId VNU;
+    protected final SuperNode bpdNode;
+    protected final ConcurrentLinkedQueue<ShardNode> excessNode = new ConcurrentLinkedQueue();
     private final List<UploadShardRes> resList = new ArrayList();
     private final Map<Integer, Shard> map = new HashMap();
 
@@ -89,20 +90,16 @@ public class UploadBlock {
     }
 
     private void firstUpload() throws InterruptedException {
+        for (ShardNode node : nodes) {
+            if (node.getShardid() == Excess_Shard_Index) {
+                excessNode.add(node);
+            }
+        }
         List<Shard> shards = rs.getShardList();
         int nodeindex = 0;
         for (Shard sd : shards) {
             map.put(nodeindex, sd);
-            ShardNode n = nodes[nodeindex];
-            UploadShardReq req = new UploadShardReq();
-            req.setBPDID(bpdNode.getId());
-            req.setBPDSIGN(n.getSign());
-            req.setDAT(sd.getData());
-            req.setSHARDID(nodeindex);
-            req.setVBI(VBI);
-            req.setVHF(sd.getVHF());
-            sign(req, nodes[nodeindex].getNodeId());
-            UploadShard.startUploadShard(req, n, this, VNU);
+            UploadShard.startUploadShard(this, nodes[nodeindex], sd);
             nodeindex++;
         }
         synchronized (this) {
@@ -136,27 +133,27 @@ public class UploadBlock {
             if (resp.getNodes() == null || resp.getNodes().length == 0) {//OK
                 break;
             }
-            LOG.info("[" + VNU + "]Upload block " + id + "/" + VBI + " retrying,remaining " + resp.getNodes().length + " shards.");
             secondUpload(resp);
         }
     }
 
     private void secondUpload(UploadBlockSubResp resp) throws InterruptedException {
-        ShardNode[] shardNodes = resp.getNodes();
-        for (ShardNode n : shardNodes) {
-            Shard sd = map.get(n.getShardid());
-            UploadShardReq req = new UploadShardReq();
-            req.setBPDID(bpdNode.getId());
-            req.setBPDSIGN(n.getSign());
-            req.setDAT(sd.getData());
-            req.setSHARDID(n.getShardid());
-            req.setVBI(VBI);
-            req.setVHF(sd.getVHF());
-            sign(req, n.getNodeId());
-            UploadShard.startUploadShard(req, n, this, VNU);
+        excessNode.clear();
+        ShardNode[] respNodes = resp.getNodes();
+        for (ShardNode node : respNodes) {
+            if (node.getShardid() == Excess_Shard_Index) {
+                excessNode.add(node);
+            }
+        }
+        int errcount = resp.getNodes().length - excessNode.size();
+        LOG.info("[" + VNU + "]Upload block " + id + "/" + VBI + " retrying,remaining " + errcount + " shards.");
+        for (int ii = 0; ii < errcount; ii++) {
+            ShardNode node = resp.getNodes()[ii];
+            Shard shard = map.get(node.getShardid());
+            UploadShard.startUploadShard(this, node, shard);
         }
         synchronized (this) {
-            while (resList.size() != shardNodes.length) {
+            while (resList.size() != errcount) {
                 this.wait(1000 * 15);
             }
         }
@@ -164,6 +161,7 @@ public class UploadBlock {
 
     private UploadBlockSubReq doUploadShardRes() {
         List<UploadShardRes> ls = new ArrayList();
+        ls.add(UploadShardRes.NeedExcessNodeSign);
         for (UploadShardRes res : resList) {
             if (res.getRES() != RES_OK) {
                 if (res.getRES() != UploadShardRes.RES_VNF_EXISTS) {// RES_NO_SPACE RES_VNF_EXISTS 
@@ -175,7 +173,7 @@ public class UploadBlock {
             }
         }
         resList.clear();
-        if (ls.isEmpty()) {
+        if (ls.size() == 1) {
             return null;
         } else {
             UploadShardRes[] ress = new UploadShardRes[ls.size()];
@@ -185,17 +183,5 @@ public class UploadBlock {
             subreq.setVBI(VBI);
             return subreq;
         }
-    }
-
-    private void sign(UploadShardReq req, int nodeid) {
-        ByteBuffer bs = ByteBuffer.allocate(48);
-        bs.put(req.getVHF());
-        bs.putInt(req.getSHARDID());
-        bs.putInt(nodeid);
-        bs.putLong(req.getVBI());
-        bs.flip();
-        byte[] sign = KeyStoreCoder.ecdsaSign(bs.array(), UserConfig.privateKey);
-        req.setUSERSIGN(sign);
-        //LOG.info(req.getSHARDID() + " getUSERSIGN " + Hex.encodeHexString(req.getBPDSIGN()));
     }
 }

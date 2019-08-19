@@ -55,10 +55,14 @@ public abstract class UploadObjectAbstract {
         } catch (Exception e) {
             throw new ServiceException(SERVER_ERROR);
         }
-        P2PUtils.requestBPU(sub, UserConfig.superNode, VNU.toString());
+        try {
+            P2PUtils.requestBPU(sub, UserConfig.superNode, VNU.toString());
+        } catch (Exception e) {
+            LOG.warn("[" + VNU + "]Sub balance may be skipped.");
+        }
     }
-
     //上传块
+
     public final void upload(Block b, short id, SuperNode node) throws ServiceException, InterruptedException {
         long l = System.currentTimeMillis();
         BlockEncrypted be = new BlockEncrypted(b.getRealSize());
