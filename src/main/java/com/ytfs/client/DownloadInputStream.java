@@ -12,7 +12,6 @@ import java.util.Map;
 
 public class DownloadInputStream extends InputStream {
 
-   
     private Map<Integer, ObjectRefer> refers = new HashMap();
     private final long end;
     private BlockInputStream bin;
@@ -35,7 +34,7 @@ public class DownloadInputStream extends InputStream {
             ObjectRefer refer = refers.get(referIndex);
             if (refer == null) {
                 return;
-            }            
+            }
             if (readpos < pos + refer.getOriginalSize()) {
                 DownloadBlock db = new DownloadBlock(refer);
                 db.load();

@@ -24,11 +24,12 @@ import java.util.List;
 import java.util.Map;
 import org.apache.log4j.Logger;
 import static com.ytfs.common.ServiceErrorCode.COMM_ERROR;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class DownloadBlock {
 
     private static final Logger LOG = Logger.getLogger(DownloadBlock.class);
-    private final ObjectRefer refer;
+    protected final ObjectRefer refer;
     private byte[] data;
     private final List<DownloadShardResp> resList = new ArrayList();
     private byte[] ks;
@@ -43,10 +44,12 @@ public class DownloadBlock {
 
     public void load() throws ServiceException {
         ks = KeyStoreCoder.aesDecryped(refer.getKEU(), UserConfig.AESKey);
+        long l = System.currentTimeMillis();
         DownloadBlockInitReq req = new DownloadBlockInitReq();
         req.setVBI(refer.getVBI());
         SuperNode pbd = SuperNodeList.getSuperNode(refer.getSuperID());
         Object resp = P2PUtils.requestBPU(req, pbd);
+        LOG.info("[" + refer.getVBI() + "]Download init OK at sn" + refer.getSuperID() + ",take times " + (System.currentTimeMillis() - l) + "ms");
         if (resp instanceof DownloadBlockDBResp) {
             this.data = aesDBDecode(((DownloadBlockDBResp) resp).getData());
             LOG.debug("[" + refer.getVBI() + "]Download block " + refer.getId() + " from DB.");
@@ -76,51 +79,39 @@ public class DownloadBlock {
     private byte[] loadRSShard(DownloadBlockInitResp initresp) throws InterruptedException, ServiceException {
         List<Shard> shards = new ArrayList();
         int len = initresp.getVNF() - UserConfig.Default_PND;
-        int nodeindex = 0;
+        ConcurrentLinkedQueue<DownloadShardParam> shardparams = new ConcurrentLinkedQueue();
         Map<Integer, Node> map = new HashMap();
         for (Node n : initresp.getNodes()) {
             map.put(n.getId(), n);
         }
-        long l = System.currentTimeMillis();
-        while (true) {
-            int count = len - shards.size();
-            if (count <= 0) {
-                break;
+        for (int ii = 0; ii < initresp.getNodeids().length; ii++) {
+            DownloadShardParam param = new DownloadShardParam();
+            param.setVHF(initresp.getVHF()[ii]);
+            Node n = map.get(initresp.getNodeids()[ii]);
+            if (n == null) {
+                LOG.warn("[" + refer.getVBI() + "]Node Offline,ID:" + initresp.getNodeids()[ii]);
+                continue;
             }
-            if (nodeindex >= initresp.getNodeids().length) {
-                break;
-            }
-            int sendnum = 0;
-            for (int ii = 0; ii < count; ii++) {
-                if (nodeindex >= initresp.getNodeids().length) {
-                    break;
-                }
-                Node n = map.get(initresp.getNodeids()[nodeindex]);
-                byte[] VHF = initresp.getVHF()[nodeindex];
-                DownloadShardReq req = new DownloadShardReq();
-                req.setVHF(VHF);
-                nodeindex++;
-                if (n == null) {
-                    LOG.warn("[" + refer.getVBI() + "]Node Offline,ID:" + initresp.getNodeids()[nodeindex - 1]);
-                    continue;
-                }
-                DownloadShare.startDownloadShard(VHF, refer.getVBI(), n, this);
-                sendnum++;
-            }
-            synchronized (this) {
-                while (resList.size() != sendnum) {
-                    this.wait(1000 * 15);
-                }
-            }
-            for (DownloadShardResp res : resList) {
-                if (res.getData() != null) {
-                    shards.add(new Shard(res.getData()));
-                }
-            }
-            resList.clear();
+            param.setNode(n);
+            shardparams.add(param);
         }
+        long l = System.currentTimeMillis();
+        for (int ii = 0; ii < len; ii++) {
+            DownloadShard.startDownloadShard(shardparams, this);
+        }
+        synchronized (this) {
+            while (resList.size() != len) {
+                this.wait(1000 * 15);
+            }
+        }
+        for (DownloadShardResp res : resList) {
+            if (res.getData() != null) {
+                shards.add(new Shard(res.getData()));
+            }
+        }
+        resList.clear();
         if (shards.size() >= len) {
-            LOG.info("[" + refer.getVBI() + "]Download shardcount " + len + ",take time " + (System.currentTimeMillis() - l) + "ms");
+            LOG.info("[" + refer.getVBI() + "]Download shardcount " + len + ",take times " + (System.currentTimeMillis() - l) + "ms");
             BlockEncrypted be = new BlockEncrypted(refer.getRealSize());
             ShardRSDecoder rsdec = new ShardRSDecoder(shards, be.getEncryptedBlockSize());
             be = rsdec.decode();
@@ -149,7 +140,7 @@ public class DownloadBlock {
                 byte[] VHF = initresp.getVHF()[index];
                 req.setVHF(VHF);
                 DownloadShardResp resp = (DownloadShardResp) P2PUtils.requestNode(req, n);
-                if (DownloadShare.verify(resp, VHF,refer.getVBI())) {
+                if (DownloadShard.verify(resp, VHF, refer.getVBI())) {
                     return aesCopyDecode(resp.getData());
                 }
                 index++;
