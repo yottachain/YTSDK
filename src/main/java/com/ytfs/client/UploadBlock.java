@@ -152,14 +152,14 @@ public class UploadBlock {
                     lasterrnum = errnum;
                 } else {
                     retrycount++;
+                    try {
+                        Thread.sleep(interval);
+                    } catch (Exception r) {
+                    }
                 }
                 if (retrycount >= retrytimes) {
                     LOG.error("[" + VNU + "]Upload block " + id + "/" + VBI + " " + retrytimes + " retries were unsuccessful.");
                     throw new ServiceException(SERVER_ERROR);
-                }
-                try {
-                    Thread.sleep(interval);
-                } catch (Exception r) {
                 }
             }
             UploadBlockSubResp resp = (UploadBlockSubResp) P2PUtils.requestBPU(uloadBlockSubReq, bpdNode, VNU.toString());
