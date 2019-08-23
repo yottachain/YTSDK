@@ -65,8 +65,7 @@ public class ClientInitor {
         for (int ii = 0; ii < 10; ii++) {
             try {
                 int port = freePort();
-                P2PUtils.start(port, UserConfig.privateKey);
-                LOG.info("P2P initialization completed, port " + port);
+                P2PUtils.start(port, UserConfig.privateKey);             
                 err = null;
                 break;
             } catch (Exception r) {

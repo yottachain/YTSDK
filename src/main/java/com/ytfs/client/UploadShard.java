@@ -11,6 +11,8 @@ import com.ytfs.service.packet.UploadShard2CResp;
 import com.ytfs.service.packet.UploadShardReq;
 import com.ytfs.service.packet.UploadShardRes;
 import static com.ytfs.service.packet.UploadShardRes.RES_NETIOERR;
+import com.ytfs.service.packet.node.GetNodeCapacityReq;
+import com.ytfs.service.packet.node.GetNodeCapacityResp;
 import io.jafka.jeos.util.Base58;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -78,14 +80,30 @@ public class UploadShard implements Runnable {
                 UploadShardReq req = this.makeUploadShardReq();
                 res.setNODEID(node.getNodeId());
                 long l = System.currentTimeMillis();
+                long ctrtimes = 0;
                 try {
+                    GetNodeCapacityReq ctlreq = new GetNodeCapacityReq();
+                    GetNodeCapacityResp ctlresp = (GetNodeCapacityResp) P2PUtils.requestNode(ctlreq, node.getNode(), uploadBlock.VNU.toString());
+                    req.setAllocId(ctlresp.getAllocId());
+                    ctrtimes = System.currentTimeMillis() - l;
+                    if (!ctlresp.isWritable()) {
+                        LOG.warn("[" + uploadBlock.VNU + "]Node " + node.getNodeId() + " is unavailabe,take times " + ctrtimes + " ms");
+                        ShardNode n = uploadBlock.excessNode.poll();
+                        if (n == null) {
+                            res.setRES(RES_NETIOERR);
+                            break;
+                        } else {
+                            node = n;
+                            continue;
+                        }
+                    }
                     UploadShard2CResp resp = (UploadShard2CResp) P2PUtils.requestNode(req, node.getNode(), uploadBlock.VNU.toString());
                     res.setRES(resp.getRES());
                     if (resp.getRES() == UploadShardRes.RES_OK || resp.getRES() == UploadShardRes.RES_VNF_EXISTS) {
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("[" + uploadBlock.VNU + "]Upload OK:" + req.getVBI() + "/(" + shardId + ")"
                                     + Base58.encode(req.getVHF()) + " to " + node.getNodeId() + ",RES:"
-                                    + resp.getRES() + ",take times " + (System.currentTimeMillis() - l) + " ms");
+                                    + resp.getRES() + ",take times " + ctrtimes + "/" + (System.currentTimeMillis() - l) + " ms");
                         }
                         break;
                     } else {
@@ -93,12 +111,13 @@ public class UploadShard implements Runnable {
                         if (n == null) {
                             LOG.error("[" + uploadBlock.VNU + "]Upload ERR:" + req.getVBI() + "/(" + shardId + ")"
                                     + Base58.encode(req.getVHF()) + " to " + node.getNodeId() + ",RES:"
-                                    + resp.getRES() + ",take times " + (System.currentTimeMillis() - l) + " ms");
+                                    + resp.getRES() + ",take times " + ctrtimes + "/" + (System.currentTimeMillis() - l) + " ms");
                             break;
                         } else {
                             LOG.error("[" + uploadBlock.VNU + "]Upload ERR:" + req.getVBI() + "/(" + shardId + ")"
                                     + Base58.encode(req.getVHF()) + " to " + node.getNodeId() + ",RES:"
-                                    + resp.getRES() + ",take times " + (System.currentTimeMillis() - l) + " ms,retry node " + n.getNodeId());
+                                    + resp.getRES() + ",take times " + ctrtimes + "/" + (System.currentTimeMillis() - l)
+                                    + " ms,retry node " + n.getNodeId());
                             node = n;
                         }
                     }
@@ -107,12 +126,12 @@ public class UploadShard implements Runnable {
                     ShardNode n = uploadBlock.excessNode.poll();
                     if (n == null) {
                         LOG.error("[" + uploadBlock.VNU + "]Upload ERR:" + req.getVBI() + "/(" + shardId + ")"
-                                + Base58.encode(req.getVHF()) + " to " + node.getNodeId() + ",take times " + (System.currentTimeMillis() - l) + " ms");
+                                + Base58.encode(req.getVHF()) + " to " + node.getNodeId() + ",take times " + ctrtimes + "/" + (System.currentTimeMillis() - l) + " ms");
                         break;
                     } else {
                         LOG.error("[" + uploadBlock.VNU + "]Upload ERR:" + req.getVBI() + "/(" + shardId + ")"
                                 + Base58.encode(req.getVHF()) + " to " + node.getNodeId()
-                                + ",take times " + (System.currentTimeMillis() - l) + " ms,retry node " + n.getNodeId());
+                                + ",take times " + ctrtimes + "/" + (System.currentTimeMillis() - l) + " ms,retry node " + n.getNodeId());
                         node = n;
                     }
                 }

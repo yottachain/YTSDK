@@ -21,7 +21,7 @@ public class SDKTest implements WrapperListener {
         try {
             ClientInitor.init();
             if (strings.length < 1) {
-                strings = new String[]{"d:/CentOS-7-x86_64-DVD-1503-01.iso"};
+                strings = new String[]{"d:/goland-2019.1.3.exe"};
             }
             String filepath = null;
             String newfilepath = null;

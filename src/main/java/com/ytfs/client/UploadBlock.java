@@ -16,6 +16,7 @@ import com.ytfs.service.packet.ShardNode;
 import com.ytfs.service.packet.UploadBlockEndReq;
 import com.ytfs.service.packet.UploadBlockSubReq;
 import com.ytfs.service.packet.UploadBlockSubResp;
+import com.ytfs.service.packet.bp.ActiveCache;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,6 +29,20 @@ import org.bson.types.ObjectId;
 public class UploadBlock {
 
     private static final Logger LOG = Logger.getLogger(UploadBlock.class);
+    private static int interval = 5000;
+    private static int retrytimes = 5;
+
+    static {
+        try {
+            interval = Integer.parseInt(System.getProperty("Dupload.sleep", "5000"));
+        } catch (Exception r) {
+        }
+        try {
+            retrytimes = Integer.parseInt(System.getProperty("Dupload.retry", "5"));
+        } catch (Exception r) {
+        }
+    }
+
     private ShardRSEncoder rs;
     private final Block block;
     private final short id;
@@ -102,10 +117,24 @@ public class UploadBlock {
             UploadShard.startUploadShard(this, nodes[nodeindex], sd);
             nodeindex++;
         }
+        long times = 0;
         synchronized (this) {
             while (resList.size() != shards.size()) {
-                this.wait(1000 * 15);
+                this.wait(15000);
+                times = times + 15000;
+                if (times >= 60000) {
+                    sendActive();
+                }
             }
+        }
+    }
+
+    private void sendActive() {
+        try {
+            ActiveCache active = new ActiveCache();
+            active.setVBI(VBI);
+            P2PUtils.requestBPU(active, bpdNode, VNU.toString());
+        } catch (Exception r) {
         }
     }
 
@@ -124,9 +153,13 @@ public class UploadBlock {
                 } else {
                     retrycount++;
                 }
-                if (retrycount >= 5) {
-                    LOG.error("[" + VNU + "]Upload block " + id + "/" + VBI + " 5 retries were unsuccessful.");
+                if (retrycount >= retrytimes) {
+                    LOG.error("[" + VNU + "]Upload block " + id + "/" + VBI + " " + retrytimes + " retries were unsuccessful.");
                     throw new ServiceException(SERVER_ERROR);
+                }
+                try {
+                    Thread.sleep(interval);
+                } catch (Exception r) {
                 }
             }
             UploadBlockSubResp resp = (UploadBlockSubResp) P2PUtils.requestBPU(uloadBlockSubReq, bpdNode, VNU.toString());
@@ -152,9 +185,14 @@ public class UploadBlock {
             Shard shard = map.get(node.getShardid());
             UploadShard.startUploadShard(this, node, shard);
         }
+        long times = 0;
         synchronized (this) {
             while (resList.size() != errcount) {
                 this.wait(1000 * 15);
+                times = times + 15000;
+                if (times >= 60000) {
+                    sendActive();
+                }
             }
         }
     }
