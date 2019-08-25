@@ -10,12 +10,14 @@ import com.ytfs.service.packet.ShardNode;
 import com.ytfs.service.packet.UploadShard2CResp;
 import com.ytfs.service.packet.UploadShardReq;
 import com.ytfs.service.packet.UploadShardRes;
+import static com.ytfs.service.packet.UploadShardRes.RES_CACHE_FILL;
 import static com.ytfs.service.packet.UploadShardRes.RES_NETIOERR;
 import com.ytfs.service.packet.node.GetNodeCapacityReq;
 import com.ytfs.service.packet.node.GetNodeCapacityResp;
 import io.jafka.jeos.util.Base58;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 public class UploadShard implements Runnable {
@@ -33,13 +35,17 @@ public class UploadShard implements Runnable {
         return queue;
     }
 
-    static void startUploadShard(UploadBlock uploadBlock, ShardNode node, Shard shard) throws InterruptedException {
-        UploadShard uploader = getQueue().take();
+    static boolean startUploadShard(UploadBlock uploadBlock, ShardNode node, Shard shard) throws InterruptedException {
+        UploadShard uploader = getQueue().poll(15, TimeUnit.SECONDS);
+        if (uploader == null) {
+            return false;
+        }
         uploader.node = node;
         uploader.shard = shard;
         uploader.uploadBlock = uploadBlock;
         uploader.shardId = node.getShardid();
         GlobleThreadPool.execute(uploader);
+        return true;
     }
 
     private UploadBlock uploadBlock;
@@ -112,6 +118,9 @@ public class UploadShard implements Runnable {
                             LOG.error("[" + uploadBlock.VNU + "]Upload ERR:" + req.getVBI() + "/(" + shardId + ")"
                                     + Base58.encode(req.getVHF()) + " to " + node.getNodeId() + ",RES:"
                                     + resp.getRES() + ",take times " + ctrtimes + "/" + (System.currentTimeMillis() - l) + " ms");
+                            if (RES_CACHE_FILL == resp.getRES()) {
+                                res.setRES(RES_NETIOERR);
+                            }
                             break;
                         } else {
                             LOG.error("[" + uploadBlock.VNU + "]Upload ERR:" + req.getVBI() + "/(" + shardId + ")"

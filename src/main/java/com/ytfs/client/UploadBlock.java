@@ -112,9 +112,19 @@ public class UploadBlock {
         }
         List<Shard> shards = rs.getShardList();
         int nodeindex = 0;
+        long startTime = System.currentTimeMillis();
         for (Shard sd : shards) {
             map.put(nodeindex, sd);
-            UploadShard.startUploadShard(this, nodes[nodeindex], sd);
+            while (true) {
+                boolean b = UploadShard.startUploadShard(this, nodes[nodeindex], sd);
+                if (System.currentTimeMillis() - startTime >= 60000) {
+                    sendActive();
+                    startTime = System.currentTimeMillis();
+                }
+                if (b) {
+                    break;
+                }
+            }
             nodeindex++;
         }
         long times = 0;
@@ -180,10 +190,20 @@ public class UploadBlock {
         }
         int errcount = resp.getNodes().length - excessNode.size();
         LOG.info("[" + VNU + "]Upload block " + id + "/" + VBI + " retrying,remaining " + errcount + " shards.");
+        long startTime = System.currentTimeMillis();
         for (int ii = 0; ii < errcount; ii++) {
             ShardNode node = resp.getNodes()[ii];
             Shard shard = map.get(node.getShardid());
-            UploadShard.startUploadShard(this, node, shard);
+            while (true) {
+                boolean b = UploadShard.startUploadShard(this, node, shard);
+                if (System.currentTimeMillis() - startTime >= 60000) {
+                    sendActive();
+                    startTime = System.currentTimeMillis();
+                }
+                if (b) {
+                    break;
+                }
+            }
         }
         long times = 0;
         synchronized (this) {
