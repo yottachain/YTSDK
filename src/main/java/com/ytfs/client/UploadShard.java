@@ -103,6 +103,9 @@ public class UploadShard implements Runnable {
                             continue;
                         }
                     }
+                    if (ctlresp.getAllocId() == null || ctlresp.getAllocId().trim().isEmpty()) {
+                        LOG.warn("[" + uploadBlock.VNU + "]Node " + node.getNodeId() + ",AllocId is null");
+                    }
                     UploadShard2CResp resp = (UploadShard2CResp) P2PUtils.requestNode(req, node.getNode(), uploadBlock.VNU.toString());
                     res.setRES(resp.getRES());
                     if (resp.getRES() == UploadShardRes.RES_OK || resp.getRES() == UploadShardRes.RES_VNF_EXISTS) {

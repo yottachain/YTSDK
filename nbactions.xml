@@ -12,8 +12,10 @@
             <properties>
                 <exec.args>-Dsun.net.useExclusiveBind=false -classpath %classpath com.ytfs.client.examples.SDKTest</exec.args>
                 <exec.executable>java</exec.executable>
-                <Env.P2PHOST_CONNECTTIMEOUT>15000</Env.P2PHOST_CONNECTTIMEOUT>
-                <Env.P2PHOST_READTIMEOUT>15000</Env.P2PHOST_READTIMEOUT>
+                <env.P2PHOST_CONNECTTIMEOUT>15000</env.P2PHOST_CONNECTTIMEOUT>
+                <env.P2PHOST_READTIMEOUT>15000</env.P2PHOST_READTIMEOUT>
+                
+                
             </properties>
         </action>
         <action>

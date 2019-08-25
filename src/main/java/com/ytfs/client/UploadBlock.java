@@ -134,6 +134,7 @@ public class UploadBlock {
                 times = times + 15000;
                 if (times >= 60000) {
                     sendActive();
+                    times = 0;
                 }
             }
         }
@@ -212,6 +213,7 @@ public class UploadBlock {
                 times = times + 15000;
                 if (times >= 60000) {
                     sendActive();
+                    times = 0;
                 }
             }
         }
