@@ -21,7 +21,7 @@ public class SDKTest implements WrapperListener {
         try {
             ClientInitor.init();
             if (strings.length < 1) {
-                strings = new String[]{"d:/goland-2019.1.3.exe"};
+                strings = new String[]{"d:/Java模式.pdf"};
             }
             String filepath = null;
             String newfilepath = null;
