@@ -98,7 +98,7 @@ public class UploadShard implements Runnable {
                         }
                         if (resp.getDNSIGN() == null || resp.getDNSIGN().trim().isEmpty()) {
                             LOG.error("DNSIGN is null.");
-                            res.setDNSIGN("sss");
+                            res.setDNSIGN(null);
                         } else {
                             res.setDNSIGN(resp.getDNSIGN());
                         }
