@@ -2,7 +2,6 @@ package com.ytfs.client;
 
 import com.ytfs.common.conf.UserConfig;
 import com.ytfs.service.packet.UploadShardRes;
-import static com.ytfs.service.packet.UploadShardRes.RES_OK;
 import com.ytfs.common.codec.Block;
 import com.ytfs.common.codec.BlockAESEncryptor;
 import com.ytfs.common.codec.KeyStoreCoder;
@@ -11,7 +10,6 @@ import com.ytfs.common.codec.ShardRSEncoder;
 import com.ytfs.common.net.P2PUtils;
 import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.common.ServiceException;
-import static com.ytfs.common.conf.ServerConfig.Excess_Shard_Index;
 import com.ytfs.service.packet.ShardNode;
 import com.ytfs.service.packet.UploadBlockEndReq;
 import com.ytfs.service.packet.UploadBlockSubReq;
@@ -19,6 +17,7 @@ import com.ytfs.service.packet.UploadBlockSubResp;
 import com.ytfs.service.packet.bp.ActiveCache;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,12 +51,14 @@ public class UploadBlock {
     protected final SuperNode bpdNode;
     protected final ConcurrentLinkedQueue<ShardNode> excessNode = new ConcurrentLinkedQueue();
     private final List<UploadShardRes> resList = new ArrayList();
+    private final List<UploadShardRes> okList = new ArrayList();
     private final Map<Integer, Shard> map = new HashMap();
 
-    public UploadBlock(Block block, short id, ShardNode[] nodes, long VBI, SuperNode bpdNode, ObjectId VNU) {
+    public UploadBlock(Block block, short id, ShardNode[] nodes, ShardNode[] excessNodes, long VBI, SuperNode bpdNode, ObjectId VNU) {
         this.block = block;
         this.id = id;
         this.nodes = nodes;
+        this.excessNode.addAll(Arrays.asList(excessNodes));
         this.VBI = VBI;
         this.bpdNode = bpdNode;
         this.VNU = VNU;
@@ -66,6 +67,9 @@ public class UploadBlock {
     void onResponse(UploadShardRes res) {
         synchronized (this) {
             resList.add(res);
+            if (res.getDNSIGN() != null) {
+                okList.add(res);
+            }
             this.notify();
         }
     }
@@ -100,23 +104,20 @@ public class UploadBlock {
         req.setOriginalSize(block.getOriginalSize());
         req.setRealSize(block.getRealSize());
         req.setRsShard(rs.getShardList().get(0).isRsShard());
+        req.setOkList(okList);
+        req.setVNU(VNU);
         P2PUtils.requestBPU(req, bpdNode, VNU.toString());
         LOG.info("[" + VNU + "]Upload block " + id + "/" + VBI + " OK,take times " + (System.currentTimeMillis() - l) + "ms");
     }
 
     private void firstUpload() throws InterruptedException {
-        for (ShardNode node : nodes) {
-            if (node.getShardid() == Excess_Shard_Index) {
-                excessNode.add(node);
-            }
-        }
         List<Shard> shards = rs.getShardList();
         int nodeindex = 0;
         long startTime = System.currentTimeMillis();
         for (Shard sd : shards) {
             map.put(nodeindex, sd);
             while (true) {
-                boolean b = UploadShard.startUploadShard(this, nodes[nodeindex], sd);
+                boolean b = UploadShard.startUploadShard(this, nodes[nodeindex], sd, nodeindex);
                 if (System.currentTimeMillis() - startTime >= 60000) {
                     sendActive();
                     startTime = System.currentTimeMillis();
@@ -143,7 +144,7 @@ public class UploadBlock {
     private void sendActive() {
         try {
             ActiveCache active = new ActiveCache();
-            active.setVBI(VBI);
+            active.setVNU(VNU);
             P2PUtils.requestBPU(active, bpdNode, VNU.toString());
         } catch (Exception r) {
         }
@@ -153,11 +154,18 @@ public class UploadBlock {
         int retrycount = 0;
         int lasterrnum = 0;
         while (true) {
-            UploadBlockSubReq uloadBlockSubReq = doUploadShardRes();
+            List<Integer> shards = new ArrayList();
+            List<Integer> errid = new ArrayList();
+            resList.stream().filter((res) -> (res.getDNSIGN() == null)).forEach((res) -> {
+                errid.add(res.getNODEID());
+                shards.add(res.getSHARDID());
+            });
+            resList.clear();
+            UploadBlockSubReq uloadBlockSubReq = doUploadShardRes(errid);
             if (uloadBlockSubReq == null) {
                 return;
             } else {
-                int errnum = uloadBlockSubReq.getRes().length;
+                int errnum = uloadBlockSubReq.getShardCount();
                 if (errnum != lasterrnum) {
                     retrycount = 0;
                     lasterrnum = errnum;
@@ -177,26 +185,23 @@ public class UploadBlock {
             if (resp.getNodes() == null || resp.getNodes().length == 0) {//OK
                 break;
             }
-            secondUpload(resp);
+            secondUpload(resp, shards);
         }
     }
 
-    private void secondUpload(UploadBlockSubResp resp) throws InterruptedException {
+    private void secondUpload(UploadBlockSubResp resp, List<Integer> shards) throws InterruptedException {
         excessNode.clear();
         ShardNode[] respNodes = resp.getNodes();
-        for (ShardNode node : respNodes) {
-            if (node.getShardid() == Excess_Shard_Index) {
-                excessNode.add(node);
-            }
-        }
-        int errcount = resp.getNodes().length - excessNode.size();
+        excessNode.addAll(Arrays.asList(resp.getExcessNodes()));
+        int errcount = shards.size();
         LOG.info("[" + VNU + "]Upload block " + id + "/" + VBI + " retrying,remaining " + errcount + " shards.");
         long startTime = System.currentTimeMillis();
-        for (int ii = 0; ii < errcount; ii++) {
-            ShardNode node = resp.getNodes()[ii];
-            Shard shard = map.get(node.getShardid());
+        int nodeindex = 0;
+        for (Integer shardid : shards) {
+            ShardNode node = respNodes[nodeindex];
+            Shard shard = map.get(shardid);
             while (true) {
-                boolean b = UploadShard.startUploadShard(this, node, shard);
+                boolean b = UploadShard.startUploadShard(this, node, shard, shardid);
                 if (System.currentTimeMillis() - startTime >= 60000) {
                     sendActive();
                     startTime = System.currentTimeMillis();
@@ -205,6 +210,7 @@ public class UploadBlock {
                     break;
                 }
             }
+            nodeindex++;
         }
         long times = 0;
         synchronized (this) {
@@ -219,28 +225,15 @@ public class UploadBlock {
         }
     }
 
-    private UploadBlockSubReq doUploadShardRes() {
-        List<UploadShardRes> ls = new ArrayList();
-        ls.add(UploadShardRes.NeedExcessNodeSign);
-        for (UploadShardRes res : resList) {
-            if (res.getRES() != RES_OK) {
-                if (res.getRES() != UploadShardRes.RES_VNF_EXISTS) {// RES_NO_SPACE RES_VNF_EXISTS 
-                    ls.add(res);
-                    if (res.getRES() == UploadShardRes.RES_NO_SPACE) {
-                        LOG.info("[" + VNU + "]ERR 'NO_SPACE',id:" + res.getNODEID());
-                    }
-                }
-            }
-        }
-        resList.clear();
-        if (ls.size() == 1) {
+    private UploadBlockSubReq doUploadShardRes(List<Integer> errid) {
+        if (errid.isEmpty()) {
             return null;
         } else {
-            UploadShardRes[] ress = new UploadShardRes[ls.size()];
-            ress = ls.toArray(ress);
             UploadBlockSubReq subreq = new UploadBlockSubReq();
-            subreq.setRes(ress);
+            subreq.setVNU(VNU);
+            subreq.setErrid(errid);
             subreq.setVBI(VBI);
+            subreq.setShardCount(errid.size());
             return subreq;
         }
     }
