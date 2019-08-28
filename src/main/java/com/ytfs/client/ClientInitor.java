@@ -90,7 +90,7 @@ public class ClientInitor {
      */
     private static void reguser() throws IOException {
         Exception err = null;
-        for (int ii = 0; ii < 10; ii++) {
+        for (int ii = 0; ii < 1000; ii++) {
             try {
                 RegUser.regist();
                 LOG.info("User Registration Successful.");
@@ -99,7 +99,7 @@ public class ClientInitor {
             } catch (Exception r) {
                 LOG.info("User registration failed.", r);
                 try {
-                    Thread.sleep(5000);
+                    Thread.sleep(15000);
                 } catch (InterruptedException ex) {
                 }
                 err = r;
