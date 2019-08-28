@@ -1,5 +1,6 @@
 package com.ytfs.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ytfs.common.conf.UserConfig;
 import static com.ytfs.common.conf.UserConfig.*;
 import com.ytfs.common.net.P2PUtils;
@@ -17,6 +18,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.tanukisoftware.wrapper.WrapperManager;
@@ -51,7 +53,7 @@ public class ClientInitor {
             load(cfg);
         }
         startP2p();
-        reguser();
+        regUser();
         clean.start();
     }
 
@@ -65,7 +67,7 @@ public class ClientInitor {
         for (int ii = 0; ii < 10; ii++) {
             try {
                 int port = freePort();
-                P2PUtils.start(port, UserConfig.privateKey);             
+                P2PUtils.start(port, UserConfig.privateKey);
                 err = null;
                 break;
             } catch (Exception r) {
@@ -88,11 +90,37 @@ public class ClientInitor {
      *
      * @throws IOException
      */
-    private static void reguser() throws IOException {
+    private static void regUser() throws IOException {
+        String path = System.getProperty("snlist.conf", "conf/snlist.properties");
+        InputStream is = null;
+        try {
+            is = new FileInputStream(path);
+        } catch (Exception r) {
+        }
+        if (is == null) {
+            throw new IOException("No snlist properties file could be found for ytfs service");
+        }
+        List snlist;
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            snlist = mapper.readValue(is, ArrayList.class);
+        } finally {
+            is.close();
+        }
+        if (snlist == null || snlist.isEmpty()) {
+            throw new IOException("No snlist properties file could be found for ytfs service");
+        }
         Exception err = null;
-        for (int ii = 0; ii < 1000; ii++) {
+        while (true) {
+            long index = System.currentTimeMillis() % snlist.size();
+            Map map = (Map) snlist.get((int) index);
             try {
-                RegUser.regist();
+                SuperNode sn = new SuperNode(0, null, null, null, null);
+                sn.setId(Integer.parseInt(map.get("Number").toString()));
+                sn.setNodeid(map.get("ID").toString());
+                List addr = (List) map.get("Addrs");
+                sn.setAddrs(addr);
+                RegUser.regist(sn);
                 LOG.info("User Registration Successful.");
                 err = null;
                 break;

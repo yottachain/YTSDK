@@ -3,7 +3,6 @@ package com.ytfs.client;
 import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.conf.UserConfig;
-import static com.ytfs.common.conf.UserConfig.superNode;
 import com.ytfs.common.eos.EOSRequest;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.service.packet.user.PreRegUserReq;
@@ -20,24 +19,25 @@ public class RegUser {
     /**
      * 注册用户
      *
+     * @param sNode
      * @throws ServiceException
      */
-    public static void regist() throws ServiceException {
+    public static void regist(SuperNode sNode) throws ServiceException {
         try {
             PreRegUserReq preq = new PreRegUserReq();
-            PreRegUserResp presp = (PreRegUserResp) P2PUtils.requestBPU(preq, UserConfig.superNode);
+            PreRegUserResp presp = (PreRegUserResp) P2PUtils.requestBPU(preq, sNode);
             RegUserReq req = new RegUserReq();
             byte[] signData = EOSRequest.makeGetBalanceRequest(presp.getSignArg(), UserConfig.username,
                     UserConfig.privateKey, presp.getContractAccount());
             req.setSigndata(signData);
             req.setUsername(UserConfig.username);
-            RegUserResp resp = (RegUserResp) P2PUtils.requestBPU(req, UserConfig.superNode);
+            RegUserResp resp = (RegUserResp) P2PUtils.requestBPU(req, sNode);
             SuperNode sn = new SuperNode(0, null, null, null, null);
             sn.setId(resp.getSuperNodeNum());
             sn.setNodeid(resp.getSuperNodeID());
             sn.setAddrs(resp.getSuperNodeAddrs());
             LOG.info("Current user supernode:" + sn.getId() + ",ID:" + sn.getNodeid());
-            superNode = sn;
+            UserConfig.superNode = sn;
         } catch (Exception r) {
             throw new ServiceException(SERVER_ERROR);
         }
