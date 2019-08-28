@@ -30,7 +30,7 @@ public class UploadShard implements Runnable {
         return queue;
     }
 
-    static boolean startUploadShard(UploadBlock uploadBlock, ShardNode node, Shard shard,int shardId) throws InterruptedException {
+    static boolean startUploadShard(UploadBlock uploadBlock, ShardNode node, Shard shard, int shardId) throws InterruptedException {
         UploadShard uploader = getQueue().poll(15, TimeUnit.SECONDS);
         if (uploader == null) {
             return false;
@@ -97,8 +97,8 @@ public class UploadShard implements Runnable {
                                     + resp.getRES() + ",take times " + ctrtimes + "/" + (System.currentTimeMillis() - l) + " ms");
                         }
                         if (resp.getDNSIGN() == null || resp.getDNSIGN().trim().isEmpty()) {
-                            LOG.error("DNSIGN is null.");
-                            res.setDNSIGN(null);
+                            //LOG.error("DNSIGN is null.");
+                            res.setDNSIGN("exists");
                         } else {
                             res.setDNSIGN(resp.getDNSIGN());
                         }
