@@ -154,9 +154,6 @@ public class ClientInitor {
      * @throws IOException
      */
     private static void load(Configurator cfg) throws IOException {
-        superNode = new SuperNode(0, null, null, null, null);
-        superNode.setNodeid(cfg.getSuperNodeID());
-        superNode.setAddrs(cfg.getSuperNodeAddrs());
         exportPrivateKey(cfg.getKUSp());
         username = cfg.getUsername();
         tmpFilePath = new File(cfg.getTmpFilePath(), "ytfs.temp");
@@ -211,25 +208,6 @@ public class ClientInitor {
         username = p.getProperty("username");
         if (username == null || username.trim().isEmpty()) {
             throw new IOException("The 'username' parameter is not configured.");
-        }
-        superNode = new SuperNode(0, null, null, null, null);
-        String key = p.getProperty("superNodeKey");
-        if (key == null || key.trim().isEmpty()) {
-            throw new IOException("The 'superNodeKey' parameter is not configured.");
-        }
-        superNode.setNodeid(key.trim());
-        List<String> ls = new ArrayList();
-        for (int ii = 0; ii < 10; ii++) {
-            String superNodeAddr = p.getProperty("superNodeAddr" + ii);
-            if (superNodeAddr == null || superNodeAddr.trim().isEmpty()) {
-            } else {
-                ls.add(superNodeAddr.trim());
-            }
-        }
-        if (ls.isEmpty()) {
-            throw new IOException("The 'superNodeAddr' parameter is not configured.");
-        } else {
-            superNode.setAddrs(ls);
         }
         exportPrivateKey(p.getProperty("KUSp").trim());
         try {
