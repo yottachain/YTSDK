@@ -110,10 +110,9 @@ public class ClientInitor {
         if (snlist == null || snlist.isEmpty()) {
             throw new IOException("No snlist properties file could be found for ytfs service");
         }
-        Exception err = null;
         while (true) {
             long index = System.currentTimeMillis() % snlist.size();
-            Map map = (Map) snlist.get((int) index);
+            Map map = (Map) snlist.remove((int) index);
             try {
                 SuperNode sn = new SuperNode(0, null, null, null, null);
                 sn.setId(Integer.parseInt(map.get("Number").toString()));
@@ -122,19 +121,17 @@ public class ClientInitor {
                 sn.setAddrs(addr);
                 RegUser.regist(sn);
                 LOG.info("User Registration Successful.");
-                err = null;
-                break;
-            } catch (Exception r) {
-                LOG.info("User registration failed.", r);
+                return;
+            } catch (Throwable r) {
+                LOG.info("User registration failed:" + r.getMessage());
                 try {
                     Thread.sleep(15000);
                 } catch (InterruptedException ex) {
                 }
-                err = r;
+                if (snlist.isEmpty()) {
+                    throw new IOException(r);
+                }
             }
-        }
-        if (err != null) {
-            throw new IOException(err);
         }
     }
 

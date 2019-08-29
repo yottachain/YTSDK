@@ -16,10 +16,10 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 public class UploadShard implements Runnable {
-
+    
     private static final Logger LOG = Logger.getLogger(UploadShard.class);
     private static ArrayBlockingQueue<UploadShard> queue = null;
-
+    
     private static synchronized ArrayBlockingQueue<UploadShard> getQueue() {
         if (queue == null) {
             queue = new ArrayBlockingQueue(UPLOADSHARDTHREAD);
@@ -29,7 +29,7 @@ public class UploadShard implements Runnable {
         }
         return queue;
     }
-
+    
     static boolean startUploadShard(UploadBlock uploadBlock, ShardNode node, Shard shard, int shardId) throws InterruptedException {
         UploadShard uploader = getQueue().poll(15, TimeUnit.SECONDS);
         if (uploader == null) {
@@ -42,12 +42,12 @@ public class UploadShard implements Runnable {
         GlobleThreadPool.execute(uploader);
         return true;
     }
-
+    
     private UploadBlock uploadBlock;
     private ShardNode node;
     private Shard shard;
     private int shardId;
-
+    
     private UploadShardReq makeUploadShardReq() {
         UploadShardReq req = new UploadShardReq();
         req.setBPDID(uploadBlock.bpdNode.getId());
@@ -58,7 +58,7 @@ public class UploadShard implements Runnable {
         req.setVHF(shard.getVHF());
         return req;
     }
-
+    
     @Override
     public void run() {
         try {
@@ -72,6 +72,8 @@ public class UploadShard implements Runnable {
                 long ctrtimes = 0;
                 try {
                     GetNodeCapacityReq ctlreq = new GetNodeCapacityReq();
+                    ctlreq.setRetryTimes(uploadBlock.retryTimes);
+                    ctlreq.setStartTime(uploadBlock.sTime);
                     GetNodeCapacityResp ctlresp = (GetNodeCapacityResp) P2PUtils.requestNode(ctlreq, node.getNode(), uploadBlock.VNU.toString());
                     req.setAllocId(ctlresp.getAllocId());
                     ctrtimes = System.currentTimeMillis() - l;
@@ -97,7 +99,6 @@ public class UploadShard implements Runnable {
                                     + resp.getRES() + ",take times " + ctrtimes + "/" + (System.currentTimeMillis() - l) + " ms");
                         }
                         if (resp.getDNSIGN() == null || resp.getDNSIGN().trim().isEmpty()) {
-                            //LOG.error("DNSIGN is null.");
                             res.setDNSIGN("exists");
                         } else {
                             res.setDNSIGN(resp.getDNSIGN());

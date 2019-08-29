@@ -1,5 +1,6 @@
 package com.ytfs.client;
 
+import com.ytfs.common.Function;
 import com.ytfs.common.conf.UserConfig;
 import com.ytfs.service.packet.UploadShardRes;
 import com.ytfs.common.codec.Block;
@@ -53,6 +54,8 @@ public class UploadBlock {
     private final List<UploadShardRes> resList = new ArrayList();
     private final List<UploadShardRes> okList = new ArrayList();
     private final Map<Integer, Shard> map = new HashMap();
+    protected final long sTime;
+    protected int retryTimes = 0;
 
     public UploadBlock(Block block, short id, ShardNode[] nodes, ShardNode[] excessNodes, long VBI, SuperNode bpdNode, ObjectId VNU) {
         this.block = block;
@@ -62,6 +65,15 @@ public class UploadBlock {
         this.VBI = VBI;
         this.bpdNode = bpdNode;
         this.VNU = VNU;
+        this.sTime = getStartTime(VBI);
+    }
+
+    private long getStartTime(long vbi) {
+        long curTime = System.currentTimeMillis();
+        byte[] bs = Function.long2bytes(vbi);
+        long time = Function.bytes2Integer(bs, 0, 4);
+        time = time * 1000 + (curTime % 1000);
+        return time;
     }
 
     void onResponse(UploadShardRes res) {
@@ -181,6 +193,7 @@ public class UploadBlock {
                     throw new ServiceException(SERVER_ERROR);
                 }
             }
+            retryTimes++;
             UploadBlockSubResp resp = (UploadBlockSubResp) P2PUtils.requestBPU(uloadBlockSubReq, bpdNode, VNU.toString());
             if (resp.getNodes() == null || resp.getNodes().length == 0) {//OK
                 break;
