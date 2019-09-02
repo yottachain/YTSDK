@@ -18,10 +18,12 @@ public class SDKTest implements WrapperListener {
 
     @Override
     public Integer start(String[] strings) {
+        System.setProperty("snlist.conf", "conf/snlistCS.properties");
+        System.getProperty("ytfs.conf", "conf/ytfsCS.properties");
         try {
             ClientInitor.init();
             if (strings.length < 1) {
-                strings = new String[]{"E:/jd-gui.zip"};
+                strings = new String[]{"E:/Xmanager.zip"};
             }
             String filepath = null;
             String newfilepath = null;
