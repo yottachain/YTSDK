@@ -16,14 +16,22 @@ import org.tanukisoftware.wrapper.WrapperManager;
 
 public class SDKTest implements WrapperListener {
 
+    private static final String sn = "yf";
+    private static final String path = "E:/aa.zip";
+
     @Override
     public Integer start(String[] strings) {
-        System.setProperty("snlist.conf", "conf/snlistCS.properties");
-        System.getProperty("ytfs.conf", "conf/ytfsCS.properties");
+        if (sn.equalsIgnoreCase("cs")) {
+            System.setProperty("snlist.conf", "conf/snlistCS.properties");
+            System.setProperty("ytfs.conf", "conf/ytfsCS.properties");
+        } else {
+            System.setProperty("snlist.conf", "conf/snlistYF.properties");
+            System.setProperty("ytfs.conf", "conf/ytfsYF.properties");
+        }
         try {
             ClientInitor.init();
             if (strings.length < 1) {
-                strings = new String[]{"E:/Xmanager.zip"};
+                strings = new String[]{path};
             }
             String filepath = null;
             String newfilepath = null;
