@@ -35,7 +35,7 @@ public class UploadObject extends UploadObjectAbstract {
     public byte[] upload() throws ServiceException, IOException, InterruptedException {
         UploadObjectInitReq req = new UploadObjectInitReq(VHW);
         req.setLength(ytfile.getLength());
-        UploadObjectInitResp res = (UploadObjectInitResp) P2PUtils.requestBPU(req, UserConfig.superNode,6);
+        UploadObjectInitResp res = (UploadObjectInitResp) P2PUtils.requestBPU(req, UserConfig.superNode, 6);
         signArg = res.getSignArg();
         stamp = res.getStamp();
         VNU = res.getVNU();
@@ -59,9 +59,14 @@ public class UploadObject extends UploadObjectAbstract {
                     throw err;
                 }
                 if (!uploaded) {
+                    long startTime = System.currentTimeMillis();
                     synchronized (execlist) {
                         while (execlist.size() >= UserConfig.UPLOADBLOCKTHREAD) {
-                            execlist.wait();
+                            execlist.wait(15000);
+                            if (System.currentTimeMillis() - startTime > 60000) {
+                                sendActive();
+                                startTime = System.currentTimeMillis();
+                            }
                         }
                         if (err != null) {
                             throw err;
@@ -72,9 +77,14 @@ public class UploadObject extends UploadObjectAbstract {
                 }
                 ii++;
             }
+            long startTime = System.currentTimeMillis();
             synchronized (execlist) {
                 while (execlist.size() > 0) {
                     execlist.wait(5000);
+                    if (System.currentTimeMillis() - startTime > 60000) {
+                        sendActive();
+                        startTime = System.currentTimeMillis();
+                    }
                 }
             }
             if (err != null) {
@@ -92,7 +102,7 @@ public class UploadObject extends UploadObjectAbstract {
         try {
             ActiveCache active = new ActiveCache();
             active.setVNU(VNU);
-            P2PUtils.requestBPU(active, UserConfig.superNode, VNU.toString(),0);
+            P2PUtils.requestBPU(active, UserConfig.superNode, VNU.toString(), 0);
         } catch (Exception r) {
         }
     }
