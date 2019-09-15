@@ -72,7 +72,7 @@ public class ClientInitor {
             }
             req.setSignData(sign);
             try {
-                P2PUtils.requestBPU(req, node);
+                P2PUtils.requestBPU(req, node,6);
             } catch (ServiceException ex) {
             }
         };

@@ -9,7 +9,16 @@ import org.apache.commons.codec.binary.Hex;
 
 public class RandomFileTest {
 
+    private static final String sn = "yf";
+
     public static void main(String[] args) throws IOException {
+        if (sn.equalsIgnoreCase("cs")) {
+            System.setProperty("snlist.conf", "conf/snlistCS.properties");
+            System.setProperty("ytfs.conf", "conf/ytfsCS.properties");
+        } else {
+            System.setProperty("snlist.conf", "conf/snlistYF.properties");
+            System.setProperty("ytfs.conf", "conf/ytfsYF.properties");
+        }
         ClientInitor.init();
         //测试小文件
         //test(new UploadObject(MakeRandFile.makeSmallFile()));

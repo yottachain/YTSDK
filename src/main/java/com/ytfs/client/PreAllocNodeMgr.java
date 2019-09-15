@@ -19,7 +19,7 @@ public class PreAllocNodeMgr extends Thread {
     private static final Logger LOG = Logger.getLogger(PreAllocNodeMgr.class);
     private static PreAllocNodeMgr me = null;
 
-    private static final Map<Integer, PreAllocNodeStat> list = new HashMap();
+    private static final Map<Integer, PreAllocNodeStat> NODE_LIST = new HashMap();
 
     public static void init() {
         Exception err = null;
@@ -27,10 +27,10 @@ public class PreAllocNodeMgr extends Thread {
             try {
                 PreAllocNodeReq req = new PreAllocNodeReq();
                 req.setCount(UserConfig.PNN);
-                PreAllocNodeResp resp = (PreAllocNodeResp) P2PUtils.requestBPU(req, UserConfig.superNode);
+                PreAllocNodeResp resp = (PreAllocNodeResp) P2PUtils.requestBPU(req, UserConfig.superNode,12);
                 List<PreAllocNode> ls = resp.getList();
                 ls.stream().forEach((node) -> {
-                    list.put(node.getId(), new PreAllocNodeStat(node));
+                    NODE_LIST.put(node.getId(), new PreAllocNodeStat(node));
                 });
                 me = new PreAllocNodeMgr();
                 me.start();
@@ -47,7 +47,7 @@ public class PreAllocNodeMgr extends Thread {
     }
 
     public static List<PreAllocNodeStat> getNodes() {
-        List<PreAllocNodeStat> ls = new ArrayList(list.values());
+        List<PreAllocNodeStat> ls = new ArrayList(NODE_LIST.values());
         Collections.sort(ls, new PreAllocNodeComparator());
         return ls;
     }
@@ -70,7 +70,7 @@ public class PreAllocNodeMgr extends Thread {
             try {
                 PreAllocNodeReq req = new PreAllocNodeReq();
                 req.setCount(UserConfig.PNN);
-                PreAllocNodeResp resp = (PreAllocNodeResp) P2PUtils.requestBPU(req, UserConfig.superNode);
+                PreAllocNodeResp resp = (PreAllocNodeResp) P2PUtils.requestBPU(req, UserConfig.superNode,6);
                 updateList(resp.getList());
                 sleep(UserConfig.PTR);
             } catch (InterruptedException ie) {
@@ -91,20 +91,20 @@ public class PreAllocNodeMgr extends Thread {
         ls.stream().forEach((node) -> {
             map.put(node.getId(), node);
         });
-        List<Map.Entry<Integer, PreAllocNodeStat>> stats = new ArrayList(list.entrySet());
+        List<Map.Entry<Integer, PreAllocNodeStat>> stats = new ArrayList(NODE_LIST.entrySet());
         stats.stream().forEach((ent) -> {
             PreAllocNodeStat stat = ent.getValue();
             if (map.containsKey(ent.getKey())) {
                 stat.init(map.remove(ent.getKey()));
                 stat.resetStat();
             } else {
-                list.remove(ent.getKey());
+                NODE_LIST.remove(ent.getKey());
                 stat.disconnet();
             }
         });
         Collection<PreAllocNode> coll = map.values();
         coll.stream().forEach((node) -> {
-            list.put(node.getId(), new PreAllocNodeStat(node));
+            NODE_LIST.put(node.getId(), new PreAllocNodeStat(node));
         });
     }
 }

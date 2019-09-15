@@ -33,7 +33,7 @@ public class UploadObjectSlow extends UploadObjectAbstract {
     public byte[] upload() throws ServiceException, IOException, InterruptedException {
         UploadObjectInitReq req = new UploadObjectInitReq(VHW);
         req.setLength(ytfile.getLength());
-        UploadObjectInitResp res = (UploadObjectInitResp) P2PUtils.requestBPU(req, UserConfig.superNode);
+        UploadObjectInitResp res = (UploadObjectInitResp) P2PUtils.requestBPU(req, UserConfig.superNode,3);
         VNU = res.getVNU();
         LOG.info("[" + VNU + "]Start upload object...");
         if (!res.isRepeat()) {

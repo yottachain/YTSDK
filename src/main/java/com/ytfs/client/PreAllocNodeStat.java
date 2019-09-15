@@ -19,13 +19,22 @@ public class PreAllocNodeStat extends PreAllocNode {
         init(node);
     }
 
+    public void setERR() {
+        errTimes.incrementAndGet();
+    }
+
+    public void setOK(long time) {
+        okDelayTimes.addAndGet(time);
+        okTimes.incrementAndGet();
+    }
+
     public long getDelayTimes() {
         long oktimes = okDelayTimes.get();
         long count = okTimes.get();
         long errcount = errTimes.get();
         long times = count == 0 ? 0 : (oktimes / count);
         if (times == 0 && errcount != 0) {
-            return errcount * 1000;
+            return errcount * 60000;
         }
         return times * errcount + times;
     }

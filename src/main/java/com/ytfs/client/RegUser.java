@@ -78,7 +78,7 @@ public class RegUser {
     private static void regist(SuperNode sNode) throws ServiceException {
         try {
             PreRegUserReq preq = new PreRegUserReq();
-            PreRegUserResp presp = (PreRegUserResp) P2PUtils.requestBPU(preq, sNode);
+            PreRegUserResp presp = (PreRegUserResp) P2PUtils.requestBPU(preq, sNode,6);
             RegUserReq req = new RegUserReq();
             byte[] signData = EOSRequest.makeGetBalanceRequest(presp.getSignArg(), UserConfig.username,
                     UserConfig.privateKey, presp.getContractAccount());
@@ -86,7 +86,7 @@ public class RegUser {
             req.setUsername(UserConfig.username);
             String pubkey = KeyUtil.toPublicKey(UserConfig.privateKey);
             req.setPubKey(pubkey.substring(3));
-            RegUserResp resp = (RegUserResp) P2PUtils.requestBPU(req, sNode);
+            RegUserResp resp = (RegUserResp) P2PUtils.requestBPU(req, sNode,0);
             SuperNode sn = new SuperNode(0, null, null, null, null);
             sn.setId(resp.getSuperNodeNum());
             sn.setNodeid(resp.getSuperNodeID());

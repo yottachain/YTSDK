@@ -17,7 +17,7 @@ import org.tanukisoftware.wrapper.WrapperManager;
 public class SDKTest implements WrapperListener {
 
     private static final String sn = "yf";
-    private static final String path = "d:/aa.zip";
+    private static final String path = "D:\\Softwares\\SQL2000个人开发版.iso";
 
     @Override
     public Integer start(String[] strings) {

@@ -8,6 +8,7 @@ import com.ytfs.common.ServiceException;
 import com.ytfs.common.codec.YTFileEncoder;
 import com.ytfs.service.packet.UploadObjectInitReq;
 import com.ytfs.service.packet.UploadObjectInitResp;
+import com.ytfs.service.packet.bp.ActiveCache;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,8 +18,8 @@ public class UploadObject extends UploadObjectAbstract {
 
     private static final Logger LOG = Logger.getLogger(UploadObject.class);
     private final YTFileEncoder ytfile;
-    ServiceException err = null;
     final List<UploadBlockExecuter> execlist = new ArrayList();
+    ServiceException err = null;
 
     public UploadObject(byte[] data) throws IOException {
         ytfile = new YTFileEncoder(data);
@@ -34,7 +35,9 @@ public class UploadObject extends UploadObjectAbstract {
     public byte[] upload() throws ServiceException, IOException, InterruptedException {
         UploadObjectInitReq req = new UploadObjectInitReq(VHW);
         req.setLength(ytfile.getLength());
-        UploadObjectInitResp res = (UploadObjectInitResp) P2PUtils.requestBPU(req, UserConfig.superNode);
+        UploadObjectInitResp res = (UploadObjectInitResp) P2PUtils.requestBPU(req, UserConfig.superNode,6);
+        signArg = res.getSignArg();
+        stamp = res.getStamp();
         VNU = res.getVNU();
         LOG.info("[" + VNU + "]Start upload object...");
         if (!res.isRepeat()) {
@@ -83,5 +86,14 @@ public class UploadObject extends UploadObjectAbstract {
             LOG.info("[" + VNU + "]Already exists.");
         }
         return VHW;
+    }
+
+    private void sendActive() {
+        try {
+            ActiveCache active = new ActiveCache();
+            active.setVNU(VNU);
+            P2PUtils.requestBPU(active, UserConfig.superNode, VNU.toString(),0);
+        } catch (Exception r) {
+        }
     }
 }

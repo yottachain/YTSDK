@@ -14,12 +14,10 @@ import com.ytfs.service.packet.SubBalanceReq;
 import com.ytfs.service.packet.UploadBlockDBReq;
 import com.ytfs.service.packet.UploadBlockDupReq;
 import com.ytfs.service.packet.UploadBlockDupResp;
-import com.ytfs.service.packet.UploadBlockInit2Req;
 import com.ytfs.service.packet.UploadBlockInitReq;
 import com.ytfs.service.packet.UploadBlockInitResp;
 import com.ytfs.service.packet.UploadObjectEndReq;
 import com.ytfs.service.packet.UploadObjectEndResp;
-import com.ytfs.service.packet.VoidResp;
 import io.jafka.jeos.util.Base58;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.io.IOException;
@@ -33,6 +31,8 @@ public abstract class UploadObjectAbstract {
 
     protected ObjectId VNU;
     protected byte[] VHW;
+    protected String signArg;
+    protected long stamp;
 
     public abstract byte[] upload() throws ServiceException, IOException, InterruptedException;
 
@@ -44,7 +44,7 @@ public abstract class UploadObjectAbstract {
     protected final void complete() throws ServiceException {
         UploadObjectEndReq req = new UploadObjectEndReq();
         req.setVHW(VHW);
-        UploadObjectEndResp resp = (UploadObjectEndResp) P2PUtils.requestBPU(req, UserConfig.superNode, VNU.toString());
+        UploadObjectEndResp resp = (UploadObjectEndResp) P2PUtils.requestBPU(req, UserConfig.superNode, VNU.toString(), 3);
         byte[] bs = resp.getSignArg();
         SubBalanceReq sub = new SubBalanceReq();
         sub.setVNU(VNU);
@@ -56,7 +56,7 @@ public abstract class UploadObjectAbstract {
             throw new ServiceException(SERVER_ERROR);
         }
         try {
-            P2PUtils.requestBPU(sub, UserConfig.superNode, VNU.toString());
+            P2PUtils.requestBPU(sub, UserConfig.superNode, VNU.toString(), 0);
         } catch (Exception e) {
             LOG.warn("[" + VNU + "]Sub balance may be skipped.");
         }
@@ -67,11 +67,7 @@ public abstract class UploadObjectAbstract {
         long l = System.currentTimeMillis();
         BlockEncrypted be = new BlockEncrypted(b.getRealSize());
         UploadBlockInitReq req = new UploadBlockInitReq(VNU, b.getVHP(), be.getShardCount(), id);
-        Object resp = P2PUtils.requestBPU(req, node, VNU.toString());
-        if (resp instanceof VoidResp) {//已经上传
-            LOG.info("[" + VNU + "]Block " + id + " has been uploaded.");
-            return;
-        }
+        Object resp = P2PUtils.requestBPU(req, node, VNU.toString(), 6);
         if (resp instanceof UploadBlockDupResp) {//重复,resp.getExist()=0已经上传     
             UploadBlockDupReq uploadBlockDupReq = checkResp((UploadBlockDupResp) resp, b);
             if (uploadBlockDupReq != null) {//请求节点
@@ -80,16 +76,14 @@ public abstract class UploadObjectAbstract {
                 uploadBlockDupReq.setOriginalSize(b.getOriginalSize());
                 uploadBlockDupReq.setRealSize(b.getRealSize());
                 uploadBlockDupReq.setVNU(VNU);
-                P2PUtils.requestBPU(uploadBlockDupReq, node, VNU.toString());
+                P2PUtils.requestBPU(uploadBlockDupReq, node, VNU.toString(), 6);
                 LOG.info("[" + VNU + "]Block " + id + " is a repetitive block:" + Base58.encode(b.getVHP()));
             } else {
                 if (!be.needEncode()) {
                     UploadBlockToDB(b, id, node);
                 } else {//请求分配节点
-                    UploadBlockInit2Req req2 = new UploadBlockInit2Req(req);
-                    UploadBlockInitResp resp1 = (UploadBlockInitResp) P2PUtils.requestBPU(req2, node, VNU.toString());
-                    UploadBlock ub = new UploadBlock(b, id, resp1.getNodes(), resp1.getExcessNodes(), resp1.getVBI(), node, VNU);
-                    LOG.info("[" + VNU + "]Block " + id + "/" + resp1.getVBI() + " is initialized at sn " + node.getId() + ",take times " + (System.currentTimeMillis() - l) + "ms");
+                    UploadBlock ub = new UploadBlock(b, id, node, VNU, ((UploadBlockDupResp) resp).getStartTime(), signArg, stamp);
+                    LOG.info("[" + VNU + "]Block " + id + " is initialized at sn " + node.getId() + ",take times " + (System.currentTimeMillis() - l) + "ms");
                     ub.upload();
                 }
             }
@@ -98,9 +92,8 @@ public abstract class UploadObjectAbstract {
             if (!be.needEncode()) {
                 UploadBlockToDB(b, id, node);
             } else {
-                UploadBlockInitResp resp1 = (UploadBlockInitResp) resp;
-                UploadBlock ub = new UploadBlock(b, id, resp1.getNodes(), resp1.getExcessNodes(), resp1.getVBI(), node, VNU);
-                LOG.info("[" + VNU + "]Block " + id + "/" + resp1.getVBI() + " is initialized at sn " + node.getId() + ",take times " + (System.currentTimeMillis() - l) + "ms");
+                UploadBlock ub = new UploadBlock(b, id, node, VNU, ((UploadBlockInitResp) resp).getStartTime(), signArg, stamp);
+                LOG.info("[" + VNU + "]Block " + id + " is initialized at sn " + node.getId() + ",take times " + (System.currentTimeMillis() - l) + "ms");
                 ub.upload();
             }
         }
@@ -121,7 +114,7 @@ public abstract class UploadObjectAbstract {
             req.setKED(KeyStoreCoder.aesEncryped(ks, b.getKD()));
             req.setOriginalSize(b.getOriginalSize());
             req.setData(enc.getBlockEncrypted().getData());
-            P2PUtils.requestBPU(req, node, VNU.toString());
+            P2PUtils.requestBPU(req, node, VNU.toString(), 6);
             LOG.info("[" + VNU + "]Upload block " + id + " to DB,VHP:" + Base58.encode(b.getVHP()));
         } catch (Exception e) {
             LOG.error("[" + VNU + "]" + e.getMessage());

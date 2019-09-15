@@ -16,7 +16,7 @@ public class LocalInterface {
      */
     public static String getUserStat() throws ServiceException {
         UserSpaceReq req = new UserSpaceReq();
-        UserSpaceResp resp = (UserSpaceResp) P2PUtils.requestBPU(req, UserConfig.superNode);
+        UserSpaceResp resp = (UserSpaceResp) P2PUtils.requestBPU(req, UserConfig.superNode,6);
         return resp.getJson();
     }
 
