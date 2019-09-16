@@ -8,6 +8,7 @@ import com.ytfs.common.ServiceException;
 import com.ytfs.common.codec.KeyStoreCoder;
 import com.ytfs.common.codec.ReadPrivateKey;
 import com.ytfs.common.net.LoginCaller;
+import com.ytfs.common.tracing.GlobalTracer;
 import com.ytfs.service.packet.user.LoginReq;
 import io.jafka.jeos.util.Base58;
 import io.jafka.jeos.util.KeyUtil;
@@ -56,6 +57,7 @@ public class ClientInitor {
         RegUser.regist();
         regCaller();
         PreAllocNodeMgr.init();
+        GlobalTracer.init(zipkinServer, "S3server");
     }
 
     private static void regCaller() {
@@ -139,6 +141,7 @@ public class ClientInitor {
         PNN = cfg.getPNN();
         PTR = cfg.getPTR();
         RETRYTIMES = cfg.getRETRYTIMES();
+        zipkinServer = cfg.getZipkinServer();
     }
 
     private static void exportPrivateKey(String password) throws IOException {
@@ -209,6 +212,7 @@ public class ClientInitor {
         PNN = cfg.getPNN();
         PTR = cfg.getPTR();
         RETRYTIMES = cfg.getRETRYTIMES();
+        zipkinServer = p.getProperty("zipkinServer");
     }
 
     /**

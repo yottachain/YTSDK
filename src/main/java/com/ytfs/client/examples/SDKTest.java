@@ -17,7 +17,7 @@ import org.tanukisoftware.wrapper.WrapperManager;
 public class SDKTest implements WrapperListener {
 
     private static final String sn = "yf";
-    private static final String path = "G:\\YTSN.zip";
+    private static final String path = "G:\\YOTTA.zip";
 
     @Override
     public Integer start(String[] strings) {

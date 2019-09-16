@@ -16,7 +16,9 @@ public class Configurator {
     private int PNN = UserConfig.PNN;
     private int PTR = UserConfig.PTR;
     private int RETRYTIMES = UserConfig.RETRYTIMES;
-
+    private String zipkinServer;
+  
+    
     /**
      * @return the superNodeID
      */
@@ -253,6 +255,20 @@ public class Configurator {
             RETRYTIMES = 1500;
         }
         this.RETRYTIMES = RETRYTIMES;
+    }
+
+    /**
+     * @return the zipkinServer
+     */
+    public String getZipkinServer() {
+        return zipkinServer;
+    }
+
+    /**
+     * @param zipkinServer the zipkinServer to set
+     */
+    public void setZipkinServer(String zipkinServer) {
+        this.zipkinServer = zipkinServer;
     }
 
 }

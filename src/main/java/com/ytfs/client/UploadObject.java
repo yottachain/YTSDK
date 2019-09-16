@@ -1,14 +1,20 @@
 package com.ytfs.client;
 
 import com.ytfs.common.GlobleThreadPool;
+import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.common.conf.UserConfig;
 import com.ytfs.common.codec.Block;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.codec.YTFileEncoder;
+import com.ytfs.common.tracing.GlobalTracer;
 import com.ytfs.service.packet.UploadObjectInitReq;
 import com.ytfs.service.packet.UploadObjectInitResp;
 import com.ytfs.service.packet.bp.ActiveCache;
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+import io.opentracing.tag.Tags;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +40,23 @@ public class UploadObject extends UploadObjectAbstract {
 
     @Override
     public byte[] upload() throws ServiceException, IOException, InterruptedException {
+        Tracer tracer = GlobalTracer.getTracer();
+        if (tracer != null) {
+            Span span = tracer.buildSpan("UploadObject").start();
+            try (Scope scope = tracer.scopeManager().activate(span)) {
+                return uploadTracer();
+            } catch (Exception ex) {
+                Tags.ERROR.set(span, true);
+                throw ex instanceof ServiceException ? (ServiceException) ex : new ServiceException(SERVER_ERROR, ex.getMessage());
+            } finally {
+                span.finish();
+            }
+        } else {
+            return uploadTracer();
+        }
+    }
+
+    public byte[] uploadTracer() throws ServiceException, IOException, InterruptedException {
         UploadObjectInitReq req = new UploadObjectInitReq(VHW);
         req.setLength(ytfile.getLength());
         UploadObjectInitResp res = (UploadObjectInitResp) P2PUtils.requestBPU(req, UserConfig.superNode, 6);
