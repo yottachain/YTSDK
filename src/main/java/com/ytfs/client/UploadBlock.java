@@ -23,14 +23,6 @@ import org.bson.types.ObjectId;
 public class UploadBlock {
 
     private static final Logger LOG = Logger.getLogger(UploadBlock.class);
-    private static int retrytimes = 500;
-
-    static {
-        try {
-            retrytimes = Integer.parseInt(System.getProperty("Dupload.retry", "500"));
-        } catch (Exception r) {
-        }
-    }
 
     private ShardRSEncoder rs;
     private final Block block;
@@ -38,7 +30,7 @@ public class UploadBlock {
     protected final ObjectId VNU;
     protected final SuperNode bpdNode;
     protected final ConcurrentLinkedQueue<PreAllocNodeStat> excessNode = new ConcurrentLinkedQueue();
-    private Map<Integer, Integer> okTimes = new HashMap();
+    private final Map<Integer, Integer> okTimes = new HashMap();
     private final List<UploadShardRes> resList = new ArrayList();
     private final List<UploadShardRes> okList = new ArrayList();
     private final Map<Integer, Shard> map = new HashMap();
@@ -150,8 +142,8 @@ public class UploadBlock {
                 } catch (Exception r) {
                 }
             }
-            if (retrycount >= retrytimes) {
-                LOG.error("[" + VNU + "]Upload block " + id + "," + retrytimes + " retries were unsuccessful.");
+            if (retrycount >= UserConfig.RETRYTIMES) {
+                LOG.error("[" + VNU + "]Upload block " + id + "," + UserConfig.RETRYTIMES + " retries were unsuccessful.");
                 throw new ServiceException(SERVER_ERROR);
             }
             times = secondUpload(shards);
@@ -196,7 +188,7 @@ public class UploadBlock {
         req.setRsShard(rs.getShardList().get(0).isRsShard());
         req.setOkList(okList);
         req.setVNU(VNU);
-        P2PUtils.requestBPU(req, bpdNode, VNU.toString(),12);
+        P2PUtils.requestBPU(req, bpdNode, VNU.toString(), 12);
         LOG.info("[" + VNU + "]Upload block " + id + " OK,take times " + (System.currentTimeMillis() - l) + "ms");
     }
 }

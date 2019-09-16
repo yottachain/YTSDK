@@ -72,7 +72,7 @@ public class ClientInitor {
             }
             req.setSignData(sign);
             try {
-                P2PUtils.requestBPU(req, node,6);
+                P2PUtils.requestBPU(req, node, 6);
             } catch (ServiceException ex) {
             }
         };
@@ -136,6 +136,9 @@ public class ClientInitor {
         DOWNLOADSHARDTHREAD = cfg.getDownloadThread();
         UPLOADBLOCKTHREAD = cfg.getUploadBlockThreadNum();
         UPLOADSHARDTHREAD = cfg.getUploadShardThreadNum();
+        PNN = cfg.getPNN();
+        PTR = cfg.getPTR();
+        RETRYTIMES = cfg.getRETRYTIMES();
     }
 
     private static void exportPrivateKey(String password) throws IOException {
@@ -197,9 +200,15 @@ public class ClientInitor {
         cfg.setDownloadThread(p.getProperty("downloadThread"));
         cfg.setUploadBlockThreadNum(p.getProperty("uploadBlockThreadNum"));
         cfg.setUploadShardThreadNum(p.getProperty("uploadShardThreadNum"));
+        cfg.setPNN(p.getProperty("PNN"));
+        cfg.setPTR(p.getProperty("PTR"));
+        cfg.setRETRYTIMES(p.getProperty("RETRYTIMES"));
         DOWNLOADSHARDTHREAD = cfg.getDownloadThread();
         UPLOADBLOCKTHREAD = cfg.getUploadBlockThreadNum();
         UPLOADSHARDTHREAD = cfg.getUploadShardThreadNum();
+        PNN = cfg.getPNN();
+        PTR = cfg.getPTR();
+        RETRYTIMES = cfg.getRETRYTIMES();
     }
 
     /**
