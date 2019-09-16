@@ -58,7 +58,7 @@ public class UploadBlockExecuter implements Runnable {
             LOG.error("[" + uploadObject.VNU + "]Block " + ii + " Upload ERR:" + se.getErrorCode());
             free(se);
         } catch (Throwable se) {
-            LOG.error("[" + uploadObject.VNU + "]Block " + ii + " Upload ERR:" ,se);
+            LOG.error("[" + uploadObject.VNU + "]Block " + ii + " Upload ERR:", se);
             free(new ServiceException(SERVER_ERROR, se.getMessage()));
         }
     }
@@ -68,6 +68,8 @@ public class UploadBlockExecuter implements Runnable {
             uploadObject.execlist.remove(this);
             if (se != null) {
                 uploadObject.err = se;
+            } else {
+                uploadObject.startTime = System.currentTimeMillis();
             }
             uploadObject.execlist.notifyAll();
         }

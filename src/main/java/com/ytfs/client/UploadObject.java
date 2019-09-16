@@ -20,6 +20,7 @@ public class UploadObject extends UploadObjectAbstract {
     private final YTFileEncoder ytfile;
     final List<UploadBlockExecuter> execlist = new ArrayList();
     ServiceException err = null;
+    long startTime;
 
     public UploadObject(byte[] data) throws IOException {
         ytfile = new YTFileEncoder(data);
@@ -40,6 +41,7 @@ public class UploadObject extends UploadObjectAbstract {
         stamp = res.getStamp();
         VNU = res.getVNU();
         LOG.info("[" + VNU + "]Start upload object...");
+        startTime = System.currentTimeMillis();
         if (!res.isRepeat()) {
             short[] refers = res.getBlocks();
             short ii = 0;
@@ -59,7 +61,6 @@ public class UploadObject extends UploadObjectAbstract {
                     throw err;
                 }
                 if (!uploaded) {
-                    long startTime = System.currentTimeMillis();
                     synchronized (execlist) {
                         while (execlist.size() >= UserConfig.UPLOADBLOCKTHREAD) {
                             execlist.wait(15000);
@@ -77,7 +78,6 @@ public class UploadObject extends UploadObjectAbstract {
                 }
                 ii++;
             }
-            long startTime = System.currentTimeMillis();
             synchronized (execlist) {
                 while (execlist.size() > 0) {
                     execlist.wait(5000);

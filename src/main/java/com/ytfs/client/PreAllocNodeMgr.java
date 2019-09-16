@@ -15,19 +15,19 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 public class PreAllocNodeMgr extends Thread {
-
+    
     private static final Logger LOG = Logger.getLogger(PreAllocNodeMgr.class);
     private static PreAllocNodeMgr me = null;
-
+    
     private static final Map<Integer, PreAllocNodeStat> NODE_LIST = new HashMap();
-
+    
     public static void init() {
         Exception err = null;
         for (int ii = 0; ii < 10; ii++) {
             try {
                 PreAllocNodeReq req = new PreAllocNodeReq();
                 req.setCount(UserConfig.PNN);
-                PreAllocNodeResp resp = (PreAllocNodeResp) P2PUtils.requestBPU(req, UserConfig.superNode,12);
+                PreAllocNodeResp resp = (PreAllocNodeResp) P2PUtils.requestBPU(req, UserConfig.superNode, 12);
                 List<PreAllocNode> ls = resp.getList();
                 ls.stream().forEach((node) -> {
                     NODE_LIST.put(node.getId(), new PreAllocNodeStat(node));
@@ -45,19 +45,19 @@ public class PreAllocNodeMgr extends Thread {
         }
         LOG.error("Get data node ERR:" + err);
     }
-
+    
     public static List<PreAllocNodeStat> getNodes() {
         List<PreAllocNodeStat> ls = new ArrayList(NODE_LIST.values());
         Collections.sort(ls, new PreAllocNodeComparator());
         return ls;
     }
-
+    
     public static void shutdown() {
         if (me != null) {
             me.interrupt();
         }
     }
-
+    
     @Override
     public void run() {
         LOG.info("Pre-Alloc Node manager is starting...");
@@ -70,8 +70,9 @@ public class PreAllocNodeMgr extends Thread {
             try {
                 PreAllocNodeReq req = new PreAllocNodeReq();
                 req.setCount(UserConfig.PNN);
-                PreAllocNodeResp resp = (PreAllocNodeResp) P2PUtils.requestBPU(req, UserConfig.superNode,6);
+                PreAllocNodeResp resp = (PreAllocNodeResp) P2PUtils.requestBPU(req, UserConfig.superNode, 6);
                 updateList(resp.getList());
+                LOG.info("Pre-Alloc Node list is updated.");
                 sleep(UserConfig.PTR);
             } catch (InterruptedException ie) {
                 break;
@@ -85,7 +86,7 @@ public class PreAllocNodeMgr extends Thread {
         }
         LOG.info("Pre-Alloc Node manager is safely closed.");
     }
-
+    
     private void updateList(List<PreAllocNode> ls) {
         Map<Integer, PreAllocNode> map = new HashMap();
         ls.stream().forEach((node) -> {
