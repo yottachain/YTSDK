@@ -38,6 +38,8 @@ public class UploadBlockExecuter implements Runnable {
         }
         SuperNode node = SuperNodeList.getBlockSuperNode(b.getVHP());
         LOG.info("[" + uploadObject.VNU + "]Start upload block " + blocknum + " to sn " + node.getId() + "...");
+        uploadObject.upload(b, blocknum, node);
+        /*
         Tracer tracer = GlobalTracer.getTracer();
         if (tracer != null) {
             Span span = tracer.buildSpan("UploadBlock").start();
@@ -51,7 +53,7 @@ public class UploadBlockExecuter implements Runnable {
             }
         } else {
             uploadObject.upload(b, blocknum, node);
-        }
+        }*/
     }
 
     @Override
