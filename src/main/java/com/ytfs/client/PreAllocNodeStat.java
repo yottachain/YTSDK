@@ -32,11 +32,24 @@ public class PreAllocNodeStat extends PreAllocNode {
         long oktimes = okDelayTimes.get();
         long count = okTimes.get();
         long errcount = errTimes.get();
-        long times = count == 0 ? 0 : (oktimes / count);
-        if (times == 0 && errcount != 0) {
-            return errcount * 60000;
+        if (count == 0) {
+            if (errcount == 0) {
+                return 0;
+            } else {
+                return 60000;
+            }
+        } else {
+            long times = oktimes / count;
+            if (errcount == 0) {
+                return times;
+            } else {
+                if (times > 60000) {
+                    return times;
+                } else {
+                    return (oktimes + 60000 * errcount) / (oktimes + errcount);
+                }
+            }
         }
-        return times * errcount + times;
     }
 
     public final void init(PreAllocNode node) {

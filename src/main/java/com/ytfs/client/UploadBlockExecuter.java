@@ -5,11 +5,6 @@ import com.ytfs.common.ServiceException;
 import com.ytfs.common.codec.Block;
 import com.ytfs.common.conf.UserConfig;
 import com.ytfs.common.node.SuperNodeList;
-import com.ytfs.common.tracing.GlobalTracer;
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.Tracer;
-import io.opentracing.tag.Tags;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.io.IOException;
 import org.apache.log4j.Logger;
@@ -39,21 +34,6 @@ public class UploadBlockExecuter implements Runnable {
         SuperNode node = SuperNodeList.getBlockSuperNode(b.getVHP());
         LOG.info("[" + uploadObject.VNU + "]Start upload block " + blocknum + " to sn " + node.getId() + "...");
         uploadObject.upload(b, blocknum, node);
-        /*
-        Tracer tracer = GlobalTracer.getTracer();
-        if (tracer != null) {
-            Span span = tracer.buildSpan("UploadBlock").start();
-            try (Scope scope = tracer.scopeManager().activate(span)) {
-                uploadObject.upload(b, blocknum, node);
-            } catch (Exception ex) {
-                Tags.ERROR.set(span, true);
-                throw ex instanceof ServiceException ? (ServiceException) ex : new ServiceException(SERVER_ERROR, ex.getMessage());
-            } finally {
-                span.finish();
-            }
-        } else {
-            uploadObject.upload(b, blocknum, node);
-        }*/
     }
 
     @Override
