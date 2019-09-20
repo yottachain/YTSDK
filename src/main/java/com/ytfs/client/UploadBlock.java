@@ -10,6 +10,7 @@ import com.ytfs.common.codec.ShardRSEncoder;
 import com.ytfs.common.net.P2PUtils;
 import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.common.ServiceException;
+import static com.ytfs.common.conf.UserConfig.SN_RETRYTIMES;
 import com.ytfs.service.packet.UploadBlockEndReq;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.util.ArrayList;
@@ -138,7 +139,7 @@ public class UploadBlock {
                 retrycount++;
                 int interval = (int) times / 12;
                 try {
-                    Thread.sleep(interval);
+                    Thread.sleep(interval < 1000 ? 1000 : interval);
                 } catch (Exception r) {
                 }
             }
@@ -175,6 +176,12 @@ public class UploadBlock {
         return System.currentTimeMillis() - startTime;
     }
 
+    /**
+     * 确认块
+     *
+     * @param ks
+     * @throws ServiceException
+     */
     private void completeUploadBlock(byte[] ks) throws ServiceException {
         long l = System.currentTimeMillis();
         UploadBlockEndReq req = new UploadBlockEndReq();
@@ -188,7 +195,7 @@ public class UploadBlock {
         req.setRsShard(rs.getShardList().get(0).isRsShard());
         req.setOkList(okList);
         req.setVNU(VNU);
-        P2PUtils.requestBPU(req, bpdNode, VNU.toString(), 12);
+        P2PUtils.requestBPU(req, bpdNode, VNU.toString(), SN_RETRYTIMES);//重试5分钟
         LOG.info("[" + VNU + "]Upload block " + id + " OK,take times " + (System.currentTimeMillis() - l) + "ms");
     }
 }

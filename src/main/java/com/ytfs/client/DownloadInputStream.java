@@ -20,10 +20,10 @@ public class DownloadInputStream extends InputStream {
     private int referIndex = 0;
 
     public DownloadInputStream(List<ObjectRefer> refs, long start, long end) {
-        for (ObjectRefer refer : refs) {
+        refs.stream().forEach((refer) -> {
             int id = refer.getId() & 0xFFFF;
             this.refers.put(id, refer);
-        }
+        });
         this.readpos = start;
         this.end = end;
     }

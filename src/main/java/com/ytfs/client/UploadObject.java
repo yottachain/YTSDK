@@ -59,7 +59,7 @@ public class UploadObject extends UploadObjectAbstract {
     public byte[] uploadTracer() throws ServiceException, IOException, InterruptedException {
         UploadObjectInitReq req = new UploadObjectInitReq(VHW);
         req.setLength(ytfile.getLength());
-        UploadObjectInitResp res = (UploadObjectInitResp) P2PUtils.requestBPU(req, UserConfig.superNode, 6);
+        UploadObjectInitResp res = (UploadObjectInitResp) P2PUtils.requestBPU(req, UserConfig.superNode, UserConfig.SN_RETRYTIMES);
         signArg = res.getSignArg();
         stamp = res.getStamp();
         VNU = res.getVNU();

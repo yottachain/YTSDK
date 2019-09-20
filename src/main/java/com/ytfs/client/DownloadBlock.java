@@ -48,7 +48,7 @@ public class DownloadBlock {
         DownloadBlockInitReq req = new DownloadBlockInitReq();
         req.setVBI(refer.getVBI());
         SuperNode pbd = SuperNodeList.getSuperNode(refer.getSuperID());
-        Object resp = P2PUtils.requestBPU(req, pbd,6);
+        Object resp = P2PUtils.requestBPU(req, pbd,UserConfig.SN_RETRYTIMES);
         LOG.info("[" + refer.getVBI() + "]Download init OK at sn" + refer.getSuperID() + ",take times " + (System.currentTimeMillis() - l) + "ms");
         if (resp instanceof DownloadBlockDBResp) {
             this.data = aesDBDecode(((DownloadBlockDBResp) resp).getData());

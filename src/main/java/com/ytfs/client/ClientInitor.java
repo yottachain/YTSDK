@@ -7,6 +7,7 @@ import com.ytfs.common.LogConfigurator;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.codec.KeyStoreCoder;
 import com.ytfs.common.codec.ReadPrivateKey;
+import com.ytfs.common.conf.UserConfig;
 import com.ytfs.common.net.LoginCaller;
 import com.ytfs.common.tracing.GlobalTracer;
 import com.ytfs.service.packet.user.LoginReq;
@@ -74,7 +75,7 @@ public class ClientInitor {
             }
             req.setSignData(sign);
             try {
-                P2PUtils.requestBPU(req, node, 6);
+                P2PUtils.requestBPU(req, node, UserConfig.SN_RETRYTIMES);
             } catch (ServiceException ex) {
             }
         };

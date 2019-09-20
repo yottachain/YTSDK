@@ -10,14 +10,14 @@ import com.ytfs.common.codec.ShardRSEncoder;
 import com.ytfs.common.conf.UserConfig;
 import com.ytfs.common.eos.EOSRequest;
 import com.ytfs.common.net.P2PUtils;
-import com.ytfs.service.packet.SubBalanceReq;
 import com.ytfs.service.packet.UploadBlockDBReq;
 import com.ytfs.service.packet.UploadBlockDupReq;
 import com.ytfs.service.packet.UploadBlockDupResp;
 import com.ytfs.service.packet.UploadBlockInitReq;
 import com.ytfs.service.packet.UploadBlockInitResp;
 import com.ytfs.service.packet.UploadObjectEndReq;
-import com.ytfs.service.packet.UploadObjectEndResp;
+import com.ytfs.service.packet.user.PreSubBalanceReq;
+import com.ytfs.service.packet.user.PreSubBalanceResp;
 import io.jafka.jeos.util.Base58;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.io.IOException;
@@ -42,23 +42,41 @@ public abstract class UploadObjectAbstract {
 
     //结束上传
     protected final void complete() throws ServiceException {
-        UploadObjectEndReq req = new UploadObjectEndReq();
-        req.setVHW(VHW);
-        UploadObjectEndResp resp = (UploadObjectEndResp) P2PUtils.requestBPU(req, UserConfig.superNode, VNU.toString(), 3);
-        byte[] bs = resp.getSignArg();
-        SubBalanceReq sub = new SubBalanceReq();
-        sub.setVNU(VNU);
-        try {
-            byte[] signData = EOSRequest.makeSubBalanceRequest(bs, UserConfig.username,
-                    UserConfig.privateKey, resp.getContractAccount(), resp.getFirstCost(), resp.getUserid());
-            sub.setSignData(signData);
-        } catch (Exception e) {
-            throw new ServiceException(SERVER_ERROR);
+        ServiceException err = null;
+        int times = 0;
+        while (true) {
+            try {
+                PreSubBalanceReq subreq = new PreSubBalanceReq();
+                subreq.setVNU(VNU);
+                PreSubBalanceResp resp = (PreSubBalanceResp) P2PUtils.requestBPU(subreq, UserConfig.superNode, VNU.toString(), 0);
+                UploadObjectEndReq req = new UploadObjectEndReq();
+                req.setVHW(VHW);
+                req.setVNU(VNU);
+                try {
+                    byte[] bs = resp.getSignArg();
+                    byte[] signData = EOSRequest.makeSubBalanceRequest(bs, UserConfig.username,
+                            UserConfig.privateKey, resp.getContractAccount(), resp.getFirstCost(), resp.getUserid());
+                    req.setSignData(signData);
+                } catch (Throwable e) {
+                    err = new ServiceException(SERVER_ERROR, e.getMessage());
+                    break;
+                }
+                P2PUtils.requestBPU(req, UserConfig.superNode, VNU.toString(), 0);
+                return;
+            } catch (Throwable ex) {
+                err = ex instanceof ServiceException ? (ServiceException) ex : new ServiceException(SERVER_ERROR, ex.getMessage());
+                if (times >= UserConfig.SN_RETRYTIMES) {
+                    break;
+                }
+                times++;
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException ex1) {
+                }
+            }
         }
-        try {
-            P2PUtils.requestBPU(sub, UserConfig.superNode, VNU.toString(), 0);
-        } catch (Exception e) {
-            LOG.warn("[" + VNU + "]Sub balance may be skipped.");
+        if (err != null) {
+            throw err;
         }
     }
     //上传块
@@ -67,7 +85,7 @@ public abstract class UploadObjectAbstract {
         long l = System.currentTimeMillis();
         BlockEncrypted be = new BlockEncrypted(b.getRealSize());
         UploadBlockInitReq req = new UploadBlockInitReq(VNU, b.getVHP(), be.getShardCount(), id);
-        Object resp = P2PUtils.requestBPU(req, node, VNU.toString(), 12);
+        Object resp = P2PUtils.requestBPU(req, node, VNU.toString(), UserConfig.SN_RETRYTIMES);
         if (resp instanceof UploadBlockDupResp) {//重复,resp.getExist()=0已经上传     
             UploadBlockDupReq uploadBlockDupReq = checkResp((UploadBlockDupResp) resp, b);
             if (uploadBlockDupReq != null) {//请求节点
@@ -76,7 +94,7 @@ public abstract class UploadObjectAbstract {
                 uploadBlockDupReq.setOriginalSize(b.getOriginalSize());
                 uploadBlockDupReq.setRealSize(b.getRealSize());
                 uploadBlockDupReq.setVNU(VNU);
-                P2PUtils.requestBPU(uploadBlockDupReq, node, VNU.toString(), 12);
+                P2PUtils.requestBPU(uploadBlockDupReq, node, VNU.toString(), UserConfig.SN_RETRYTIMES);
                 LOG.info("[" + VNU + "]Block " + id + " is a repetitive block:" + Base58.encode(b.getVHP()));
             } else {
                 if (!be.needEncode()) {
@@ -114,7 +132,7 @@ public abstract class UploadObjectAbstract {
             req.setKED(KeyStoreCoder.aesEncryped(ks, b.getKD()));
             req.setOriginalSize(b.getOriginalSize());
             req.setData(enc.getBlockEncrypted().getData());
-            P2PUtils.requestBPU(req, node, VNU.toString(), 12);
+            P2PUtils.requestBPU(req, node, VNU.toString(), UserConfig.SN_RETRYTIMES);
             LOG.info("[" + VNU + "]Upload block " + id + " to DB,VHP:" + Base58.encode(b.getVHP()));
         } catch (Exception e) {
             LOG.error("[" + VNU + "]" + e.getMessage());
