@@ -34,12 +34,14 @@ public class UploadShard implements Runnable {
         uploader.shard = shard;
         uploader.uploadBlock = uploadBlock;
         uploader.shardId = shardId;
+        uploader.logHead = "[" + uploadBlock.VNU + "][" + uploadBlock.id + "][" + shardId + "]";
         GlobleThreadPool.execute(uploader);
     }
 
     private UploadBlock uploadBlock;
     private Shard shard;
     private int shardId;
+    private String logHead;
 
     private UploadShardReq makeUploadShardReq(PreAllocNodeStat node) {
         UploadShardReq req = new UploadShardReq();
@@ -73,11 +75,11 @@ public class UploadShard implements Runnable {
                     GetNodeCapacityReq ctlreq = new GetNodeCapacityReq();
                     ctlreq.setRetryTimes(uploadBlock.retryTimes);
                     ctlreq.setStartTime(uploadBlock.sTime);
-                    GetNodeCapacityResp ctlresp = (GetNodeCapacityResp) P2PUtils.requestNode(ctlreq, node.getNode(), uploadBlock.VNU.toString());
+                    GetNodeCapacityResp ctlresp = (GetNodeCapacityResp) P2PUtils.requestNode(ctlreq, node.getNode(), logHead);
                     req.setAllocId(ctlresp.getAllocId());
                     ctrtimes = System.currentTimeMillis() - l;
                     if (!ctlresp.isWritable()) {
-                        LOG.warn("[" + uploadBlock.VNU + "]Node " + node.getId() + " is unavailabe,take times " + ctrtimes + " ms");
+                        LOG.warn(logHead + "Node " + node.getId() + " is unavailabe,take times " + ctrtimes + " ms");
                         node.setERR();
                         PreAllocNodeStat n = uploadBlock.excessNode.poll();
                         if (n == null) {
@@ -89,14 +91,13 @@ public class UploadShard implements Runnable {
                         }
                     }
                     if (ctlresp.getAllocId() == null || ctlresp.getAllocId().trim().isEmpty()) {
-                        LOG.warn("[" + uploadBlock.VNU + "]Node " + node.getId() + ",AllocId is null");
+                        LOG.warn(logHead + "Node " + node.getId() + ",AllocId is null");
                     }
-                    UploadShard2CResp resp = (UploadShard2CResp) P2PUtils.requestNode(req, node.getNode(), uploadBlock.VNU.toString());
+                    UploadShard2CResp resp = (UploadShard2CResp) P2PUtils.requestNode(req, node.getNode(), logHead);
                     long times = System.currentTimeMillis() - l;
                     if (resp.getRES() == UploadShardRes.RES_OK || resp.getRES() == UploadShardRes.RES_VNF_EXISTS) {
                         if (LOG.isDebugEnabled()) {
-                            LOG.debug("[" + uploadBlock.VNU + "]Upload OK:" + shardId + "/"
-                                    + Base58.encode(req.getVHF()) + " to " + node.getId() + ",RES:"
+                            LOG.debug(logHead + "Upload OK:" + Base58.encode(req.getVHF()) + " to " + node.getId() + ",RES:"
                                     + resp.getRES() + ",take times " + ctrtimes + "/" + times + " ms");
                         }
                         node.setOK(times);
@@ -107,19 +108,19 @@ public class UploadShard implements Runnable {
                         }
                         break;
                     } else {
+                        if (resp.getRES() == UploadShardRes.RES_NO_SPACE) {
+                            ErrorNodeCache.addErrorNode(node.getId());
+                        }
                         node.setERR();
                         PreAllocNodeStat n = uploadBlock.excessNode.poll();
                         if (n == null) {
-                            LOG.error("[" + uploadBlock.VNU + "]Upload ERR:" + shardId + "/"
-                                    + Base58.encode(req.getVHF()) + " to " + node.getId() + ",RES:"
+                            LOG.error(logHead + "Upload ERR:" + Base58.encode(req.getVHF()) + " to " + node.getId() + ",RES:"
                                     + resp.getRES() + ",take times " + ctrtimes + "/" + times + " ms");
                             res.setDNSIGN(null);
                             break;
                         } else {
-                            LOG.error("[" + uploadBlock.VNU + "]Upload ERR:" + shardId + "/"
-                                    + Base58.encode(req.getVHF()) + " to " + node.getId() + ",RES:"
-                                    + resp.getRES() + ",take times " + ctrtimes + "/" + times
-                                    + " ms,retry node " + n.getId());
+                            LOG.error(logHead + "Upload ERR:" + Base58.encode(req.getVHF()) + " to " + node.getId() + ",RES:"
+                                    + resp.getRES() + ",take times " + ctrtimes + "/" + times + " ms,retry node " + n.getId());
                             node = n;
                         }
                     }
@@ -127,13 +128,12 @@ public class UploadShard implements Runnable {
                     node.setERR();
                     PreAllocNodeStat n = uploadBlock.excessNode.poll();
                     if (n == null) {
-                        LOG.error("[" + uploadBlock.VNU + "]Upload ERR:" + shardId + "/"
-                                + Base58.encode(req.getVHF()) + " to " + node.getId() + ",take times " + ctrtimes + "/" + (System.currentTimeMillis() - l) + " ms");
+                        LOG.error(logHead + "Upload ERR:" + Base58.encode(req.getVHF()) + " to " + node.getId()
+                                + ",take times " + ctrtimes + "/" + (System.currentTimeMillis() - l) + " ms");
                         res.setDNSIGN(null);
                         break;
                     } else {
-                        LOG.error("[" + uploadBlock.VNU + "]Upload ERR:" + shardId + "/"
-                                + Base58.encode(req.getVHF()) + " to " + node.getId()
+                        LOG.error(logHead + "Upload ERR:" + Base58.encode(req.getVHF()) + " to " + node.getId()
                                 + ",take times " + ctrtimes + "/" + (System.currentTimeMillis() - l) + " ms,retry node " + n.getId());
                         node = n;
                     }

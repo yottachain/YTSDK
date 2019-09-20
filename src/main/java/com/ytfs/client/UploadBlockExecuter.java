@@ -29,10 +29,10 @@ public class UploadBlockExecuter implements Runnable {
     private void execute() throws IOException, ServiceException, InterruptedException {
         b.calculate();
         if (b.getRealSize() > UserConfig.Default_Block_Size) {
-            LOG.fatal("[" + uploadObject.VNU + "]Block length too large.");
+            LOG.fatal("[" + uploadObject.VNU + "][" + blocknum + "]Block length too large.");
         }
         SuperNode node = SuperNodeList.getBlockSuperNode(b.getVHP());
-        LOG.info("[" + uploadObject.VNU + "]Start upload block " + blocknum + " to sn " + node.getId() + "...");
+        LOG.info("[" + uploadObject.VNU + "][" + blocknum + "]Start upload block to sn " + node.getId() + "...");
         uploadObject.upload(b, blocknum, node);
     }
 
@@ -42,10 +42,10 @@ public class UploadBlockExecuter implements Runnable {
             execute();
             free(null);
         } catch (ServiceException se) {
-            LOG.error("[" + uploadObject.VNU + "]Block " + blocknum + " Upload ERR:" + se.getErrorCode());
+            LOG.error("[" + uploadObject.VNU + "][" + blocknum + "]Upload block ERR:" + se.getErrorCode());
             free(se);
         } catch (Throwable se) {
-            LOG.error("[" + uploadObject.VNU + "]Block " + blocknum + " Upload ERR:", se);
+            LOG.error("[" + uploadObject.VNU + "][" + blocknum + "]Upload block ERR:", se);
             free(new ServiceException(SERVER_ERROR, se.getMessage()));
         }
     }

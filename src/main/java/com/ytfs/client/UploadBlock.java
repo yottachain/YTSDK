@@ -11,7 +11,7 @@ import com.ytfs.common.net.P2PUtils;
 import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.common.ServiceException;
 import static com.ytfs.common.conf.UserConfig.SN_RETRYTIMES;
-import com.ytfs.service.packet.UploadBlockEndReq;
+import com.ytfs.service.packet.user.UploadBlockEndReq;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,21 +25,21 @@ public class UploadBlock {
 
     private static final Logger LOG = Logger.getLogger(UploadBlock.class);
 
-    private ShardRSEncoder rs;
-    private final Block block;
-    private final short id;
+    protected final short id;
     protected final ObjectId VNU;
     protected final SuperNode bpdNode;
     protected final ConcurrentLinkedQueue<PreAllocNodeStat> excessNode = new ConcurrentLinkedQueue();
-    private final Map<Integer, Integer> okTimes = new HashMap();
-    private final List<UploadShardRes> resList = new ArrayList();
-    private final List<UploadShardRes> okList = new ArrayList();
-    private final Map<Integer, Shard> map = new HashMap();
     protected final long sTime;
     protected int retryTimes = 0;
     protected final String signArg;
     protected final long stamp;
     private int maxOkTimes;
+    private ShardRSEncoder rs;
+    private final Block block;
+    private final Map<Integer, Integer> okTimes = new HashMap();
+    private final List<UploadShardRes> resList = new ArrayList();
+    private final List<UploadShardRes> okList = new ArrayList();
+    private final Map<Integer, Shard> map = new HashMap();
 
     public UploadBlock(Block block, short id, SuperNode bpdNode, ObjectId VNU, long sTime, String signArg, long stamp) {
         this.block = block;
@@ -78,7 +78,7 @@ public class UploadBlock {
             int len = rs.getShardList().size();
             long times = firstUpload();
             subUpload(times);
-            LOG.info("[" + VNU + "]Upload block " + id + ",shardcount " + len + ",take times " + (System.currentTimeMillis() - l) + "ms");
+            LOG.info("[" + VNU + "][" + id + "]Upload block OK,shardcount " + len + ",take times " + (System.currentTimeMillis() - l) + "ms");
             completeUploadBlock(ks);
         } catch (Exception r) {
             throw r instanceof ServiceException ? (ServiceException) r : new ServiceException(SERVER_ERROR);
@@ -144,7 +144,7 @@ public class UploadBlock {
                 }
             }
             if (retrycount >= UserConfig.RETRYTIMES) {
-                LOG.error("[" + VNU + "]Upload block " + id + "," + UserConfig.RETRYTIMES + " retries were unsuccessful.");
+                LOG.error("[" + VNU + "][" + id + "]Upload block " + UserConfig.RETRYTIMES + " retries were unsuccessful.");
                 throw new ServiceException(SERVER_ERROR);
             }
             times = secondUpload(shards);
@@ -162,7 +162,7 @@ public class UploadBlock {
             });
         }
         int errcount = shards.size();
-        LOG.info("[" + VNU + "]Upload block " + id + " retrying,remaining " + errcount + " shards.");
+        LOG.info("[" + VNU + "][" + id + "]Upload block is still incomplete,remaining " + errcount + " shards.");
         long startTime = System.currentTimeMillis();
         for (Integer shardid : shards) {
             Shard shard = map.get(shardid);
@@ -196,6 +196,6 @@ public class UploadBlock {
         req.setOkList(okList);
         req.setVNU(VNU);
         P2PUtils.requestBPU(req, bpdNode, VNU.toString(), SN_RETRYTIMES);//重试5分钟
-        LOG.info("[" + VNU + "]Upload block " + id + " OK,take times " + (System.currentTimeMillis() - l) + "ms");
+        LOG.info("[" + VNU + "][" + id + "]Upload block OK,take times " + (System.currentTimeMillis() - l) + "ms");
     }
 }

@@ -70,9 +70,10 @@ public class PreAllocNodeMgr extends Thread {
             try {
                 PreAllocNodeReq req = new PreAllocNodeReq();
                 req.setCount(UserConfig.PNN);
-                PreAllocNodeResp resp = (PreAllocNodeResp) P2PUtils.requestBPU(req, UserConfig.superNode, 6);
+                req.setExcludes(ErrorNodeCache.getErrorIds());
+                PreAllocNodeResp resp = (PreAllocNodeResp) P2PUtils.requestBPU(req, UserConfig.superNode, UserConfig.SN_RETRYTIMES);
                 updateList(resp.getList());
-                LOG.info("Pre-Alloc Node list is updated.");
+                LOG.info("Pre-Alloc Node list is updated," + req.getExcludes().length + " error ids were excluded.");
                 sleep(UserConfig.PTR);
             } catch (InterruptedException ie) {
                 break;

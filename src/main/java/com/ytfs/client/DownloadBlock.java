@@ -9,9 +9,9 @@ import com.ytfs.common.codec.Shard;
 import com.ytfs.common.codec.ShardRSDecoder;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.node.SuperNodeList;
-import com.ytfs.service.packet.DownloadBlockDBResp;
-import com.ytfs.service.packet.DownloadBlockInitReq;
-import com.ytfs.service.packet.DownloadBlockInitResp;
+import com.ytfs.service.packet.user.DownloadBlockDBResp;
+import com.ytfs.service.packet.user.DownloadBlockInitReq;
+import com.ytfs.service.packet.user.DownloadBlockInitResp;
 import com.ytfs.service.packet.DownloadShardReq;
 import com.ytfs.service.packet.DownloadShardResp;
 import static com.ytfs.common.ServiceErrorCode.INVALID_SHARD;
@@ -48,7 +48,7 @@ public class DownloadBlock {
         DownloadBlockInitReq req = new DownloadBlockInitReq();
         req.setVBI(refer.getVBI());
         SuperNode pbd = SuperNodeList.getSuperNode(refer.getSuperID());
-        Object resp = P2PUtils.requestBPU(req, pbd,UserConfig.SN_RETRYTIMES);
+        Object resp = P2PUtils.requestBPU(req, pbd, UserConfig.SN_RETRYTIMES);
         LOG.info("[" + refer.getVBI() + "]Download init OK at sn" + refer.getSuperID() + ",take times " + (System.currentTimeMillis() - l) + "ms");
         if (resp instanceof DownloadBlockDBResp) {
             this.data = aesDBDecode(((DownloadBlockDBResp) resp).getData());

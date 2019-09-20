@@ -8,8 +8,8 @@ import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.codec.YTFileEncoder;
 import com.ytfs.common.tracing.GlobalTracer;
-import com.ytfs.service.packet.UploadObjectInitReq;
-import com.ytfs.service.packet.UploadObjectInitResp;
+import com.ytfs.service.packet.user.UploadObjectInitReq;
+import com.ytfs.service.packet.user.UploadObjectInitResp;
 import com.ytfs.service.packet.bp.ActiveCache;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -74,7 +74,7 @@ public class UploadObject extends UploadObjectAbstract {
                 if (res.getBlocks() != null) { //检查是否已经上传
                     for (short refer : refers) {
                         if (ii == refer) {
-                            LOG.info("[" + VNU + "]Block " + ii + " has been uploaded.");
+                            LOG.info("[" + VNU + "][" + ii + "]Block has been uploaded.");
                             uploaded = true;
                             break;
                         }
