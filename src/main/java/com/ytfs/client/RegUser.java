@@ -44,9 +44,10 @@ public class RegUser {
         if (snlist == null || snlist.isEmpty()) {
             throw new IOException("No snlist properties file could be found for ytfs service");
         }
+        List list = new ArrayList(snlist);
         while (true) {
-            long index = System.currentTimeMillis() % snlist.size();
-            Map map = (Map) snlist.remove((int) index);
+            long index = System.currentTimeMillis() % list.size();
+            Map map = (Map) list.remove((int) index);
             try {
                 SuperNode sn = new SuperNode(0, null, null, null, null);
                 sn.setId(Integer.parseInt(map.get("Number").toString()));
@@ -62,8 +63,8 @@ public class RegUser {
                     Thread.sleep(15000);
                 } catch (InterruptedException ex) {
                 }
-                if (snlist.isEmpty()) {
-                    throw new IOException(r);
+                if (list.isEmpty()) {
+                    list = new ArrayList(snlist);
                 }
             }
         }

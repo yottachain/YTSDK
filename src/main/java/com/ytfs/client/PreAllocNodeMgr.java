@@ -22,8 +22,7 @@ public class PreAllocNodeMgr extends Thread {
     private static final Map<Integer, PreAllocNodeStat> NODE_LIST = new HashMap();
 
     public static void init() {
-        Exception err = null;
-        for (int ii = 0; ii < 10; ii++) {
+        while (true) {
             try {
                 PreAllocNodeReq req = new PreAllocNodeReq();
                 req.setCount(UserConfig.PNN);
@@ -36,14 +35,13 @@ public class PreAllocNodeMgr extends Thread {
                 me.start();
                 return;
             } catch (ServiceException ex) {
+                LOG.error("Get data node ERR:" + ex);
                 try {
                     Thread.sleep(15000);
                 } catch (InterruptedException ex1) {
                 }
-                err = ex;
             }
         }
-        LOG.error("Get data node ERR:" + err);
     }
 
     public static List<PreAllocNodeStat> getNodes() {
@@ -73,7 +71,11 @@ public class PreAllocNodeMgr extends Thread {
                 req.setExcludes(ErrorNodeCache.getErrorIds());
                 PreAllocNodeResp resp = (PreAllocNodeResp) P2PUtils.requestBPU(req, UserConfig.superNode, UserConfig.SN_RETRYTIMES);
                 updateList(resp.getList());
-                LOG.info("Pre-Alloc Node list is updated," + req.getExcludes().length + " error ids were excluded.");
+                if (req.getExcludes().length > 0) {
+                    LOG.info("Pre-Alloc Node list is updated," + req.getExcludes().length + " error ids were excluded.");
+                } else {
+                    LOG.info("Pre-Alloc Node list is updated.");
+                }
                 sleep(UserConfig.PTR);
             } catch (InterruptedException ie) {
                 break;

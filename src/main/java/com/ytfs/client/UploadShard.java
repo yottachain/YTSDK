@@ -5,12 +5,17 @@ import com.ytfs.common.codec.Shard;
 import com.ytfs.common.conf.UserConfig;
 import static com.ytfs.common.conf.UserConfig.UPLOADSHARDTHREAD;
 import com.ytfs.common.net.P2PUtils;
+import com.ytfs.common.tracing.GlobalTracer;
 import com.ytfs.service.packet.UploadShard2CResp;
 import com.ytfs.service.packet.UploadShardReq;
 import com.ytfs.service.packet.UploadShardRes;
 import com.ytfs.service.packet.node.GetNodeCapacityReq;
 import com.ytfs.service.packet.node.GetNodeCapacityResp;
 import io.jafka.jeos.util.Base58;
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+import io.opentracing.tag.Tags;
 import java.util.concurrent.ArrayBlockingQueue;
 import org.apache.log4j.Logger;
 
@@ -93,7 +98,21 @@ public class UploadShard implements Runnable {
                     if (ctlresp.getAllocId() == null || ctlresp.getAllocId().trim().isEmpty()) {
                         LOG.warn(logHead + "Node " + node.getId() + ",AllocId is null");
                     }
-                    UploadShard2CResp resp = (UploadShard2CResp) P2PUtils.requestNode(req, node.getNode(), logHead);
+                    UploadShard2CResp resp;
+                    Tracer tracer = GlobalTracer.getTracer();
+                    if (tracer != null) {
+                        Span span = tracer.buildSpan("SendShard").start();
+                        try (Scope scope = tracer.scopeManager().activate(span)) {
+                            resp = (UploadShard2CResp) P2PUtils.requestNode(req, node.getNode(), logHead);
+                        } catch (Throwable ex) {
+                            Tags.ERROR.set(span, true);
+                            throw ex;
+                        } finally {
+                            span.finish();
+                        }
+                    } else {
+                        resp = (UploadShard2CResp) P2PUtils.requestNode(req, node.getNode(), logHead);
+                    }
                     long times = System.currentTimeMillis() - l;
                     if (resp.getRES() == UploadShardRes.RES_OK || resp.getRES() == UploadShardRes.RES_VNF_EXISTS) {
                         if (LOG.isDebugEnabled()) {

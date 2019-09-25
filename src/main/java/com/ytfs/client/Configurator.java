@@ -251,8 +251,8 @@ public class Configurator {
         if (RETRYTIMES < 5) {
             RETRYTIMES = 5;
         }
-        if (RETRYTIMES > 1500) {
-            RETRYTIMES = 1500;
+        if (RETRYTIMES > 3000) {
+            RETRYTIMES = 3000;
         }
         this.RETRYTIMES = RETRYTIMES;
     }
