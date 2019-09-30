@@ -103,7 +103,6 @@ public class PreAllocNodeMgr extends Thread {
                 stat.resetStat();
             } else {
                 NODE_LIST.remove(ent.getKey());
-                stat.disconnet();
             }
         });
         Collection<PreAllocNode> coll = map.values();

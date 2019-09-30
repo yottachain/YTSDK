@@ -1,6 +1,5 @@
 package com.ytfs.client;
 
-import com.ytfs.common.net.P2PUtils;
 import com.ytfs.service.packet.user.PreAllocNode;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -69,9 +68,4 @@ public class PreAllocNodeStat extends PreAllocNode {
             resetTime = System.currentTimeMillis();
         }
     }
-
-    public void disconnet() {
-        P2PUtils.remove(this.getNodeid());
-    }
-
 }
