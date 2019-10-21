@@ -21,9 +21,9 @@ public class RandomFileTest {
         }
         ClientInitor.init();
         //测试小文件
-        //test(new UploadObject(MakeRandFile.makeSmallFile()));
+        test(new UploadObject(MakeRandFile.makeSmallFile()));
         //测试多副本
-        //test(new UploadObject(MakeRandFile.makeMediumFile()));
+        test(new UploadObject(MakeRandFile.makeMediumFile()));
         //测试rs模式
         test(new UploadObject(MakeRandFile.makeLargeFile()));
     }
