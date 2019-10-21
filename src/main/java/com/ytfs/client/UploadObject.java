@@ -56,6 +56,12 @@ public class UploadObject extends UploadObjectAbstract {
         }
     }
 
+    public void closeFile() {
+        if (ytfile != null) {
+            ytfile.closeFile();
+        }
+    }
+
     public byte[] uploadTracer() throws ServiceException, IOException, InterruptedException {
         UploadObjectInitReq req = new UploadObjectInitReq(VHW);
         req.setLength(ytfile.getLength());
