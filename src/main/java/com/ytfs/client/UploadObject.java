@@ -40,25 +40,26 @@ public class UploadObject extends UploadObjectAbstract {
 
     @Override
     public byte[] upload() throws ServiceException, IOException, InterruptedException {
-        Tracer tracer = GlobalTracer.getTracer();
-        if (tracer != null) {
-            Span span = tracer.buildSpan("UploadObject").start();
-            try (Scope scope = tracer.scopeManager().activate(span)) {
+        try {
+            Tracer tracer = GlobalTracer.getTracer();
+            if (tracer != null) {
+                Span span = tracer.buildSpan("UploadObject").start();
+                try (Scope scope = tracer.scopeManager().activate(span)) {
+                    return uploadTracer();
+                } catch (Exception ex) {
+                    Tags.ERROR.set(span, true);
+                    throw ex instanceof ServiceException ? (ServiceException) ex : new ServiceException(SERVER_ERROR, ex.getMessage());
+                } finally {
+                    span.finish();
+                }
+            } else {
                 return uploadTracer();
-            } catch (Exception ex) {
-                Tags.ERROR.set(span, true);
-                throw ex instanceof ServiceException ? (ServiceException) ex : new ServiceException(SERVER_ERROR, ex.getMessage());
-            } finally {
-                span.finish();
             }
-        } else {
-            return uploadTracer();
-        }
-    }
-
-    public void closeFile() {
-        if (ytfile != null) {
-            ytfile.closeFile();
+        } catch (ServiceException | IOException | InterruptedException r) {
+            if (ytfile != null) {
+                ytfile.closeFile();
+            }
+            throw r;
         }
     }
 
