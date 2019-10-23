@@ -23,24 +23,30 @@ import org.apache.log4j.Logger;
 public class UploadObject extends UploadObjectAbstract {
 
     private static final Logger LOG = Logger.getLogger(UploadObject.class);
-    private final YTFileEncoder ytfile;
+    private YTFileEncoder ytfile;
     final List<UploadBlockExecuter> execlist = new ArrayList();
     ServiceException err = null;
     long startTime;
+    private byte[] data = null;
+    private String path;
 
     public UploadObject(byte[] data) throws IOException {
-        ytfile = new YTFileEncoder(data);
-        this.VHW = ytfile.getVHW();
+        this.data = data;
     }
 
     public UploadObject(String path) throws IOException {
-        ytfile = new YTFileEncoder(path);
-        this.VHW = ytfile.getVHW();
+        this.path = path;
     }
 
     @Override
     public byte[] upload() throws ServiceException, IOException, InterruptedException {
         try {
+            if (data != null) {
+                ytfile = new YTFileEncoder(data);
+            } else {
+                ytfile = new YTFileEncoder(path);
+            }
+            this.VHW = ytfile.getVHW();
             Tracer tracer = GlobalTracer.getTracer();
             if (tracer != null) {
                 Span span = tracer.buildSpan("UploadObject").start();
@@ -55,11 +61,10 @@ public class UploadObject extends UploadObjectAbstract {
             } else {
                 return uploadTracer();
             }
-        } catch (ServiceException | IOException | InterruptedException r) {
+        } finally {
             if (ytfile != null) {
                 ytfile.closeFile();
             }
-            throw r;
         }
     }
 
