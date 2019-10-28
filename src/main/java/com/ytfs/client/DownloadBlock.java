@@ -104,11 +104,9 @@ public class DownloadBlock {
                 this.wait(1000 * 15);
             }
         }
-        for (DownloadShardResp res : resList) {
-            if (res.getData() != null) {
-                shards.add(new Shard(res.getData()));
-            }
-        }
+        resList.stream().filter((res) -> (res.getData() != null)).forEachOrdered((res) -> {
+            shards.add(new Shard(res.getData()));
+        });
         resList.clear();
         if (shards.size() >= len) {
             LOG.info("[" + refer.getVBI() + "]Download shardcount " + len + ",take times " + (System.currentTimeMillis() - l) + "ms");

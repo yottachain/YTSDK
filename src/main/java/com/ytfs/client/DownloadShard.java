@@ -1,5 +1,6 @@
 package com.ytfs.client;
 
+import static com.ytfs.client.DownloadShardParam.Max_Retry_Times;
 import com.ytfs.common.conf.UserConfig;
 import static com.ytfs.common.conf.UserConfig.DOWNLOADSHARDTHREAD;
 import com.ytfs.common.net.P2PUtils;
@@ -65,7 +66,18 @@ public class DownloadShard implements Runnable {
                         break;
                     }
                 } catch (Throwable ex) {
-                    LOG.error("[" + downloadBlock.refer.getVBI() + "]Download ERR:" + Base58.encode(req.getVHF()) + " from " + node.getId());
+                    LOG.error("[" + downloadBlock.refer.getVBI() + "]Download ERR:" + Base58.encode(req.getVHF()) + " from " + node.getId());                   
+                    if (param.getRetryTime() > 0) {
+                        try {
+                            Thread.sleep(500);
+                        } catch (InterruptedException ex1) {
+                            break;
+                        }
+                    }
+                    if (param.getRetryTime() < Max_Retry_Times) {
+                        shardparams.add(param);
+                    }
+                    param.addRetryTime();
                 }
             }
         } finally {

@@ -3,6 +3,12 @@ package com.ytfs.client;
 import io.yottachain.nodemgmt.core.vo.Node;
 
 public class DownloadShardParam {
+    
+    public static int Max_Retry_Times=10;
+
+    private Node node;
+    private byte[] VHF;
+    private int retryTime = 0;
 
     /**
      * @return the node
@@ -32,7 +38,22 @@ public class DownloadShardParam {
         this.VHF = VHF;
     }
 
-    private Node node;
-    private byte[] VHF;
+    /**
+     * @return the retryTime
+     */
+    public int getRetryTime() {
+        return retryTime;
+    }
+
+    /**
+     * @param retryTime the retryTime to set
+     */
+    public void setRetryTime(int retryTime) {
+        this.retryTime = retryTime;
+    }
+
+    public void addRetryTime() {
+        this.retryTime++;
+    }
 
 }

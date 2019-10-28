@@ -31,6 +31,7 @@ public class PreAllocNodeMgr extends Thread {
                 ls.stream().forEach((node) -> {
                     NODE_LIST.put(node.getId(), new PreAllocNodeStat(node));
                 });
+                LOG.info("Pre-Alloc Node total:" + ls.size());
                 me = new PreAllocNodeMgr();
                 me.start();
                 return;
@@ -72,9 +73,9 @@ public class PreAllocNodeMgr extends Thread {
                 PreAllocNodeResp resp = (PreAllocNodeResp) P2PUtils.requestBPU(req, UserConfig.superNode, UserConfig.SN_RETRYTIMES);
                 updateList(resp.getList());
                 if (req.getExcludes().length > 0) {
-                    LOG.info("Pre-Alloc Node list is updated," + req.getExcludes().length + " error ids were excluded.");
+                    LOG.info("Pre-Alloc Node list is updated,total:" + resp.getList().size() + "," + req.getExcludes().length + " error ids were excluded.");
                 } else {
-                    LOG.info("Pre-Alloc Node list is updated.");
+                    LOG.info("Pre-Alloc Node list is updated,total:" + resp.getList().size());
                 }
                 sleep(UserConfig.PTR);
             } catch (InterruptedException ie) {
