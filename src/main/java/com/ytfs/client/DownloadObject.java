@@ -30,8 +30,8 @@ public class DownloadObject {
     private void init() throws ServiceException {
         DownloadObjectInitReq req = new DownloadObjectInitReq();
         req.setVHW(VHW);
-        DownloadObjectInitResp resp = (DownloadObjectInitResp) P2PUtils.requestBPU(req, UserConfig.superNode,UserConfig.SN_RETRYTIMES);
-        refers = ObjectRefer.parse(resp.getOldRefers(), resp.getRefers());
+        DownloadObjectInitResp resp = (DownloadObjectInitResp) P2PUtils.requestBPU(req, UserConfig.superNode, UserConfig.SN_RETRYTIMES);
+        refers = ObjectRefer.parse(resp.getRefers());
         this.length = resp.getLength();
     }
 
@@ -42,8 +42,8 @@ public class DownloadObject {
         if (versionId != null) {
             req.setVersionId(versionId);
         }
-        DownloadObjectInitResp resp = (DownloadObjectInitResp) P2PUtils.requestBPU(req, UserConfig.superNode,UserConfig.SN_RETRYTIMES);
-        refers = ObjectRefer.parse(resp.getOldRefers(), resp.getRefers());
+        DownloadObjectInitResp resp = (DownloadObjectInitResp) P2PUtils.requestBPU(req, UserConfig.superNode, UserConfig.SN_RETRYTIMES);
+        refers = ObjectRefer.parse(resp.getRefers());
         this.length = resp.getLength();
     }
 
