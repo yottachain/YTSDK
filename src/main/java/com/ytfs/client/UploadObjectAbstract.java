@@ -8,7 +8,6 @@ import com.ytfs.common.codec.BlockEncrypted;
 import com.ytfs.common.codec.KeyStoreCoder;
 import com.ytfs.common.codec.ShardRSEncoder;
 import com.ytfs.common.conf.UserConfig;
-import com.ytfs.common.eos.EOSRequest;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.service.packet.user.UploadBlockDBReq;
 import com.ytfs.service.packet.user.UploadBlockDupReq;
@@ -16,8 +15,6 @@ import com.ytfs.service.packet.user.UploadBlockDupResp;
 import com.ytfs.service.packet.user.UploadBlockInitReq;
 import com.ytfs.service.packet.user.UploadBlockInitResp;
 import com.ytfs.service.packet.user.UploadObjectEndReq;
-import com.ytfs.service.packet.user.PreSubBalanceReq;
-import com.ytfs.service.packet.user.PreSubBalanceResp;
 import io.jafka.jeos.util.Base58;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.io.IOException;
@@ -42,42 +39,10 @@ public abstract class UploadObjectAbstract {
 
     //结束上传
     protected final void complete() throws ServiceException {
-        ServiceException err = null;
-        int times = 0;
-        while (true) {
-            try {
-                PreSubBalanceReq subreq = new PreSubBalanceReq();
-                subreq.setVNU(VNU);
-                PreSubBalanceResp resp = (PreSubBalanceResp) P2PUtils.requestBPU(subreq, UserConfig.superNode, VNU.toString(), 0);
-                UploadObjectEndReq req = new UploadObjectEndReq();
-                req.setVHW(VHW);
-                req.setVNU(VNU);
-                try {
-                    byte[] bs = resp.getSignArg();
-                    byte[] signData = EOSRequest.makeSubBalanceRequest(bs, UserConfig.username,
-                            UserConfig.privateKey, resp.getContractAccount(), resp.getFirstCost(), resp.getUserid());
-                    req.setSignData(signData);
-                } catch (Throwable e) {
-                    err = new ServiceException(SERVER_ERROR, e.getMessage());
-                    break;
-                }
-                P2PUtils.requestBPU(req, UserConfig.superNode, VNU.toString(), 0);
-                return;
-            } catch (Throwable ex) {
-                err = ex instanceof ServiceException ? (ServiceException) ex : new ServiceException(SERVER_ERROR, ex.getMessage());
-                if (times >= UserConfig.SN_RETRYTIMES) {
-                    break;
-                }
-                times++;
-                try {
-                    Thread.sleep(10000);
-                } catch (InterruptedException ex1) {
-                }
-            }
-        }
-        if (err != null) {
-            throw err;
-        }
+        UploadObjectEndReq req = new UploadObjectEndReq();
+        req.setVHW(VHW);
+        req.setVNU(VNU);
+        P2PUtils.requestBPU(req, UserConfig.superNode, VNU.toString(), UserConfig.SN_RETRYTIMES);
     }
     //上传块
 
