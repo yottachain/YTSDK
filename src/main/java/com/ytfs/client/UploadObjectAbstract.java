@@ -1,5 +1,6 @@
 package com.ytfs.client;
 
+import static com.ytfs.common.ServiceErrorCode.INVALID_UPLOAD_ID;
 import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.codec.Block;
@@ -42,7 +43,13 @@ public abstract class UploadObjectAbstract {
         UploadObjectEndReq req = new UploadObjectEndReq();
         req.setVHW(VHW);
         req.setVNU(VNU);
-        P2PUtils.requestBPU(req, UserConfig.superNode, VNU.toString(), UserConfig.SN_RETRYTIMES);
+        try {
+            P2PUtils.requestBPU(req, UserConfig.superNode, VNU.toString(), UserConfig.SN_RETRYTIMES);
+        } catch (ServiceException e) {
+            if (e.getErrorCode() != INVALID_UPLOAD_ID) {
+                throw e;
+            }
+        }
     }
     //上传块
 
