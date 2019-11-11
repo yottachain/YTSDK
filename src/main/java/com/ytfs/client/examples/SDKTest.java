@@ -17,7 +17,7 @@ import org.tanukisoftware.wrapper.WrapperManager;
 public class SDKTest implements WrapperListener {
 
     private static final String sn = "yf";
-    private static final String path = "D:\\Documents\\Documents.rar";
+    private static final String path = "D:\\docs.rar";
 
     @Override
     public Integer start(String[] strings) {
