@@ -6,7 +6,7 @@ import com.ytfs.common.codec.BlockEncrypted;
 import com.ytfs.common.codec.KeyStoreCoder;
 import com.ytfs.service.packet.ObjectRefer;
 import com.ytfs.common.codec.Shard;
-import com.ytfs.common.codec.ShardRSDecoder;
+import com.ytfs.common.codec.erasure.ShardRSDecoder;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.packet.user.DownloadBlockDBResp;
@@ -24,6 +24,9 @@ import java.util.List;
 import java.util.Map;
 import org.apache.log4j.Logger;
 import static com.ytfs.common.ServiceErrorCode.COMM_ERROR;
+import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
+import com.ytfs.common.codec.ShardEncoder;
+import com.ytfs.common.codec.lrc.ShardLRCDecoder;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class DownloadBlock {
@@ -55,16 +58,27 @@ public class DownloadBlock {
             LOG.debug("[" + refer.getVBI() + "]Download block " + refer.getId() + " from DB.");
         } else {
             DownloadBlockInitResp initresp = (DownloadBlockInitResp) resp;
-            if (initresp.getVNF() < 0) {
-                this.data = loadCopyShard(initresp);
-                LOG.info("[" + refer.getVBI() + "]Download block " + refer.getId() + " copy.");
-            } else {
-                try {
-                    this.data = loadRSShard(initresp);
-                    LOG.info("[" + refer.getVBI() + "]Download block " + refer.getId() + " RS shards.");
-                } catch (InterruptedException e) {
-                    throw new ServiceException(COMM_ERROR, e.getMessage());
-                }
+            switch (initresp.getAR()) {
+                case ShardEncoder.AR_COPY_MODE:
+                    this.data = loadCopyShard(initresp);
+                    LOG.info("[" + refer.getVBI() + "]Download block " + refer.getId() + " copy.");
+                    break;
+                case ShardEncoder.AR_RS_MODE:
+                    try {
+                        this.data = loadRSShard(initresp);
+                        LOG.info("[" + refer.getVBI() + "]Download block " + refer.getId() + " RS shards.");
+                    } catch (InterruptedException e) {
+                        throw new ServiceException(SERVER_ERROR, e.getMessage());
+                    }
+                    break;
+                default:
+                    try {
+                        this.data = loadLRCShard(initresp);
+                        LOG.info("[" + refer.getVBI() + "]Download block " + refer.getId() + " RS shards.");
+                    } catch (InterruptedException e) {
+                        throw new ServiceException(SERVER_ERROR, e.getMessage());
+                    }
+                    break;
             }
         }
     }
@@ -73,6 +87,64 @@ public class DownloadBlock {
         synchronized (this) {
             resList.add(res);
             this.notify();
+        }
+    }
+
+    private byte[] loadLRCShard(DownloadBlockInitResp initresp) throws InterruptedException, ServiceException {
+        List<Shard> shards = new ArrayList();
+        int len = initresp.getVNF() - initresp.getAR();
+        ConcurrentLinkedQueue<DownloadShardParam> shardparams = new ConcurrentLinkedQueue();
+        Map<Integer, Node> map = new HashMap();
+        for (Node n : initresp.getNodes()) {
+            map.put(n.getId(), n);
+        }
+        for (int ii = 0; ii < initresp.getNodeids().length; ii++) {
+            DownloadShardParam param = new DownloadShardParam();
+            param.setVHF(initresp.getVHF()[ii]);
+            Node n = map.get(initresp.getNodeids()[ii]);
+            if (n == null) {
+                LOG.warn("[" + refer.getVBI() + "]Node Offline,ID:" + initresp.getNodeids()[ii]);
+                continue;
+            }
+            param.setNode(n);
+            shardparams.add(param);
+        }
+        long l = System.currentTimeMillis();
+        for (int ii = 0; ii < len; ii++) {
+            DownloadShard.startDownloadShard(shardparams, this);
+        }
+        synchronized (this) {
+            while (resList.size() != len) {
+                this.wait(1000 * 15);
+            }
+        }
+        resList.stream().filter((res) -> (res.getData() != null)).forEachOrdered((res) -> {
+            shards.add(new Shard(res.getData()));
+        });
+        resList.clear();
+        ShardLRCDecoder lrc;
+        try {
+            BlockEncrypted be = new BlockEncrypted(refer.getRealSize());
+            lrc = new ShardLRCDecoder(be.getEncryptedBlockSize());
+            for (Shard shard : shards) {
+                boolean b = lrc.addShard(shard.getData());
+                if (b) {
+                    break;
+                }
+            }
+            if (lrc.isFinished()) {
+                LOG.info("[" + refer.getVBI() + "]Download shardcount " + len + ",take times " + (System.currentTimeMillis() - l) + "ms");
+                be = lrc.decode();
+                BlockAESDecryptor dec = new BlockAESDecryptor(be.getData(), ks);
+                dec.decrypt();
+                return dec.getSrcData();
+            } else {
+                lrc.free();
+                LOG.error("[" + refer.getVBI() + "]Download shardcount " + shards.size() + "/" + initresp.getVNF() + ",Not enough shards present.");
+                throw new ServiceException(COMM_ERROR);
+            }
+        } catch (Throwable t) {
+            throw t instanceof ServiceException ? (ServiceException) t : new ServiceException(SERVER_ERROR, t.getMessage());
         }
     }
 

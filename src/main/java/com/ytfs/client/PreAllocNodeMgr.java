@@ -92,10 +92,12 @@ public class PreAllocNodeMgr extends Thread {
     }
 
     private void updateList(List<PreAllocNode> ls) {
+        int maxsize = NODE_LIST.size();
         Map<Integer, PreAllocNode> map = new HashMap();
         ls.stream().forEach((node) -> {
             map.put(node.getId(), node);
         });
+        List<PreAllocNodeStat> removels = new ArrayList();
         List<Map.Entry<Integer, PreAllocNodeStat>> stats = new ArrayList(NODE_LIST.entrySet());
         stats.stream().forEach((ent) -> {
             PreAllocNodeStat stat = ent.getValue();
@@ -104,11 +106,16 @@ public class PreAllocNodeMgr extends Thread {
                 stat.resetStat();
             } else {
                 NODE_LIST.remove(ent.getKey());
+                removels.add(ent.getValue());
             }
         });
         Collection<PreAllocNode> coll = map.values();
         coll.stream().forEach((node) -> {
             NODE_LIST.put(node.getId(), new PreAllocNodeStat(node));
         });
+        while (NODE_LIST.size() < maxsize && (!removels.isEmpty())) {
+            PreAllocNodeStat node = removels.remove(0);
+            NODE_LIST.put(node.getId(), node);
+        }
     }
 }

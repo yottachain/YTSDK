@@ -4,9 +4,11 @@ import static com.ytfs.common.conf.UserConfig.*;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.GlobleThreadPool;
 import com.ytfs.common.LogConfigurator;
+import com.ytfs.common.ServiceErrorCode;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.codec.KeyStoreCoder;
 import com.ytfs.common.codec.ReadPrivateKey;
+import com.ytfs.common.codec.lrc.MemoryCache;
 import com.ytfs.common.conf.UserConfig;
 import com.ytfs.common.net.LoginCaller;
 import com.ytfs.common.tracing.GlobalTracer;
@@ -58,6 +60,7 @@ public class ClientInitor {
         RegUser.regist();
         regCaller();
         PreAllocNodeMgr.init();
+        MemoryCache.init();
         GlobalTracer.init(zipkinServer, "S3server");
     }
 
@@ -77,6 +80,12 @@ public class ClientInitor {
             try {
                 P2PUtils.requestBPU(req, node, UserConfig.SN_RETRYTIMES);
             } catch (ServiceException ex) {
+                if (ex.getErrorCode() == ServiceErrorCode.INVALID_USER_ID) {
+                    try {
+                        Thread.sleep(30000);
+                    } catch (InterruptedException ex1) {
+                    }
+                }
             }
         };
         P2PUtils.regLoginCaller(caller);

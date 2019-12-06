@@ -7,7 +7,7 @@ import com.ytfs.common.codec.Block;
 import com.ytfs.common.codec.BlockAESEncryptor;
 import com.ytfs.common.codec.BlockEncrypted;
 import com.ytfs.common.codec.KeyStoreCoder;
-import com.ytfs.common.codec.ShardRSEncoder;
+import com.ytfs.common.codec.erasure.ShardRSEncoder;
 import com.ytfs.common.conf.UserConfig;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.service.packet.user.UploadBlockDBReq;
@@ -56,7 +56,7 @@ public abstract class UploadObjectAbstract {
     public final void upload(Block b, short id, SuperNode node) throws ServiceException, InterruptedException {
         long l = System.currentTimeMillis();
         BlockEncrypted be = new BlockEncrypted(b.getRealSize());
-        UploadBlockInitReq req = new UploadBlockInitReq(VNU, b.getVHP(), be.getShardCount(), id);
+        UploadBlockInitReq req = new UploadBlockInitReq(VNU, b.getVHP(), id);
         Object resp = P2PUtils.requestBPU(req, node, VNU.toString(), UserConfig.SN_RETRYTIMES);
         if (resp instanceof UploadBlockDupResp) {//重复,resp.getExist()=0已经上传     
             UploadBlockDupReq uploadBlockDupReq = checkResp((UploadBlockDupResp) resp, b);

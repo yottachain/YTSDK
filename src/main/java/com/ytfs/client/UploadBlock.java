@@ -6,10 +6,12 @@ import com.ytfs.common.codec.Block;
 import com.ytfs.common.codec.BlockAESEncryptor;
 import com.ytfs.common.codec.KeyStoreCoder;
 import com.ytfs.common.codec.Shard;
-import com.ytfs.common.codec.ShardRSEncoder;
+import com.ytfs.common.codec.erasure.ShardRSEncoder;
 import com.ytfs.common.net.P2PUtils;
 import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.common.ServiceException;
+import com.ytfs.common.codec.ShardEncoder;
+import com.ytfs.common.codec.lrc.ShardLRCEncoder;
 import static com.ytfs.common.conf.UserConfig.SN_RETRYTIMES;
 import com.ytfs.service.packet.user.UploadBlockEndReq;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
@@ -34,7 +36,7 @@ public class UploadBlock {
     protected final String signArg;
     protected final long stamp;
     private int maxOkTimes;
-    private ShardRSEncoder rs;
+    private ShardEncoder encoder;
     private final Block block;
     private final Map<Integer, Integer> okTimes = new HashMap();
     private final List<UploadShardRes> resList = new ArrayList();
@@ -73,12 +75,15 @@ public class UploadBlock {
             byte[] ks = KeyStoreCoder.generateRandomKey();
             BlockAESEncryptor aes = new BlockAESEncryptor(block, ks);
             aes.encrypt();
-            rs = new ShardRSEncoder(aes.getBlockEncrypted());
-            rs.encode();
-            int len = rs.getShardList().size();
+            if (UserConfig.useLRCCoder) {
+                encoder = new ShardLRCEncoder(aes.getBlockEncrypted());
+            } else {
+                encoder = new ShardRSEncoder(aes.getBlockEncrypted());
+            }
+            encoder.encode();
             long times = firstUpload();
             subUpload(times);
-            LOG.info("[" + VNU + "][" + id + "]Upload block OK,shardcount " + len + ",take times " + (System.currentTimeMillis() - l) + "ms");
+            LOG.info("[" + VNU + "][" + id + "]Upload block OK,shardcount " + encoder.getShardList().size() + ",take times " + (System.currentTimeMillis() - l) + "ms");
             completeUploadBlock(ks);
         } catch (Exception r) {
             throw r instanceof ServiceException ? (ServiceException) r : new ServiceException(SERVER_ERROR);
@@ -87,7 +92,7 @@ public class UploadBlock {
 
     private long firstUpload() throws InterruptedException {
         List<PreAllocNodeStat> ls = PreAllocNodeMgr.getNodes();
-        List<Shard> shards = rs.getShardList();
+        List<Shard> shards = encoder.getShardList();
         if (ls.size() >= shards.size()) {
             if (ls.size() / shards.size() >= 2) {
                 this.maxOkTimes = 1;
@@ -147,20 +152,40 @@ public class UploadBlock {
                 LOG.error("[" + VNU + "][" + id + "]Upload block " + UserConfig.RETRYTIMES + " retries were unsuccessful.");
                 throw new ServiceException(SERVER_ERROR);
             }
+            fillExcessNode(shards);
             times = secondUpload(shards);
         }
     }
 
-    private long secondUpload(List<Integer> shards) throws InterruptedException {
-        List<PreAllocNodeStat> ls = PreAllocNodeMgr.getNodes();
-        while (excessNode.size() < shards.size()) {
+    private void fillExcessNode(List<Integer> shards) throws ServiceException {
+        int preAllocNodeTimes = 0;
+        while (true) {
+            List<PreAllocNodeStat> ls = PreAllocNodeMgr.getNodes();
             ls.forEach((n) -> {
                 Integer ok = this.okTimes.get(n.getId());
                 if (ok == null || ok < this.maxOkTimes) {
                     excessNode.add(n);
                 }
             });
+            if (excessNode.size() < shards.size()) {
+                if (preAllocNodeTimes > 2) {
+                    LOG.error("[" + VNU + "][" + id + "]Not enough nodes to upload shards,upload aborted.");
+                    throw new ServiceException(SERVER_ERROR);
+                } else {
+                    LOG.error("[" + VNU + "][" + id + "]Not enough nodes to upload shards,waiting...");
+                    preAllocNodeTimes++;
+                    try {
+                        Thread.sleep(UserConfig.PTR);
+                    } catch (Exception r) {
+                    }
+                }
+            } else {
+                break;
+            }
         }
+    }
+
+    private long secondUpload(List<Integer> shards) throws InterruptedException {
         int errcount = shards.size();
         LOG.info("[" + VNU + "][" + id + "]Upload block is still incomplete,remaining " + errcount + " shards.");
         long startTime = System.currentTimeMillis();
@@ -187,12 +212,20 @@ public class UploadBlock {
         UploadBlockEndReq req = new UploadBlockEndReq();
         req.setId(id);
         req.setVHP(block.getVHP());
-        req.setVHB(rs.makeVHB());
+        req.setVHB(encoder.makeVHB());
         req.setKEU(KeyStoreCoder.aesEncryped(ks, UserConfig.AESKey));
         req.setKED(KeyStoreCoder.aesEncryped(ks, block.getKD()));
         req.setOriginalSize(block.getOriginalSize());
         req.setRealSize(block.getRealSize());
-        req.setRsShard(rs.getShardList().get(0).isRsShard());
+        if (encoder.isCopyMode()) {
+            req.setAR(ShardEncoder.AR_COPY_MODE);
+        } else {
+            if (encoder instanceof ShardRSEncoder) {
+                req.setAR(ShardEncoder.AR_RS_MODE);
+            } else {
+                req.setAR(encoder.getDataCount());
+            }
+        }
         req.setOkList(okList);
         req.setVNU(VNU);
         P2PUtils.requestBPU(req, bpdNode, VNU.toString(), SN_RETRYTIMES);//重试5分钟
