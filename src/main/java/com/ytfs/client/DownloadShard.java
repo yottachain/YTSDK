@@ -69,7 +69,7 @@ public class DownloadShard implements Runnable {
                     LOG.error("[" + downloadBlock.refer.getVBI() + "]Download ERR:" + Base58.encode(req.getVHF()) + " from " + node.getId());
                     if (param.getRetryTime() > 0) {
                         try {
-                            Thread.sleep(500);
+                            Thread.sleep(50);
                         } catch (InterruptedException ex1) {
                             break;
                         }

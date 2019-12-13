@@ -92,7 +92,7 @@ public class DownloadBlock {
 
     private byte[] loadLRCShard(DownloadBlockInitResp initresp) throws InterruptedException, ServiceException {
         List<Shard> shards = new ArrayList();
-        int len = initresp.getAR();
+        int len = initresp.getAR()+(initresp.getVNF()-initresp.getAR())/2;
         ConcurrentLinkedQueue<DownloadShardParam> shardparams = new ConcurrentLinkedQueue();
         Map<Integer, Node> map = new HashMap();
         for (Node n : initresp.getNodes()) {
