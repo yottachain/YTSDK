@@ -66,7 +66,7 @@ public class DownloadShard implements Runnable {
                         break;
                     }
                 } catch (Throwable ex) {
-                    LOG.error("[" + downloadBlock.refer.getVBI() + "]Download ERR:" + Base58.encode(req.getVHF()) + " from " + node.getId());                   
+                    LOG.error("[" + downloadBlock.refer.getVBI() + "]Download ERR:" + Base58.encode(req.getVHF()) + " from " + node.getId());
                     if (param.getRetryTime() > 0) {
                         try {
                             Thread.sleep(500);
@@ -93,13 +93,14 @@ public class DownloadShard implements Runnable {
         }
         if (data.length < UserConfig.Default_Shard_Size) {
             return false;
+        } else if (data.length == UserConfig.Default_Shard_Size) {
         } else {
             byte[] bs = new byte[UserConfig.Default_Shard_Size];
             System.arraycopy(data, 0, bs, 0, bs.length);
             resp.setData(bs);
         }
         try {
-            MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+            MessageDigest sha256 = MessageDigest.getInstance("MD5");
             byte[] bs = sha256.digest(resp.getData());
             return Arrays.equals(bs, VHF);
         } catch (NoSuchAlgorithmException ex) {

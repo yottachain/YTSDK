@@ -41,6 +41,7 @@ public class UploadShard implements Runnable {
         uploader.shardId = shardId;
         uploader.logHead = "[" + uploadBlock.VNU + "][" + uploadBlock.id + "][" + shardId + "]";
         GlobleThreadPool.execute(uploader);
+        //uploader.run();
     }
 
     private UploadBlock uploadBlock;

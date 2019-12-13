@@ -79,7 +79,7 @@ public class RegUser {
     private static void regist(SuperNode sNode) throws ServiceException {
         try {
             PreRegUserReq preq = new PreRegUserReq();
-            PreRegUserResp presp = (PreRegUserResp) P2PUtils.requestBPU(preq, sNode, UserConfig.SN_RETRYTIMES);
+            PreRegUserResp presp = (PreRegUserResp) P2PUtils.requestBPU(preq, sNode, 0);
             RegUserReq req = new RegUserReq();
             byte[] signData = EOSRequest.makeGetBalanceRequest(presp.getSignArg(), UserConfig.username,
                     UserConfig.privateKey, presp.getContractAccount());
@@ -96,6 +96,7 @@ public class RegUser {
             LOG.info("Current user ID:" + resp.getUserId() + ",supernode:" + sn.getId() + ",ID:" + sn.getNodeid());
             UserConfig.superNode = sn;
         } catch (Exception r) {
+            r.printStackTrace();
             throw new ServiceException(SERVER_ERROR);
         }
     }
