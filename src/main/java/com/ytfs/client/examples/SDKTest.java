@@ -17,7 +17,7 @@ import org.tanukisoftware.wrapper.WrapperManager;
 public class SDKTest implements WrapperListener {
 
     private static final String sn = "yf";
-    private static final String path = "D:\\aa.rar";
+    private static final String path = "D:\\test.rar";
 
     @Override
     public Integer start(String[] strings) {
@@ -30,6 +30,7 @@ public class SDKTest implements WrapperListener {
         }
         try {
             ClientInitor.init();
+ 
             if (strings.length < 1) {
                 strings = new String[]{path};
             }

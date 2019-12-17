@@ -7,6 +7,7 @@ import com.ytfs.common.net.P2PUtils;
 import com.ytfs.service.packet.DownloadShardReq;
 import com.ytfs.service.packet.DownloadShardResp;
 import com.ytfs.common.GlobleThreadPool;
+import com.ytfs.common.codec.lrc.ShardLRCDecoder;
 import io.jafka.jeos.util.Base58;
 import io.yottachain.nodemgmt.core.vo.Node;
 import java.security.MessageDigest;
@@ -32,15 +33,17 @@ public class DownloadShard implements Runnable {
         return queue;
     }
 
-    static void startDownloadShard(ConcurrentLinkedQueue<DownloadShardParam> shardparams, DownloadBlock downloadBlock) throws InterruptedException {
+    static void startDownloadShard(ConcurrentLinkedQueue<DownloadShardParam> shardparams, DownloadBlock downloadBlock, ShardLRCDecoder lrcDecoder) throws InterruptedException {
         DownloadShard downloader = getQueue().take();
         downloader.downloadBlock = downloadBlock;
         downloader.shardparams = shardparams;
+        downloader.lrcDecoder = lrcDecoder;
         GlobleThreadPool.execute(downloader);
     }
 
     private DownloadBlock downloadBlock;
     private ConcurrentLinkedQueue<DownloadShardParam> shardparams;
+    private ShardLRCDecoder lrcDecoder;
 
     @Override
     public void run() {
@@ -48,7 +51,7 @@ public class DownloadShard implements Runnable {
             while (true) {
                 DownloadShardParam param = shardparams.poll();
                 if (param == null) {
-                    downloadBlock.onResponse(new DownloadShardResp());
+                    downloadBlock.onResponse(new DownloadShardResp(), lrcDecoder);
                     break;
                 }
                 DownloadShardReq req = new DownloadShardReq();
@@ -57,19 +60,31 @@ public class DownloadShard implements Runnable {
                 try {
                     DownloadShardResp resp = (DownloadShardResp) P2PUtils.requestNode(req, node);
                     if (!verify(resp, req.getVHF(), downloadBlock.refer.getVBI())) {
+                        if (lrcDecoder != null) {
+                            if (lrcDecoder.isFinished()) {
+                                downloadBlock.onResponse(new DownloadShardResp(), lrcDecoder);
+                                break;
+                            }
+                        }
                         LOG.error("[" + downloadBlock.refer.getVBI() + "]Download VHF inconsistency:" + Base58.encode(req.getVHF()) + " from " + node.getId());
                     } else {
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("[" + downloadBlock.refer.getVBI() + "]Download OK:" + Base58.encode(req.getVHF()) + " from " + node.getId());
                         }
-                        downloadBlock.onResponse(resp);
+                        downloadBlock.onResponse(resp, lrcDecoder);
                         break;
                     }
                 } catch (Throwable ex) {
+                    if (lrcDecoder != null) {
+                        if (lrcDecoder.isFinished()) {
+                            downloadBlock.onResponse(new DownloadShardResp(), lrcDecoder);
+                            break;
+                        }
+                    }
                     LOG.error("[" + downloadBlock.refer.getVBI() + "]Download ERR:" + Base58.encode(req.getVHF()) + " from " + node.getId());
                     if (param.getRetryTime() > 0) {
                         try {
-                            Thread.sleep(50);
+                            Thread.sleep(100);
                         } catch (InterruptedException ex1) {
                             break;
                         }
@@ -88,7 +103,7 @@ public class DownloadShard implements Runnable {
     static boolean verify(DownloadShardResp resp, byte[] VHF, long vbi) {
         byte[] data = resp.getData();
         if (data == null) {
-            LOG.error("[" + vbi + "]VHF:(" + Base58.encode(VHF) + ") Non-existent.");
+            LOG.error("[" + vbi + "]VHF:(" + Base58.encode(VHF) + ") Non-existent:" + (data == null ? "0" : data.length));
             return false;
         }
         if (data.length < UserConfig.Default_Shard_Size) {

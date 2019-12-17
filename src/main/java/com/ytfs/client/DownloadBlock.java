@@ -27,6 +27,11 @@ import static com.ytfs.common.ServiceErrorCode.COMM_ERROR;
 import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.common.codec.ShardEncoder;
 import com.ytfs.common.codec.lrc.ShardLRCDecoder;
+import io.yottachain.p2phost.utils.Base58;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class DownloadBlock {
@@ -43,6 +48,15 @@ public class DownloadBlock {
 
     public byte[] getData() {
         return data;
+    }
+
+    public static String sha256(byte[] bs) {
+        try {
+            MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+            return Base58.encode(sha256.digest(bs));
+        } catch (NoSuchAlgorithmException ex) {
+            return "";
+        }
     }
 
     public void load() throws ServiceException {
@@ -83,16 +97,32 @@ public class DownloadBlock {
         }
     }
 
-    void onResponse(DownloadShardResp res) {
+    void onResponse(DownloadShardResp res, ShardLRCDecoder lrcDecoder) {
         synchronized (this) {
             resList.add(res);
+            if (lrcDecoder != null) {
+                if (res.getData() != null) {
+                    try {
+                        lrcDecoder.addShard(res.getData());
+                    } catch (Throwable d) {
+                        LOG.error("LRC decoder err:" + d.getMessage());
+                    }
+                }
+            }
             this.notify();
         }
     }
 
     private byte[] loadLRCShard(DownloadBlockInitResp initresp) throws InterruptedException, ServiceException {
-        List<Shard> shards = new ArrayList();
-        int len = initresp.getAR()+(initresp.getVNF()-initresp.getAR())/2;
+        int len = initresp.getVNF();
+        BlockEncrypted be = new BlockEncrypted(refer.getRealSize());
+        ShardLRCDecoder lrcDecoder;
+        try {
+            lrcDecoder = new ShardLRCDecoder(be.getEncryptedBlockSize());
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
+            throw new ServiceException(SERVER_ERROR, e.getMessage());
+        }
         ConcurrentLinkedQueue<DownloadShardParam> shardparams = new ConcurrentLinkedQueue();
         Map<Integer, Node> map = new HashMap();
         for (Node n : initresp.getNodes()) {
@@ -111,39 +141,37 @@ public class DownloadBlock {
         }
         long l = System.currentTimeMillis();
         for (int ii = 0; ii < len; ii++) {
-            DownloadShard.startDownloadShard(shardparams, this);
+            DownloadShard.startDownloadShard(shardparams, this, lrcDecoder);
         }
         synchronized (this) {
             while (resList.size() != len) {
+                if (lrcDecoder.isFinished()) {
+                    break;
+                }
                 this.wait(1000 * 15);
             }
         }
-        resList.stream().filter((res) -> (res.getData() != null)).forEachOrdered((res) -> {
-            shards.add(new Shard(res.getData()));
-        });
-        resList.clear();
-        ShardLRCDecoder lrc;
         try {
-            BlockEncrypted be = new BlockEncrypted(refer.getRealSize());
-            lrc = new ShardLRCDecoder(be.getEncryptedBlockSize());
-            for (Shard shard : shards) {
-                boolean b = lrc.addShard(shard.getData());
-                if (b) {
-                    break;
-                }
-            }
-            if (lrc.isFinished()) {
-                LOG.info("[" + refer.getVBI() + "]Download shardcount " + len + ",take times " + (System.currentTimeMillis() - l) + "ms");
-                be = lrc.decode();
+            if (lrcDecoder.isFinished()) {
+                LOG.info("[" + refer.getVBI() + "]Download shardcount " + lrcDecoder.shardCount() + ",take times " + (System.currentTimeMillis() - l) + "ms");
+                be = lrcDecoder.decode();
+/*
+                String sha = sha256(be.getData());
+                File f = new File("d:/test" + refer.getId()); 
+                FileOutputStream fos = new FileOutputStream(new File(f, sha+".dec"));
+                fos.write(be.getData());
+                fos.close();
+*/
                 BlockAESDecryptor dec = new BlockAESDecryptor(be.getData(), ks);
                 dec.decrypt();
                 return dec.getSrcData();
             } else {
-                lrc.free();
-                LOG.error("[" + refer.getVBI() + "]Download shardcount " + shards.size() + "/" + initresp.getVNF() + ",Not enough shards present.");
+                lrcDecoder.free();
+                LOG.error("[" + refer.getId() + "]Download shardcount " + lrcDecoder.shardCount() + "/" + initresp.getVNF() + ",Not enough shards present.");
                 throw new ServiceException(COMM_ERROR);
             }
         } catch (Throwable t) {
+            t.printStackTrace();
             throw t instanceof ServiceException ? (ServiceException) t : new ServiceException(SERVER_ERROR, t.getMessage());
         }
     }
@@ -169,7 +197,7 @@ public class DownloadBlock {
         }
         long l = System.currentTimeMillis();
         for (int ii = 0; ii < len; ii++) {
-            DownloadShard.startDownloadShard(shardparams, this);
+            DownloadShard.startDownloadShard(shardparams, this, null);
         }
         synchronized (this) {
             while (resList.size() != len) {
@@ -179,7 +207,6 @@ public class DownloadBlock {
         resList.stream().filter((res) -> (res.getData() != null)).forEachOrdered((res) -> {
             shards.add(new Shard(res.getData()));
         });
-        resList.clear();
         if (shards.size() >= len) {
             LOG.info("[" + refer.getVBI() + "]Download shardcount " + len + ",take times " + (System.currentTimeMillis() - l) + "ms");
             BlockEncrypted be = new BlockEncrypted(refer.getRealSize());
