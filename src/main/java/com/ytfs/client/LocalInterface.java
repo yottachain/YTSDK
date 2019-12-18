@@ -2,9 +2,6 @@ package com.ytfs.client;
 
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.conf.UserConfig;
-import com.ytfs.common.net.P2PUtils;
-import com.ytfs.service.packet.user.UserSpaceReq;
-import com.ytfs.service.packet.user.UserSpaceResp;
 
 public class LocalInterface {
 
@@ -15,9 +12,12 @@ public class LocalInterface {
      * @throws ServiceException
      */
     public static String getUserStat() throws ServiceException {
+        /*
         UserSpaceReq req = new UserSpaceReq();
         UserSpaceResp resp = (UserSpaceResp) P2PUtils.requestBPU(req, UserConfig.superNode,6);
         return resp.getJson();
+         */
+        return null;
     }
 
     /**
@@ -26,7 +26,7 @@ public class LocalInterface {
      * @return
      */
     public static String getPrivateKey() {
-        return UserConfig.username + "@" + UserConfig.privateKey;
+        return UserConfig.username + "@";// + UserConfig.privateKey;
     }
 
 }

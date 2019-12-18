@@ -30,7 +30,6 @@ public class SDKTest implements WrapperListener {
         }
         try {
             ClientInitor.init();
- 
             if (strings.length < 1) {
                 strings = new String[]{path};
             }
