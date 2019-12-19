@@ -167,8 +167,8 @@ public class Configurator {
         if (uploadShardThreadNum < 50) {
             uploadShardThreadNum = 50;
         }
-        if (uploadShardThreadNum > 1500) {
-            uploadShardThreadNum = 1500;
+        if (uploadShardThreadNum > 5000) {
+            uploadShardThreadNum = 5000;
         }
         this.uploadShardThreadNum = uploadShardThreadNum;
     }
