@@ -48,7 +48,7 @@ public class ClientInitor {
      * @throws IOException
      */
     public static void init(Configurator cfg) throws IOException {
-        String level = WrapperManager.getProperties().getProperty("wrapper.log4j.loglevel", "DEBUG");
+        String level = WrapperManager.getProperties().getProperty("wrapper.log4j.loglevel", "INFO");
         String path = WrapperManager.getProperties().getProperty("wrapper.log4j.logfile");
         LogConfigurator.configPath(path == null ? null : new File(path), level);
         if (cfg == null) {

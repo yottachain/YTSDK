@@ -28,8 +28,6 @@ import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.common.codec.ShardEncoder;
 import com.ytfs.common.codec.lrc.ShardLRCDecoder;
 import io.yottachain.p2phost.utils.Base58;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -155,13 +153,6 @@ public class DownloadBlock {
             if (lrcDecoder.isFinished()) {
                 LOG.info("[" + refer.getVBI() + "]Download shardcount " + lrcDecoder.shardCount() + ",take times " + (System.currentTimeMillis() - l) + "ms");
                 be = lrcDecoder.decode();
-/*
-                String sha = sha256(be.getData());
-                File f = new File("d:/test" + refer.getId()); 
-                FileOutputStream fos = new FileOutputStream(new File(f, sha+".dec"));
-                fos.write(be.getData());
-                fos.close();
-*/
                 BlockAESDecryptor dec = new BlockAESDecryptor(be.getData(), ks);
                 dec.decrypt();
                 return dec.getSrcData();

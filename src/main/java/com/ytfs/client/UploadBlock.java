@@ -1,6 +1,5 @@
 package com.ytfs.client;
 
-import static com.ytfs.client.DownloadBlock.sha256;
 import com.ytfs.common.conf.UserConfig;
 import com.ytfs.service.packet.UploadShardRes;
 import com.ytfs.common.codec.Block;
@@ -16,8 +15,6 @@ import com.ytfs.common.codec.lrc.ShardLRCEncoder;
 import static com.ytfs.common.conf.UserConfig.SN_RETRYTIMES;
 import com.ytfs.service.packet.user.UploadBlockEndReq;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -77,32 +74,13 @@ public class UploadBlock {
             long l = System.currentTimeMillis();
             byte[] ks = KeyStoreCoder.generateRandomKey();
             BlockAESEncryptor aes = new BlockAESEncryptor(block, ks);
-            aes.encrypt();
-            
-            /*********
-            String sha = sha256(aes.getBlockEncrypted().getData());
-            File f = new File("d:/test" + id);
-            f.mkdir();
-            FileOutputStream fos = new FileOutputStream(new File(f, sha));
-            fos.write(aes.getBlockEncrypted().getData());
-            fos.close();
-            */
-            
+            aes.encrypt();           
             if (UserConfig.useLRCCoder) {
                 encoder = new ShardLRCEncoder(aes.getBlockEncrypted());
             } else {
                 encoder = new ShardRSEncoder(aes.getBlockEncrypted());
             }
-            encoder.encode();
-            
-            /*********
-            List<Shard> shards = encoder.getShardList();
-            for (int ii = 0; ii < shards.size(); ii++) {
-                FileOutputStream foss = new FileOutputStream(new File(f, ii+""));
-                foss.write(shards.get(ii).getData());
-                foss.close();
-            }
-            */
+            encoder.encode();          
             long times = firstUpload();
             subUpload(times);
             LOG.info("[" + VNU + "][" + id + "]Upload block OK,shardcount " + encoder.getShardList().size() + ",take times " + (System.currentTimeMillis() - l) + "ms");

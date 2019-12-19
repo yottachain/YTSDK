@@ -7,7 +7,9 @@ import com.ytfs.common.codec.Block;
 import com.ytfs.common.codec.BlockAESEncryptor;
 import com.ytfs.common.codec.BlockEncrypted;
 import com.ytfs.common.codec.KeyStoreCoder;
+import com.ytfs.common.codec.ShardEncoder;
 import com.ytfs.common.codec.erasure.ShardRSEncoder;
+import com.ytfs.common.codec.lrc.ShardLRCEncoder;
 import com.ytfs.common.conf.UserConfig;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.service.packet.user.UploadBlockDBReq;
@@ -73,7 +75,8 @@ public abstract class UploadObjectAbstract {
                     UploadBlockToDB(b, id, node);
                 } else {//请求分配节点
                     UploadBlock ub = new UploadBlock(b, id, node, VNU, ((UploadBlockDupResp) resp).getStartTime(), signArg, stamp);
-                    LOG.info("[" + VNU + "][" + id + "]Block is initialized at sn " + node.getId() + ",take times " + (System.currentTimeMillis() - l) + "ms");
+                    LOG.info("[" + VNU + "][" + id + "]Block is initialized at sn " + node.getId() + ",take times "
+                            + (System.currentTimeMillis() - l) + "ms," + Base58.encode(b.getVHP()));
                     ub.upload();
                 }
             }
@@ -83,7 +86,8 @@ public abstract class UploadObjectAbstract {
                 UploadBlockToDB(b, id, node);
             } else {
                 UploadBlock ub = new UploadBlock(b, id, node, VNU, ((UploadBlockInitResp) resp).getStartTime(), signArg, stamp);
-                LOG.info("[" + VNU + "][" + id + "]Block is initialized at sn " + node.getId() + ",take times " + (System.currentTimeMillis() - l) + "ms");
+                LOG.info("[" + VNU + "][" + id + "]Block is initialized at sn " + node.getId() + ",take times "
+                        + (System.currentTimeMillis() - l) + "ms," + Base58.encode(b.getVHP()));
                 ub.upload();
             }
         }
@@ -116,6 +120,7 @@ public abstract class UploadObjectAbstract {
     private UploadBlockDupReq checkResp(UploadBlockDupResp resp, Block b) {
         byte[][] keds = resp.getKED();
         byte[][] vhbs = resp.getVHB();
+        int[] ars = resp.getAR();
         for (int ii = 0; ii < keds.length; ii++) {
             byte[] ked = keds[ii];
             try {
@@ -124,9 +129,15 @@ public abstract class UploadObjectAbstract {
                 BlockAESEncryptor aes = new BlockAESEncryptor(b, ks);
                 aes.encrypt();
                 if (aes.getBlockEncrypted().needEncode()) {
-                    ShardRSEncoder enc = new ShardRSEncoder(aes.getBlockEncrypted());
-                    enc.encode();
-                    VHB = enc.makeVHB();
+                    if (ars[ii] == ShardEncoder.AR_RS_MODE) {
+                        ShardRSEncoder enc = new ShardRSEncoder(aes.getBlockEncrypted());
+                        enc.encode();
+                        VHB = enc.makeVHB();
+                    } else {
+                        ShardLRCEncoder enc = new ShardLRCEncoder(aes.getBlockEncrypted());
+                        enc.encode();
+                        VHB = enc.makeVHB();
+                    }
                 } else {
                     VHB = aes.getBlockEncrypted().getVHB();
                 }
