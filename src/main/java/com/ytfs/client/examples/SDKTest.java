@@ -17,7 +17,7 @@ import org.tanukisoftware.wrapper.WrapperManager;
 public class SDKTest implements WrapperListener {
 
     private static final String sn = "yf";
-    private static final String path = "D:\\test.rar";
+    private static final String path = "D:\\孟庭苇-无声的雨.ape";
 
     @Override
     public Integer start(String[] strings) {
@@ -25,8 +25,8 @@ public class SDKTest implements WrapperListener {
             System.setProperty("snlist.conf", "conf/snlistCS.properties");
             System.setProperty("ytfs.conf", "conf/ytfsCS.properties");
         } else {
-            System.setProperty("snlist.conf", "conf/snlistYF.properties");
-            System.setProperty("ytfs.conf", "conf/ytfsYF.properties");
+            System.setProperty("snlist.conf", "conf/snlist.properties");
+            System.setProperty("ytfs.conf", "conf/ytfs.properties");
         }
         try {
             ClientInitor.init();

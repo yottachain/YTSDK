@@ -74,13 +74,23 @@ public class UploadBlock {
             long l = System.currentTimeMillis();
             byte[] ks = KeyStoreCoder.generateRandomKey();
             BlockAESEncryptor aes = new BlockAESEncryptor(block, ks);
-            aes.encrypt();           
+            aes.encrypt();
             if (UserConfig.useLRCCoder) {
                 encoder = new ShardLRCEncoder(aes.getBlockEncrypted());
             } else {
                 encoder = new ShardRSEncoder(aes.getBlockEncrypted());
             }
-            encoder.encode();          
+            encoder.encode();
+            /*
+            if (encoder.getShardList().size() == 164) {
+                int ii = 0;
+                MessageWriter.write("d:\\src.dat", aes.getBlockEncrypted().getData());
+                for (Shard s : encoder.getShardList()) {
+                    MessageWriter.write("d:\\" + ii + ".dat", s.getData());
+                    ii++;
+                }
+            }
+            */
             long times = firstUpload();
             subUpload(times);
             LOG.info("[" + VNU + "][" + id + "]Upload block OK,shardcount " + encoder.getShardList().size() + ",take times " + (System.currentTimeMillis() - l) + "ms");
