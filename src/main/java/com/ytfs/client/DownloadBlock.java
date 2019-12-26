@@ -162,7 +162,6 @@ public class DownloadBlock {
                 throw new ServiceException(COMM_ERROR);
             }
         } catch (Throwable t) {
-            t.printStackTrace();
             throw t instanceof ServiceException ? (ServiceException) t : new ServiceException(SERVER_ERROR, t.getMessage());
         }
     }

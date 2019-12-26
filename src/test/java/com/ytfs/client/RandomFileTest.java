@@ -16,8 +16,8 @@ public class RandomFileTest {
             System.setProperty("snlist.conf", "conf/snlistCS.properties");
             System.setProperty("ytfs.conf", "conf/ytfsCS.properties");
         } else {
-            System.setProperty("snlist.conf", "conf/snlistYF.properties");
-            System.setProperty("ytfs.conf", "conf/ytfsYF.properties");
+            System.setProperty("snlist.conf", "conf/snlist.properties");
+            System.setProperty("ytfs.conf", "conf/ytfs.properties");
         }
         ClientInitor.init();
         //测试小文件
