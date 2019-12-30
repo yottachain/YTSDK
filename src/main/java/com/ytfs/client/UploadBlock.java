@@ -14,6 +14,7 @@ import com.ytfs.common.codec.ShardEncoder;
 import com.ytfs.common.codec.lrc.ShardLRCEncoder;
 import static com.ytfs.common.conf.UserConfig.SN_RETRYTIMES;
 import com.ytfs.service.packet.user.UploadBlockEndReq;
+import com.ytfs.service.packet.user.UploadBlockEndResp;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -90,7 +91,7 @@ public class UploadBlock {
                     ii++;
                 }
             }
-            */
+             */
             long times = firstUpload();
             subUpload(times);
             LOG.info("[" + VNU + "][" + id + "]Upload block OK,shardcount " + encoder.getShardList().size() + ",take times " + (System.currentTimeMillis() - l) + "ms");
@@ -238,7 +239,8 @@ public class UploadBlock {
         }
         req.setOkList(okList);
         req.setVNU(VNU);
-        P2PUtils.requestBPU(req, bpdNode, VNU.toString(), SN_RETRYTIMES);//重试5分钟
+        UploadBlockEndResp resp = (UploadBlockEndResp) P2PUtils.requestBPU(req, bpdNode, VNU.toString(), SN_RETRYTIMES);//重试5分钟
+        BlockSyncCache.putBlock(req, resp);
         LOG.info("[" + VNU + "][" + id + "]Upload block OK,take times " + (System.currentTimeMillis() - l) + "ms");
     }
 }

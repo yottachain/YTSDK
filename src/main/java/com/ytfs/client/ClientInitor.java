@@ -41,6 +41,8 @@ public class ClientInitor {
         init(null);
     }
 
+    private static boolean inited = false;
+
     /**
      * 初始化SDK
      *
@@ -50,18 +52,30 @@ public class ClientInitor {
     public static void init(Configurator cfg) throws IOException {
         String level = WrapperManager.getProperties().getProperty("wrapper.log4j.loglevel", "DEBUG");
         String path = WrapperManager.getProperties().getProperty("wrapper.log4j.logfile");
-        LogConfigurator.configPath(path == null ? null : new File(path), level);
-        if (cfg == null) {
-            load();
+        if (!inited) {
+            LogConfigurator.configPath(path == null ? null : new File(path), level);
+            if (cfg == null) {
+                load();
+            } else {
+                load(cfg);
+            }
+            startP2p();
+            RegUser.regist();
+            regCaller();
+            PreAllocNodeMgr.init();
+            MemoryCache.init();
+            GlobalTracer.init(zipkinServer, "S3server");
+            inited = true;
         } else {
-            load(cfg);
+            LogConfigurator.configPath(path == null ? null : new File(path), level);
+            if (cfg == null) {
+                load();
+            } else {
+                load(cfg);
+            }
+            RegUser.regist();
+            regCaller();
         }
-        startP2p();
-        RegUser.regist();
-        regCaller();
-        PreAllocNodeMgr.init();
-        MemoryCache.init();
-        GlobalTracer.init(zipkinServer, "S3server");
     }
 
     private static void regCaller() {

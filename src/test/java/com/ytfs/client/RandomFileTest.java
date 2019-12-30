@@ -9,14 +9,14 @@ import org.apache.commons.codec.binary.Hex;
 
 public class RandomFileTest {
 
-    private static final String sn = "yf";
+    private static final String sn = "cs";
 
     public static void main(String[] args) throws IOException {
         if (sn.equalsIgnoreCase("cs")) {
-            System.setProperty("snlist.conf", "conf/snlistCS.properties");
-            System.setProperty("ytfs.conf", "conf/ytfsCS.properties");
+            System.setProperty("snlist.conf", "conf/snlist_CS.properties");
+            System.setProperty("ytfs.conf", "conf/ytfs.properties");
         } else {
-            System.setProperty("snlist.conf", "conf/snlist.properties");
+            System.setProperty("snlist.conf", "conf/snlist_YF.properties");
             System.setProperty("ytfs.conf", "conf/ytfs.properties");
         }
         ClientInitor.init();
