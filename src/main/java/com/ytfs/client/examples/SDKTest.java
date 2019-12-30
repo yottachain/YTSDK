@@ -17,13 +17,13 @@ import org.tanukisoftware.wrapper.WrapperManager;
 public class SDKTest implements WrapperListener {
 
     private static final String sn = "yf";
-    private static final String path = "D:\\萨顶顶 - 左手指月.flac";
+    private static final String path = "D:\\Documents.rar";
 
     @Override
     public Integer start(String[] strings) {
         if (sn.equalsIgnoreCase("cs")) {
-            System.setProperty("snlist.conf", "conf/snlistCS.properties");
-            System.setProperty("ytfs.conf", "conf/ytfsCS.properties");
+            System.setProperty("snlist.conf", "conf/snlist_CS.properties");
+            System.setProperty("ytfs.conf", "conf/ytfs.properties");
         } else {
             System.setProperty("snlist.conf", "conf/snlist_YF.properties");
             System.setProperty("ytfs.conf", "conf/ytfs.properties");

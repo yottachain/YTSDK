@@ -16,7 +16,7 @@ public class BlockSyncCache {
 
     private static final Logger LOG = Logger.getLogger(BlockSyncCache.class);
     private static final Map<UploadBlockEndSyncReq, BlockIP> blockSyncCache = new ConcurrentHashMap<>();
-    private static final int ExpiredTime = 3 * 60000;
+    private static final int ExpiredTime =  60000;
     private static BlockSyncCacheClear me = null;
 
     public static void putBlock(UploadBlockEndReq req, UploadBlockEndResp resp) {
