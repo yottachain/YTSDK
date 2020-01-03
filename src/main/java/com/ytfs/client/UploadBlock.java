@@ -239,8 +239,10 @@ public class UploadBlock {
         }
         req.setOkList(okList);
         req.setVNU(VNU);
-        UploadBlockEndResp resp = (UploadBlockEndResp) P2PUtils.requestBPU(req, bpdNode, VNU.toString(), SN_RETRYTIMES);//重试5分钟
-        BlockSyncCache.putBlock(req, resp);
+        Object obj = P2PUtils.requestBPU(req, bpdNode, VNU.toString(), SN_RETRYTIMES);//重试5分钟
+        if (obj instanceof UploadBlockEndResp) {
+            BlockSyncCache.putBlock(req, (UploadBlockEndResp) obj);
+        }
         LOG.info("[" + VNU + "][" + id + "]Upload block OK,take times " + (System.currentTimeMillis() - l) + "ms");
     }
 }
