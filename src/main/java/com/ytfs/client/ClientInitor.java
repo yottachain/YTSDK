@@ -82,7 +82,8 @@ public class ClientInitor {
         LoginCaller caller = (SuperNode node) -> {
             LoginReq req = new LoginReq();
             req.setUserId(userId);
-            String data = userId + username;
+            req.setKeyNumber(keyNumber);
+            String data = userId + username + keyNumber;
             byte[] signdata = data.getBytes(Charset.forName("UTF-8"));
             String sign = null;
             try {

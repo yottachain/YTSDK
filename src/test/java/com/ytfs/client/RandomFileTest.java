@@ -9,7 +9,7 @@ import org.apache.commons.codec.binary.Hex;
 
 public class RandomFileTest {
 
-    private static final String sn = "cs";
+    private static final String sn = "yf";
 
     public static void main(String[] args) throws IOException {
         if (sn.equalsIgnoreCase("cs")) {

@@ -93,6 +93,7 @@ public class RegUser {
             sn.setNodeid(resp.getSuperNodeID());
             sn.setAddrs(resp.getSuperNodeAddrs());
             UserConfig.userId = resp.getUserId();
+            UserConfig.keyNumber = resp.getKeyNumber();
             LOG.info("Current user ID:" + resp.getUserId() + ",supernode:" + sn.getId() + ",ID:" + sn.getNodeid());
             UserConfig.superNode = sn;
         } catch (Exception r) {
