@@ -126,6 +126,9 @@ public class UploadShard implements Runnable {
                         } else {
                             res.setDNSIGN(resp.getDNSIGN());
                         }
+                        if (!shard.isCopyShard()) {
+                            shard.clearData();
+                        }
                         break;
                     } else {
                         if (resp.getRES() == UploadShardRes.RES_NO_SPACE) {

@@ -21,7 +21,9 @@ import com.ytfs.service.packet.user.UploadObjectEndReq;
 import io.jafka.jeos.util.Base58;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 
@@ -33,6 +35,8 @@ public abstract class UploadObjectAbstract {
     protected byte[] VHW;
     protected String signArg;
     protected long stamp;
+    protected long memorys = 0;
+    protected final List<UploadBlockExecuter> execlist = new ArrayList();
 
     public abstract byte[] upload() throws ServiceException, IOException, InterruptedException;
 
@@ -53,6 +57,15 @@ public abstract class UploadObjectAbstract {
             }
         }
     }
+
+    protected void memoryChange(long len) {
+        synchronized (execlist) {
+            long curmem = memorys + len;
+            if (curmem < UserConfig.UPLOADFILEMAXMEMORY) {
+                execlist.notify();
+            }
+        }
+    }
     //上传块
 
     public final void upload(Block b, short id, SuperNode node) throws ServiceException, InterruptedException {
@@ -63,6 +76,8 @@ public abstract class UploadObjectAbstract {
         if (resp instanceof UploadBlockDupResp) {//重复,resp.getExist()=0已经上传     
             UploadBlockDupReq uploadBlockDupReq = checkResp((UploadBlockDupResp) resp, b);
             if (uploadBlockDupReq != null) {//请求节点
+                b.clearData();
+                this.memoryChange(b.getRealSize() * -1);
                 uploadBlockDupReq.setId(id);
                 uploadBlockDupReq.setVHP(b.getVHP());  //计数
                 uploadBlockDupReq.setOriginalSize(b.getOriginalSize());
@@ -72,9 +87,11 @@ public abstract class UploadObjectAbstract {
                 LOG.info("[" + VNU + "][" + id + "]Block is a repetitive block:" + Base58.encode(b.getVHP()));
             } else {
                 if (!be.needEncode()) {
+                    b.clearData();
+                    this.memoryChange(b.getRealSize() * -1);
                     UploadBlockToDB(b, id, node);
                 } else {//请求分配节点
-                    UploadBlock ub = new UploadBlock(b, id, node, VNU, ((UploadBlockDupResp) resp).getStartTime(), signArg, stamp);
+                    UploadBlock ub = new UploadBlock(this, b, id, node, VNU, ((UploadBlockDupResp) resp).getStartTime(), signArg, stamp);
                     LOG.info("[" + VNU + "][" + id + "]Block is initialized at sn " + node.getId() + ",take times "
                             + (System.currentTimeMillis() - l) + "ms," + Base58.encode(b.getVHP()));
                     ub.upload();
@@ -83,9 +100,11 @@ public abstract class UploadObjectAbstract {
         }
         if (resp instanceof UploadBlockInitResp) {
             if (!be.needEncode()) {
+                b.clearData();
+                this.memoryChange(b.getRealSize() * -1);
                 UploadBlockToDB(b, id, node);
             } else {
-                UploadBlock ub = new UploadBlock(b, id, node, VNU, ((UploadBlockInitResp) resp).getStartTime(), signArg, stamp);
+                UploadBlock ub = new UploadBlock(this, b, id, node, VNU, ((UploadBlockInitResp) resp).getStartTime(), signArg, stamp);
                 LOG.info("[" + VNU + "][" + id + "]Block is initialized at sn " + node.getId() + ",take times "
                         + (System.currentTimeMillis() - l) + "ms," + Base58.encode(b.getVHP()));
                 ub.upload();

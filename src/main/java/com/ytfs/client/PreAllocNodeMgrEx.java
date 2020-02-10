@@ -1,6 +1,6 @@
 package com.ytfs.client;
 
-import com.ytfs.common.ServiceException;
+import static com.ytfs.client.PreAllocNodes.idList;
 import com.ytfs.common.conf.UserConfig;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.service.packet.user.PreAllocNode;
@@ -13,10 +13,11 @@ import java.util.List;
 import java.util.Map;
 import org.apache.log4j.Logger;
 
-public class PreAllocNodeMgr extends Thread {
+public class PreAllocNodeMgrEx extends Thread {
 
-    private static final Logger LOG = Logger.getLogger(PreAllocNodeMgr.class);
-    private static PreAllocNodeMgr me = null;
+    private static final Logger LOG = Logger.getLogger(PreAllocNodeMgrEx.class);
+    private static PreAllocNodeMgrEx me = null;
+
 
     public static void init() {
         while (true) {
@@ -29,10 +30,10 @@ public class PreAllocNodeMgr extends Thread {
                     PreAllocNodes.NODE_LIST.put(node.getId(), new PreAllocNodeStat(node));
                 });
                 LOG.info("Pre-Alloc Node total:" + ls.size());
-                me = new PreAllocNodeMgr();
+                me = new PreAllocNodeMgrEx();
                 me.start();
                 return;
-            } catch (ServiceException ex) {
+            } catch (Exception ex) {
                 LOG.error("Get data node ERR:" + ex);
                 try {
                     Thread.sleep(15000);
@@ -48,11 +49,29 @@ public class PreAllocNodeMgr extends Thread {
         }
     }
 
+    public boolean needAlloc() {
+        Collection<PreAllocNodeStat> coll = PreAllocNodes.NODE_LIST.values();
+        int count = 0;
+        for (PreAllocNodeStat stat : coll) {
+            if (idList.contains(stat.getId())) {
+                count++;
+            }
+        }
+        if (idList.size() > count) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
     @Override
     public void run() {
         LOG.info("Pre-Alloc Node manager is starting...");
         try {
-            sleep(UserConfig.PTR);
+            if (!needAlloc()) {
+                sleep(UserConfig.PTR);
+            }
         } catch (InterruptedException ex) {
             this.interrupt();
         }
@@ -68,7 +87,11 @@ public class PreAllocNodeMgr extends Thread {
                 } else {
                     LOG.info("Pre-Alloc Node list is updated,total:" + resp.getList().size());
                 }
-                sleep(UserConfig.PTR);
+                if (!needAlloc()) {
+                    sleep(UserConfig.PTR);
+                } else {
+                    sleep(UserConfig.PTR / 2);
+                }
             } catch (InterruptedException ie) {
                 break;
             } catch (Throwable ex) {
@@ -96,13 +119,19 @@ public class PreAllocNodeMgr extends Thread {
                 stat.init(map.remove(ent.getKey()));
                 stat.resetStat();
             } else {
-                PreAllocNodes.NODE_LIST.remove(ent.getKey());
-                removels.add(ent.getValue());
+                if (idList.contains(ent.getKey())) {
+                    stat.resetStat();
+                } else {
+                    PreAllocNodes.NODE_LIST.remove(ent.getKey());
+                    removels.add(ent.getValue());
+                }
             }
         });
         Collection<PreAllocNode> coll = map.values();
         coll.stream().forEach((node) -> {
-            PreAllocNodes.NODE_LIST.put(node.getId(), new PreAllocNodeStat(node));
+            if (PreAllocNodes.NODE_LIST.size() < maxsize) {
+                PreAllocNodes.NODE_LIST.put(node.getId(), new PreAllocNodeStat(node));
+            }
         });
         while (PreAllocNodes.NODE_LIST.size() < maxsize && (!removels.isEmpty())) {
             PreAllocNodeStat node = removels.remove(0);

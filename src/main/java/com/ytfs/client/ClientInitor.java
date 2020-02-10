@@ -62,7 +62,7 @@ public class ClientInitor {
             startP2p();
             RegUser.regist();
             regCaller();
-            PreAllocNodeMgr.init();
+            PreAllocNodes.init();
             MemoryCache.init();
             GlobalTracer.init(zipkinServer, "S3server");
             inited = true;
@@ -161,7 +161,7 @@ public class ClientInitor {
             throw new IOException("The 'tmpFilePath' parameter is not configured.");
         }
         DOWNLOADSHARDTHREAD = cfg.getDownloadThread();
-        UPLOADBLOCKTHREAD = cfg.getUploadBlockThreadNum();
+        UPLOADFILEMAXMEMORY = cfg.getUploadFileMaxMemory();
         UPLOADSHARDTHREAD = cfg.getUploadShardThreadNum();
         PNN = cfg.getPNN();
         PTR = cfg.getPTR();
@@ -226,13 +226,13 @@ public class ClientInitor {
         }
         Configurator cfg = new Configurator();
         cfg.setDownloadThread(p.getProperty("downloadThread"));
-        cfg.setUploadBlockThreadNum(p.getProperty("uploadBlockThreadNum"));
+        cfg.setUploadFileMaxMemory(p.getProperty("uploadFileMaxMemory"));
         cfg.setUploadShardThreadNum(p.getProperty("uploadShardThreadNum"));
         cfg.setPNN(p.getProperty("PNN"));
         cfg.setPTR(p.getProperty("PTR"));
         cfg.setRETRYTIMES(p.getProperty("RETRYTIMES"));
         DOWNLOADSHARDTHREAD = cfg.getDownloadThread();
-        UPLOADBLOCKTHREAD = cfg.getUploadBlockThreadNum();
+        UPLOADFILEMAXMEMORY = cfg.getUploadFileMaxMemory();
         UPLOADSHARDTHREAD = cfg.getUploadShardThreadNum();
         PNN = cfg.getPNN();
         PTR = cfg.getPTR();

@@ -16,15 +16,13 @@ import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.tag.Tags;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import org.apache.log4j.Logger;
 
 public class UploadObject extends UploadObjectAbstract {
 
     private static final Logger LOG = Logger.getLogger(UploadObject.class);
     private YTFileEncoder ytfile;
-    final List<UploadBlockExecuter> execlist = new ArrayList();
+   
     ServiceException err = null;
     long startTime;
     private byte[] data = null;
@@ -36,6 +34,10 @@ public class UploadObject extends UploadObjectAbstract {
 
     public UploadObject(String path) throws IOException {
         this.path = path;
+    }
+
+    public int getProgress() {
+        return ytfile.getProgress();
     }
 
     @Override
@@ -97,7 +99,8 @@ public class UploadObject extends UploadObjectAbstract {
                 }
                 if (!uploaded) {
                     synchronized (execlist) {
-                        while (execlist.size() >= UserConfig.UPLOADBLOCKTHREAD) {
+                        long curmem = memorys + b.getRealSize();
+                        while (curmem >= UserConfig.UPLOADFILEMAXMEMORY) {
                             execlist.wait(15000);
                             if (System.currentTimeMillis() - startTime > 60000) {
                                 sendActive();
@@ -111,11 +114,12 @@ public class UploadObject extends UploadObjectAbstract {
                         GlobleThreadPool.execute(exec);
                     }
                 }
+                LOG.info("[" + VNU + "]Upload object " + this.getProgress() + "%");
                 ii++;
             }
             synchronized (execlist) {
                 while (execlist.size() > 0) {
-                    execlist.wait(5000);
+                    execlist.wait(15000);
                     if (System.currentTimeMillis() - startTime > 60000) {
                         sendActive();
                         startTime = System.currentTimeMillis();
@@ -126,12 +130,14 @@ public class UploadObject extends UploadObjectAbstract {
                 throw err;
             }
             complete();
-            LOG.info("[" + VNU + "]Upload object OK.");
+            LOG.info("[" + VNU + "]Upload object " + this.getProgress() + "%");
         } else {
             LOG.info("[" + VNU + "]Already exists.");
         }
         return VHW;
     }
+
+
 
     private void sendActive() {
         try {

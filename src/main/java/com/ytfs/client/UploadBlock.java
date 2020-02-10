@@ -12,6 +12,7 @@ import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.codec.ShardEncoder;
 import com.ytfs.common.codec.lrc.ShardLRCEncoder;
+import static com.ytfs.common.conf.UserConfig.Default_Shard_Size;
 import static com.ytfs.common.conf.UserConfig.SN_RETRYTIMES;
 import com.ytfs.service.packet.user.UploadBlockEndReq;
 import com.ytfs.service.packet.user.UploadBlockEndResp;
@@ -43,8 +44,10 @@ public class UploadBlock {
     private final List<UploadShardRes> resList = new ArrayList();
     private final List<UploadShardRes> okList = new ArrayList();
     private final Map<Integer, Shard> map = new HashMap();
+    private final UploadObjectAbstract uploadObject;
 
-    public UploadBlock(Block block, short id, SuperNode bpdNode, ObjectId VNU, long sTime, String signArg, long stamp) {
+    public UploadBlock(UploadObjectAbstract uploadObject, Block block, short id, SuperNode bpdNode, ObjectId VNU, long sTime, String signArg, long stamp) {
+        this.uploadObject = uploadObject;
         this.block = block;
         this.id = id;
         this.bpdNode = bpdNode;
@@ -55,10 +58,12 @@ public class UploadBlock {
     }
 
     void onResponse(UploadShardRes res) {
+        long freelen = 0;
         synchronized (this) {
             resList.add(res);
             if (res.getDNSIGN() != null) {
                 okList.add(res);
+                freelen = Default_Shard_Size;
                 Integer ts = okTimes.get(res.getNODEID());
                 if (ts == null) {
                     okTimes.put(res.getNODEID(), 1);
@@ -67,6 +72,11 @@ public class UploadBlock {
                 }
             }
             this.notify();
+        }
+        if (!encoder.isCopyMode()) {
+            if (freelen != 0) {
+                uploadObject.memoryChange(freelen * -1);
+            }
         }
     }
 
@@ -82,16 +92,10 @@ public class UploadBlock {
                 encoder = new ShardRSEncoder(aes.getBlockEncrypted());
             }
             encoder.encode();
-            /*
-            if (encoder.getShardList().size() == 164) {
-                int ii = 0;
-                MessageWriter.write("d:\\src.dat", aes.getBlockEncrypted().getData());
-                for (Shard s : encoder.getShardList()) {
-                    MessageWriter.write("d:\\" + ii + ".dat", s.getData());
-                    ii++;
-                }
-            }
-             */
+            block.clearData();
+            aes.getBlockEncrypted().clearData();
+            long size = encoder.getLength() - block.getRealSize();
+            uploadObject.memoryChange(size);
             long times = firstUpload();
             subUpload(times);
             LOG.info("[" + VNU + "][" + id + "]Upload block OK,shardcount " + encoder.getShardList().size() + ",take times " + (System.currentTimeMillis() - l) + "ms");
@@ -102,7 +106,7 @@ public class UploadBlock {
     }
 
     private long firstUpload() throws InterruptedException {
-        List<PreAllocNodeStat> ls = PreAllocNodeMgr.getNodes();
+        List<PreAllocNodeStat> ls = PreAllocNodes.getNodes();
         List<Shard> shards = encoder.getShardList();
         if (ls.size() >= shards.size()) {
             if (ls.size() / shards.size() >= 2) {
@@ -171,7 +175,7 @@ public class UploadBlock {
     private void fillExcessNode(List<Integer> shards) throws ServiceException {
         int preAllocNodeTimes = 0;
         while (true) {
-            List<PreAllocNodeStat> ls = PreAllocNodeMgr.getNodes();
+            List<PreAllocNodeStat> ls = PreAllocNodes.getNodes();
             ls.forEach((n) -> {
                 Integer ok = this.okTimes.get(n.getId());
                 if (ok == null || ok < this.maxOkTimes) {

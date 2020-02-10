@@ -9,7 +9,9 @@ import com.ytfs.service.packet.user.RegUserReq;
 import com.ytfs.service.packet.user.RegUserResp;
 import io.jafka.jeos.util.KeyUtil;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -23,13 +25,20 @@ public class RegUser {
 
     public static void regist() throws IOException {
         String path = System.getProperty("snlist.conf", "conf/snlist.properties");
+        File file = new File(path);
+        if (!file.exists()) {
+            file = new File("conf/snlist.properties");
+        }
+        if (!file.exists()) {
+            file = new File("../conf/snlist.properties");
+        }
         InputStream is = null;
         try {
-            is = new FileInputStream(path);
-        } catch (Exception r) {
-        }
-        if (is == null) {
-            throw new IOException("No snlist properties file could be found for ytfs service");
+            is = new FileInputStream(file);
+            
+        } catch (FileNotFoundException r) {
+            LOG.error("No snlist properties file could be found for ytfs service.");
+            throw new IOException("No snlist properties file could be found for ytfs service.");
         }
         List snlist;
         try {
@@ -39,6 +48,7 @@ public class RegUser {
             is.close();
         }
         if (snlist == null || snlist.isEmpty()) {
+            LOG.error("No snlist properties file could be found for ytfs service.");
             throw new IOException("No snlist properties file could be found for ytfs service");
         }
         List list = new ArrayList(snlist);

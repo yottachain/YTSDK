@@ -12,13 +12,12 @@ public class Configurator {
     private String tmpFilePath;
     private int uploadShardThreadNum = UserConfig.UPLOADSHARDTHREAD;
     private int downloadThread = UserConfig.DOWNLOADSHARDTHREAD;
-    private int uploadBlockThreadNum = UserConfig.UPLOADBLOCKTHREAD;
+    private long uploadFileMaxMemory = UserConfig.UPLOADFILEMAXMEMORY;
     private int PNN = UserConfig.PNN;
     private int PTR = UserConfig.PTR;
     private int RETRYTIMES = UserConfig.RETRYTIMES;
     private String zipkinServer;
-  
-    
+
     /**
      * @return the superNodeID
      */
@@ -120,29 +119,29 @@ public class Configurator {
     /**
      * @return the uploadBlockThreadNum
      */
-    public int getUploadBlockThreadNum() {
-        return uploadBlockThreadNum;
+    public long getUploadFileMaxMemory() {
+        return uploadFileMaxMemory;
     }
 
-    public void setUploadBlockThreadNum(String uploadBlockThreadNum) {
+    public void setUploadFileMaxMemory(String uploadFileMaxMemory) {
         try {
-            int num = Integer.parseInt(uploadBlockThreadNum);
-            setUploadBlockThreadNum(num);
+            long num = Long.parseLong(uploadFileMaxMemory);
+            setUploadFileMaxMemory(num * 1024L * 1024L);
         } catch (Exception r) {
         }
     }
 
     /**
-     * @param uploadBlockThreadNum the uploadBlockThreadNum to set
+     * @param uploadFileMaxMemory the uploadBlockThreadNum to set
      */
-    public void setUploadBlockThreadNum(int uploadBlockThreadNum) {
-        if (uploadBlockThreadNum < 1) {
-            uploadBlockThreadNum = 1;
+    public void setUploadFileMaxMemory(long uploadFileMaxMemory) {
+        if (uploadFileMaxMemory < 1024L * 1024L * 2L) {
+            uploadFileMaxMemory = 1024L * 1024L * 2L;
         }
-        if (uploadBlockThreadNum > 3) {
-            uploadBlockThreadNum = 3;
+        if (uploadFileMaxMemory > 1024L * 1024L * 30L) {
+            uploadFileMaxMemory = 1024L * 1024L * 30L;
         }
-        this.uploadBlockThreadNum = uploadBlockThreadNum;
+        this.uploadFileMaxMemory = uploadFileMaxMemory;
     }
 
     /**
@@ -167,8 +166,8 @@ public class Configurator {
         if (uploadShardThreadNum < 50) {
             uploadShardThreadNum = 50;
         }
-        if (uploadShardThreadNum > 5000) {
-            uploadShardThreadNum = 5000;
+        if (uploadShardThreadNum > 3000) {
+            uploadShardThreadNum = 3000;
         }
         this.uploadShardThreadNum = uploadShardThreadNum;
     }

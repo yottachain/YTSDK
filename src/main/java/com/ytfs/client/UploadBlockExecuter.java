@@ -58,7 +58,7 @@ public class UploadBlockExecuter implements Runnable {
             } else {
                 uploadObject.startTime = System.currentTimeMillis();
             }
-            uploadObject.execlist.notifyAll();
+            uploadObject.execlist.notify();
         }
     }
 
