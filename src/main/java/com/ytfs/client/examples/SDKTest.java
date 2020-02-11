@@ -17,11 +17,11 @@ import org.tanukisoftware.wrapper.WrapperManager;
 public class SDKTest implements WrapperListener {
 
     private static final String sn = "cs";
-    private static final String path = "D:\\aaa.zip";
+    private static final String path = "D:\\YTSDK.rar";
 
     @Override
     public Integer start(String[] strings) {
-        if (sn.equalsIgnoreCase("cs")) {
+        if (sn.equalsIgnoreCase("yf")) {
             System.setProperty("snlist.conf", "conf/snlist.properties");
             System.setProperty("ytfs.conf", "conf/ytfs.properties");
         } else {

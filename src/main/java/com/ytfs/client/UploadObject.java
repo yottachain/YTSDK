@@ -16,14 +16,15 @@ import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.tag.Tags;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicLong;
 import org.apache.log4j.Logger;
 
 public class UploadObject extends UploadObjectAbstract {
 
     private static final Logger LOG = Logger.getLogger(UploadObject.class);
     private YTFileEncoder ytfile;
-   
     ServiceException err = null;
+    AtomicLong uploadedSize = new AtomicLong(0);
     long startTime;
     private byte[] data = null;
     private String path;
@@ -37,7 +38,11 @@ public class UploadObject extends UploadObjectAbstract {
     }
 
     public int getProgress() {
-        return ytfile.getProgress();
+        long p = ytfile.getReadinTotal() * 100L / ytfile.getLength();
+        long uploaded = uploadedSize.get() * 100L / ytfile.getOutTotal();
+        p = p * uploaded / 100L;
+        return (int) p;
+
     }
 
     @Override
@@ -113,8 +118,9 @@ public class UploadObject extends UploadObjectAbstract {
                         UploadBlockExecuter exec = new UploadBlockExecuter(this, b, ii);
                         GlobleThreadPool.execute(exec);
                     }
+                } else {
+                    uploadedSize.addAndGet(b.getRealSize());
                 }
-                LOG.info("[" + VNU + "]Upload object " + this.getProgress() + "%");
                 ii++;
             }
             synchronized (execlist) {
@@ -136,8 +142,6 @@ public class UploadObject extends UploadObjectAbstract {
         }
         return VHW;
     }
-
-
 
     private void sendActive() {
         try {

@@ -18,7 +18,7 @@ public class PreAllocNodeMgr extends Thread {
     private static final Logger LOG = Logger.getLogger(PreAllocNodeMgr.class);
     private static PreAllocNodeMgr me = null;
 
-    public static void init() {
+    static void init() {
         while (true) {
             try {
                 PreAllocNodeReq req = new PreAllocNodeReq();

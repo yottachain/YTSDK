@@ -40,7 +40,9 @@ public class UploadBlockExecuter implements Runnable {
     public void run() {
         try {
             execute();
+            uploadObject.uploadedSize.addAndGet(b.getRealSize());
             free(null);
+            LOG.info("[" + uploadObject.VNU + "]Upload object " + uploadObject.getProgress() + "%");
         } catch (ServiceException se) {
             LOG.error("[" + uploadObject.VNU + "][" + blocknum + "]Upload block ERR:" + se.getErrorCode());
             free(se);

@@ -178,7 +178,8 @@ public class UploadBlock {
             List<PreAllocNodeStat> ls = PreAllocNodes.getNodes();
             ls.forEach((n) -> {
                 Integer ok = this.okTimes.get(n.getId());
-                if (ok == null || ok < this.maxOkTimes) {
+                int num = ok == null ? this.maxOkTimes : (this.maxOkTimes - ok);
+                for (int ii = 0; ii < num; ii++) {
                     excessNode.add(n);
                 }
             });
