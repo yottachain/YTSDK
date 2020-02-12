@@ -6,6 +6,7 @@ import com.ytfs.client.UploadObject;
 import static com.ytfs.client.examples.MakeRandFile.largeFileLength;
 import static com.ytfs.client.examples.MakeRandFile.mediumFileLength;
 import static com.ytfs.client.examples.MakeRandFile.smallFileLength;
+import com.ytfs.common.LogConfigurator;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -17,7 +18,7 @@ import org.tanukisoftware.wrapper.WrapperManager;
 public class SDKTest implements WrapperListener {
 
     private static final String sn = "cs";
-    private static final String path = "D:\\YTSDK.rar";
+    private static final String path = "D:\\aaa.mkv";
 
     @Override
     public Integer start(String[] strings) {
@@ -25,10 +26,11 @@ public class SDKTest implements WrapperListener {
             System.setProperty("snlist.conf", "conf/snlist.properties");
             System.setProperty("ytfs.conf", "conf/ytfs.properties");
         } else {
-            System.setProperty("snlist.conf", "conf/snlist_YF.properties");
-            System.setProperty("ytfs.conf", "conf/ytfs.properties");
+            System.setProperty("snlist.conf", "../conf/snlist_YF.properties");
+            System.setProperty("ytfs.conf", "../conf/ytfs.properties");
         }
         try {
+            LogConfigurator.configPath(new File("D:\\log\\log"), "DEBUG");
             ClientInitor.init();
             if (strings.length < 1) {
                 strings = new String[]{path};

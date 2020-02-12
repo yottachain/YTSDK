@@ -42,7 +42,6 @@ public class UploadObject extends UploadObjectAbstract {
         long uploaded = uploadedSize.get() * 100L / ytfile.getOutTotal();
         p = p * uploaded / 100L;
         return (int) p;
-
     }
 
     @Override
@@ -105,7 +104,7 @@ public class UploadObject extends UploadObjectAbstract {
                 if (!uploaded) {
                     synchronized (execlist) {
                         long curmem = memorys + b.getRealSize();
-                        while (curmem >= UserConfig.UPLOADFILEMAXMEMORY) {
+                        while (curmem >= UserConfig.UPLOADFILEMAXMEMORY && execlist.size() > 30) {
                             execlist.wait(15000);
                             if (System.currentTimeMillis() - startTime > 60000) {
                                 sendActive();
