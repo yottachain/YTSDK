@@ -29,6 +29,7 @@ import org.bson.types.ObjectId;
 
 public abstract class UploadObjectAbstract {
 
+    static final List<UploadBlockExecuter> execlist = new ArrayList();
     private static final Logger LOG = Logger.getLogger(UploadObjectSlow.class);
 
     protected ObjectId VNU;
@@ -36,7 +37,6 @@ public abstract class UploadObjectAbstract {
     protected String signArg;
     protected long stamp;
     protected long memorys = 0;
-    protected final List<UploadBlockExecuter> execlist = new ArrayList();
 
     public abstract byte[] upload() throws ServiceException, IOException, InterruptedException;
 

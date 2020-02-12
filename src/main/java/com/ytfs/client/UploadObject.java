@@ -104,7 +104,7 @@ public class UploadObject extends UploadObjectAbstract {
                 if (!uploaded) {
                     synchronized (execlist) {
                         long curmem = memorys + b.getRealSize();
-                        while (curmem >= UserConfig.UPLOADFILEMAXMEMORY && execlist.size() > 3) {
+                        while (curmem >= UserConfig.UPLOADFILEMAXMEMORY || execlist.size() > UserConfig.UPLOADBLOCKTHREAD) {
                             execlist.wait(15000);
                             if (System.currentTimeMillis() - startTime > 60000) {
                                 sendActive();

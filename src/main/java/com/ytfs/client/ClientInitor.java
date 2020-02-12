@@ -163,6 +163,7 @@ public class ClientInitor {
         DOWNLOADSHARDTHREAD = cfg.getDownloadThread();
         UPLOADFILEMAXMEMORY = cfg.getUploadFileMaxMemory();
         UPLOADSHARDTHREAD = cfg.getUploadShardThreadNum();
+        UPLOADBLOCKTHREAD = cfg.getUploadBlockThreadNum();
         PNN = cfg.getPNN();
         PTR = cfg.getPTR();
         RETRYTIMES = cfg.getRETRYTIMES();
@@ -228,12 +229,14 @@ public class ClientInitor {
         cfg.setDownloadThread(p.getProperty("downloadThread"));
         cfg.setUploadFileMaxMemory(p.getProperty("uploadFileMaxMemory"));
         cfg.setUploadShardThreadNum(p.getProperty("uploadShardThreadNum"));
+        cfg.setUploadBlockThreadNum(p.getProperty("uploadBlockThreadNum"));
         cfg.setPNN(p.getProperty("PNN"));
         cfg.setPTR(p.getProperty("PTR"));
         cfg.setRETRYTIMES(p.getProperty("RETRYTIMES"));
         DOWNLOADSHARDTHREAD = cfg.getDownloadThread();
         UPLOADFILEMAXMEMORY = cfg.getUploadFileMaxMemory();
         UPLOADSHARDTHREAD = cfg.getUploadShardThreadNum();
+        UPLOADBLOCKTHREAD = cfg.getUploadBlockThreadNum();
         PNN = cfg.getPNN();
         PTR = cfg.getPTR();
         RETRYTIMES = cfg.getRETRYTIMES();

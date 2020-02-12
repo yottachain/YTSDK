@@ -21,8 +21,8 @@ public class UploadBlockExecuter implements Runnable {
         this.uploadObject = uploadObject;
         this.b = b;
         this.blocknum = ii;
-        synchronized (uploadObject.execlist) {
-            uploadObject.execlist.add(this);
+        synchronized (UploadObjectAbstract.execlist) {
+            UploadObjectAbstract.execlist.add(this);
         }
     }
 
@@ -53,14 +53,14 @@ public class UploadBlockExecuter implements Runnable {
     }
 
     private void free(ServiceException se) {
-        synchronized (uploadObject.execlist) {
-            uploadObject.execlist.remove(this);
+        synchronized (UploadObjectAbstract.execlist) {
+            UploadObjectAbstract.execlist.remove(this);
             if (se != null) {
                 uploadObject.err = se;
             } else {
                 uploadObject.startTime = System.currentTimeMillis();
             }
-            uploadObject.execlist.notify();
+            UploadObjectAbstract.execlist.notify();
         }
     }
 

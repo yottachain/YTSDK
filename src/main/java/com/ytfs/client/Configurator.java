@@ -11,6 +11,7 @@ public class Configurator {
     private String KUSp;     //用户私钥
     private String tmpFilePath;
     private int uploadShardThreadNum = UserConfig.UPLOADSHARDTHREAD;
+    private int uploadBlockThreadNum = UserConfig.UPLOADBLOCKTHREAD;
     private int downloadThread = UserConfig.DOWNLOADSHARDTHREAD;
     private long uploadFileMaxMemory = UserConfig.UPLOADFILEMAXMEMORY;
     private int PNN = UserConfig.PNN;
@@ -121,6 +122,31 @@ public class Configurator {
      */
     public long getUploadFileMaxMemory() {
         return uploadFileMaxMemory;
+    }
+
+    /**
+     * @param uploadBlockThreadNum the uploadBlockThreadNum to set
+     */
+    public void setUploadBlockThreadNum(String uploadBlockThreadNum) {
+        try {
+            int num = Integer.parseInt(uploadBlockThreadNum);
+            setUploadBlockThreadNum(num);
+        } catch (Exception r) {
+        }
+
+    }
+
+    /**
+     * @param uploadBlockThreadNum the uploadBlockThreadNum to set
+     */
+    public void setUploadBlockThreadNum(int uploadBlockThreadNum) {
+        if (uploadBlockThreadNum < 3) {
+            uploadBlockThreadNum = 3;
+        }
+        if (uploadBlockThreadNum > 500) {
+            uploadBlockThreadNum = 500;
+        }
+        this.uploadBlockThreadNum = uploadBlockThreadNum;
     }
 
     public void setUploadFileMaxMemory(String uploadFileMaxMemory) {
@@ -268,6 +294,13 @@ public class Configurator {
      */
     public void setZipkinServer(String zipkinServer) {
         this.zipkinServer = zipkinServer;
+    }
+
+    /**
+     * @return the uploadBlockThreadNum
+     */
+    public int getUploadBlockThreadNum() {
+        return uploadBlockThreadNum;
     }
 
 }
