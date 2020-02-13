@@ -59,6 +59,9 @@ public class ClientInitor {
             } else {
                 load(cfg);
             }
+            UploadBlockExecuter.init();
+            UploadShard.init();
+            DownloadShard.init();
             startP2p();
             RegUser.regist();
             regCaller();

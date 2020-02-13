@@ -21,15 +21,14 @@ import com.ytfs.service.packet.user.UploadObjectEndReq;
 import io.jafka.jeos.util.Base58;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 
 public abstract class UploadObjectAbstract {
 
-    static final List<UploadBlockExecuter> execlist = new ArrayList();
     private static final Logger LOG = Logger.getLogger(UploadObjectSlow.class);
 
     protected ObjectId VNU;
@@ -37,6 +36,7 @@ public abstract class UploadObjectAbstract {
     protected String signArg;
     protected long stamp;
     protected long memorys = 0;
+    protected final List<UploadBlockExecuter> execlist = new LinkedList<>();
 
     public abstract byte[] upload() throws ServiceException, IOException, InterruptedException;
 

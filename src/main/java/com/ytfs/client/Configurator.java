@@ -164,8 +164,8 @@ public class Configurator {
         if (uploadFileMaxMemory < 1024L * 1024L * 2L) {
             uploadFileMaxMemory = 1024L * 1024L * 2L;
         }
-        if (uploadFileMaxMemory > 1024L * 1024L * 30L) {
-            uploadFileMaxMemory = 1024L * 1024L * 30L;
+        if (uploadFileMaxMemory > 1024L * 1024L * 20L) {
+            uploadFileMaxMemory = 1024L * 1024L * 20L;
         }
         this.uploadFileMaxMemory = uploadFileMaxMemory;
     }

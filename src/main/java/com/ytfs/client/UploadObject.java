@@ -1,6 +1,5 @@
 package com.ytfs.client;
 
-import com.ytfs.common.GlobleThreadPool;
 import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.common.conf.UserConfig;
 import com.ytfs.common.codec.Block;
@@ -104,7 +103,7 @@ public class UploadObject extends UploadObjectAbstract {
                 if (!uploaded) {
                     synchronized (execlist) {
                         long curmem = memorys + b.getRealSize();
-                        while (curmem >= UserConfig.UPLOADFILEMAXMEMORY || execlist.size() > UserConfig.UPLOADBLOCKTHREAD) {
+                        while (curmem >= UserConfig.UPLOADFILEMAXMEMORY) {
                             execlist.wait(15000);
                             if (System.currentTimeMillis() - startTime > 60000) {
                                 sendActive();
@@ -114,9 +113,8 @@ public class UploadObject extends UploadObjectAbstract {
                         if (err != null) {
                             throw err;
                         }
-                        UploadBlockExecuter exec = new UploadBlockExecuter(this, b, ii);
-                        GlobleThreadPool.execute(exec);
                     }
+                    UploadBlockExecuter.startUploadBlock(this, b, ii);
                 } else {
                     uploadedSize.addAndGet(b.getRealSize());
                 }

@@ -24,18 +24,17 @@ public class UploadShard implements Runnable {
     private static final Logger LOG = Logger.getLogger(UploadShard.class);
     private static ArrayBlockingQueue<UploadShard> queue = null;
 
-    private static synchronized ArrayBlockingQueue<UploadShard> getQueue() {
+    public static void init() {
         if (queue == null) {
             queue = new ArrayBlockingQueue(UPLOADSHARDTHREAD);
             for (int ii = 0; ii < UPLOADSHARDTHREAD; ii++) {
                 queue.add(new UploadShard());
             }
         }
-        return queue;
     }
 
     static void startUploadShard(UploadBlock uploadBlock, Shard shard, int shardId) throws InterruptedException {
-        UploadShard uploader = getQueue().take();
+        UploadShard uploader = queue.take();
         uploader.shard = shard;
         uploader.uploadBlock = uploadBlock;
         uploader.shardId = shardId;
@@ -164,7 +163,7 @@ public class UploadShard implements Runnable {
             }
             uploadBlock.onResponse(res);
         } finally {
-            getQueue().add(this);
+            queue.add(this);
         }
     }
 }
