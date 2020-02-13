@@ -10,6 +10,12 @@ import java.util.Map;
 
 public class BucketHandler {
 
+    /**
+     * 创建Bucket
+     * @param name bucket名称，最大允许100个bucket
+     * @param meta bucket属性，自定义数据类型
+     * @throws ServiceException 
+     */
     public static void createBucket(String name,byte[] meta) throws ServiceException {
         CreateBucketReq req = new CreateBucketReq();
         req.setMeta(meta);
@@ -24,6 +30,11 @@ public class BucketHandler {
         P2PUtils.requestBPU(req, UserConfig.superNode);
     }
 
+    /**
+     * 遍历Bucket名称
+     * @return String[]
+     * @throws ServiceException 
+     */
     public static String[] listBucket() throws ServiceException {
         ListBucketReq req = new ListBucketReq();
         ListBucketResp resp = (ListBucketResp) P2PUtils.requestBPU(req, UserConfig.superNode);
@@ -40,6 +51,11 @@ public class BucketHandler {
         return map;
     }
 
+    /**
+     * 删除Bucket
+     * @param bucketName
+     * @throws ServiceException 
+     */
     public static void deleteBucket(String bucketName) throws ServiceException {
         DeleteBucketReq req = new DeleteBucketReq();
         req.setBucketname(bucketName);

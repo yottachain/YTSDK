@@ -18,7 +18,7 @@ import org.tanukisoftware.wrapper.WrapperManager;
 public class SDKTest implements WrapperListener {
 
     private static final String sn = "cs";
-    private static final String path = "D:\\aaa.mkv";
+    private static final String path = "D:\\test-dd";
 
     @Override
     public Integer start(String[] strings) {
@@ -26,11 +26,11 @@ public class SDKTest implements WrapperListener {
             System.setProperty("snlist.conf", "conf/snlist.properties");
             System.setProperty("ytfs.conf", "conf/ytfs.properties");
         } else {
-            System.setProperty("snlist.conf", "../conf/snlist_YF.properties");
-            System.setProperty("ytfs.conf", "../conf/ytfs.properties");
+            System.setProperty("snlist.conf", "conf/snlist_YF.properties");
+            System.setProperty("ytfs.conf", "conf/ytfs.properties");
         }
         try {
-            LogConfigurator.configPath(new File("D:\\log\\log"), "DEBUG");
+            //LogConfigurator.configPath(new File("D:\\log\\log"), "DEBUG");
             ClientInitor.init();
             if (strings.length < 1) {
                 strings = new String[]{path};

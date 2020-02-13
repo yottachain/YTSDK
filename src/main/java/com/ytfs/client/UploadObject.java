@@ -28,14 +28,30 @@ public class UploadObject extends UploadObjectAbstract {
     private byte[] data = null;
     private String path;
 
+    /**
+     * 创建实例
+     *
+     * @param data 要上传的文件内容
+     * @throws IOException
+     */
     public UploadObject(byte[] data) throws IOException {
         this.data = data;
     }
 
+    /**
+     * 创建实例
+     *
+     * @param path 要上传的文件的本地路径
+     * @throws IOException
+     */
     public UploadObject(String path) throws IOException {
         this.path = path;
     }
 
+    /**
+     * 上传过程中可获取到当前文件的上传进度
+     * @return 0-100
+     */
     public int getProgress() {
         long p = ytfile.getReadinTotal() * 100L / ytfile.getLength();
         long uploaded = uploadedSize.get() * 100L / ytfile.getOutTotal();
@@ -43,6 +59,13 @@ public class UploadObject extends UploadObjectAbstract {
         return (int) p;
     }
 
+    /**
+     * 开始上传
+     * @return
+     * @throws ServiceException
+     * @throws IOException
+     * @throws InterruptedException 
+     */
     @Override
     public byte[] upload() throws ServiceException, IOException, InterruptedException {
         try {
