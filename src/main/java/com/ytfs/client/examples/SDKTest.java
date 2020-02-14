@@ -26,8 +26,8 @@ public class SDKTest implements WrapperListener {
             System.setProperty("snlist.conf", "conf/snlist.properties");
             System.setProperty("ytfs.conf", "conf/ytfs.properties");
         } else {
-            System.setProperty("snlist.conf", "conf/snlist_YF.properties");
-            System.setProperty("ytfs.conf", "conf/ytfs.properties");
+            System.setProperty("snlist.conf", "../conf/snlist_YF.properties");
+            System.setProperty("ytfs.conf", "../conf/ytfs.properties");
         }
         try {
             //LogConfigurator.configPath(new File("D:\\log\\log"), "DEBUG");
