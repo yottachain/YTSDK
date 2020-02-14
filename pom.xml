@@ -162,7 +162,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>26.0-android</version>
+            <version>25.1-jre</version>
         </dependency>
         <dependency>
             <groupId>io.yottachain</groupId>

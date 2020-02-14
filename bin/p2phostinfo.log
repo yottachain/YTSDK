@@ -3198,3 +3198,14 @@ P2PHOST->INFO: 2020/02/14 17:45:14 client.go:142:
 - [rpc-client-send-time] time:0                   
 - [rpc-client-unlock-send-time] time:0
 -------------------------------------------------------------------------------
+P2PHOST->INFO: 2020/02/14 18:22:43 wrapper.go:292: configure callback handler successful.
+P2PHOST->INFO: 2020/02/14 18:22:43 wrapper.go:306: GRPC address: 0.0.0.0:11002
+P2PHOST->INFO: 2020/02/14 18:22:44 client.go:142: 
+-------------------------------------------------------------------------------
+- [rpc-client-lock] get req lock time:0           
+- [rpc-client-mutex] get req mutex lock time:0    
+- [rpc-client-Register] get Register time:0       
+- [rpc-client-write] write request time:0         
+- [rpc-client-send-time] time:0                   
+- [rpc-client-unlock-send-time] time:0
+-------------------------------------------------------------------------------
