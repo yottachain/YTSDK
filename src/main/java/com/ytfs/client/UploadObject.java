@@ -27,6 +27,7 @@ public class UploadObject extends UploadObjectAbstract {
     long startTime;
     private byte[] data = null;
     private String path;
+    private boolean exist = false;
 
     /**
      * 创建实例
@@ -50,21 +51,29 @@ public class UploadObject extends UploadObjectAbstract {
 
     /**
      * 上传过程中可获取到当前文件的上传进度
+     *
      * @return 0-100
      */
     public int getProgress() {
+        if (exist) {
+            return 100;
+        }
+        if (ytfile == null) {
+            return 0;
+        }
         long p = ytfile.getReadinTotal() * 100L / ytfile.getLength();
-        long uploaded = uploadedSize.get() * 100L / ytfile.getOutTotal();
+        long uploaded = ytfile.getOutTotal() == 0 ? 0 : (uploadedSize.get() * 100L / ytfile.getOutTotal());
         p = p * uploaded / 100L;
         return (int) p;
     }
 
     /**
      * 开始上传
+     *
      * @return
      * @throws ServiceException
      * @throws IOException
-     * @throws InterruptedException 
+     * @throws InterruptedException
      */
     @Override
     public byte[] upload() throws ServiceException, IOException, InterruptedException {
@@ -158,6 +167,7 @@ public class UploadObject extends UploadObjectAbstract {
             complete();
             LOG.info("[" + VNU + "]Upload object " + this.getProgress() + "%");
         } else {
+            exist = true;
             LOG.info("[" + VNU + "]Already exists.");
         }
         return VHW;
