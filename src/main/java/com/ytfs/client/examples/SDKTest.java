@@ -6,6 +6,7 @@ import com.ytfs.client.UploadObject;
 import static com.ytfs.client.examples.MakeRandFile.largeFileLength;
 import static com.ytfs.client.examples.MakeRandFile.mediumFileLength;
 import static com.ytfs.client.examples.MakeRandFile.smallFileLength;
+import com.ytfs.common.LogConfigurator;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -17,11 +18,11 @@ import org.tanukisoftware.wrapper.WrapperManager;
 public class SDKTest implements WrapperListener {
 
     private static final String sn = "cs";
-    private static final String path = "D:\\aaa.zip";
+    private static final String path = "D:\\p2p-wrapper-0.1(2).jar";
 
     @Override
     public Integer start(String[] strings) {
-        if (sn.equalsIgnoreCase("cs")) {
+        if (sn.equalsIgnoreCase("yf")) {
             System.setProperty("snlist.conf", "conf/snlist.properties");
             System.setProperty("ytfs.conf", "conf/ytfs.properties");
         } else {
@@ -29,6 +30,7 @@ public class SDKTest implements WrapperListener {
             System.setProperty("ytfs.conf", "conf/ytfs.properties");
         }
         try {
+            //LogConfigurator.configPath(new File("D:\\log\\log"), "DEBUG");
             ClientInitor.init();
             if (strings.length < 1) {
                 strings = new String[]{path};

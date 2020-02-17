@@ -2,7 +2,7 @@
 
 rem ---------在这里设置要上传的文件路径------------
 
-set filepath=f:/aa.txt
+set filepath=
 
 
 rem --------------------upload test----------------------

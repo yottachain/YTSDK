@@ -11,6 +11,14 @@ import java.util.List;
 
 public class ObjectHandler {
 
+    /**
+     * 创建文件元数控
+     * @param bucketname
+     * @param filename 文件名
+     * @param VNU  文件ID
+     * @param meta　文件属性，自定义格式
+     * @throws ServiceException 
+     */
     public static void createObject(String bucketname, String filename, ObjectId VNU,byte[] meta) throws ServiceException {
         UploadFileReq req = new UploadFileReq();
         req.setBucketname(bucketname);
@@ -77,6 +85,8 @@ public class ObjectHandler {
         }
         return isExistObject;
     }
+    
+    
     public static ObjectId getObjectIdByName(String bucketName,String fileName) throws ServiceException{
         GetObjectReq req = new GetObjectReq();
         req.setFileName(fileName);

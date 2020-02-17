@@ -28,9 +28,6 @@ public class PreAllocNodeStat extends PreAllocNode {
     }
 
     public long getDelayTimes() {
-        if (PreAllocNodes.idList != null && PreAllocNodes.idList.contains(this.getId())) {
-            return -1;
-        }
         long oktimes = okDelayTimes.get();
         long count = okTimes.get();
         long errcount = errTimes.get();

@@ -23,18 +23,17 @@ public class DownloadShard implements Runnable {
 
     private static ArrayBlockingQueue<DownloadShard> queue = null;
 
-    private static synchronized ArrayBlockingQueue<DownloadShard> getQueue() {
+    public static void init() {
         if (queue == null) {
             queue = new ArrayBlockingQueue(DOWNLOADSHARDTHREAD);
             for (int ii = 0; ii < DOWNLOADSHARDTHREAD; ii++) {
                 queue.add(new DownloadShard());
             }
         }
-        return queue;
     }
 
     static void startDownloadShard(ConcurrentLinkedQueue<DownloadShardParam> shardparams, DownloadBlock downloadBlock, ShardLRCDecoder lrcDecoder) throws InterruptedException {
-        DownloadShard downloader = getQueue().take();
+        DownloadShard downloader = queue.take();
         downloader.downloadBlock = downloadBlock;
         downloader.shardparams = shardparams;
         downloader.lrcDecoder = lrcDecoder;
@@ -96,7 +95,7 @@ public class DownloadShard implements Runnable {
                 }
             }
         } finally {
-            getQueue().add(this);
+            queue.add(this);
         }
     }
 

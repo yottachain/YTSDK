@@ -1,6 +1,5 @@
 package com.ytfs.client;
 
-import com.ytfs.common.GlobleThreadPool;
 import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.common.conf.UserConfig;
 import com.ytfs.common.codec.Block;
@@ -16,30 +15,66 @@ import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.tag.Tags;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicLong;
 import org.apache.log4j.Logger;
 
 public class UploadObject extends UploadObjectAbstract {
 
     private static final Logger LOG = Logger.getLogger(UploadObject.class);
     private YTFileEncoder ytfile;
-   
     ServiceException err = null;
+    AtomicLong uploadedSize = new AtomicLong(0);
     long startTime;
     private byte[] data = null;
     private String path;
+    private boolean exist = false;
 
+    /**
+     * 创建实例
+     *
+     * @param data 要上传的文件内容
+     * @throws IOException
+     */
     public UploadObject(byte[] data) throws IOException {
         this.data = data;
     }
 
+    /**
+     * 创建实例
+     *
+     * @param path 要上传的文件的本地路径
+     * @throws IOException
+     */
     public UploadObject(String path) throws IOException {
         this.path = path;
     }
 
+    /**
+     * 上传过程中可获取到当前文件的上传进度
+     *
+     * @return 0-100
+     */
     public int getProgress() {
-        return ytfile.getProgress();
+        if (exist) {
+            return 100;
+        }
+        if (ytfile == null) {
+            return 0;
+        }
+        long p = ytfile.getReadinTotal() * 100L / ytfile.getLength();
+        long uploaded = ytfile.getOutTotal() == 0 ? 0 : (uploadedSize.get() * 100L / ytfile.getOutTotal());
+        p = p * uploaded / 100L;
+        return (int) p;
     }
 
+    /**
+     * 开始上传
+     *
+     * @return
+     * @throws ServiceException
+     * @throws IOException
+     * @throws InterruptedException
+     */
     @Override
     public byte[] upload() throws ServiceException, IOException, InterruptedException {
         try {
@@ -110,11 +145,11 @@ public class UploadObject extends UploadObjectAbstract {
                         if (err != null) {
                             throw err;
                         }
-                        UploadBlockExecuter exec = new UploadBlockExecuter(this, b, ii);
-                        GlobleThreadPool.execute(exec);
                     }
+                    UploadBlockExecuter.startUploadBlock(this, b, ii);
+                } else {
+                    uploadedSize.addAndGet(b.getRealSize());
                 }
-                LOG.info("[" + VNU + "]Upload object " + this.getProgress() + "%");
                 ii++;
             }
             synchronized (execlist) {
@@ -132,12 +167,11 @@ public class UploadObject extends UploadObjectAbstract {
             complete();
             LOG.info("[" + VNU + "]Upload object " + this.getProgress() + "%");
         } else {
+            exist = true;
             LOG.info("[" + VNU + "]Already exists.");
         }
         return VHW;
     }
-
-
 
     private void sendActive() {
         try {

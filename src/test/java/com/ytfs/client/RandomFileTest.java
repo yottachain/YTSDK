@@ -19,6 +19,8 @@ public class RandomFileTest {
             System.setProperty("snlist.conf", "conf/snlist_YF.properties");
             System.setProperty("ytfs.conf", "conf/ytfs.properties");
         }
+
+        
         ClientInitor.init();
         //测试小文件
         //test(new UploadObject(MakeRandFile.makeSmallFile()));
@@ -33,6 +35,7 @@ public class RandomFileTest {
             byte[] VHW = upload.upload();
             System.out.println(Hex.encodeHexString(VHW) + " 上传完毕！准备下载......");
 
+          
             DownloadObject obj = new DownloadObject(VHW);
             MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
             InputStream is = obj.load(0, 1111111111111L);

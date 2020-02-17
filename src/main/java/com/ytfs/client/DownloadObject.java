@@ -18,11 +18,23 @@ public class DownloadObject {
     private List<ObjectRefer> refers;
     private long length;
 
+    /**
+     * 创建下载实例
+     * @param VHW
+     * @throws ServiceException 
+     */
     public DownloadObject(byte[] VHW) throws ServiceException {
         this.VHW = VHW;
         init();
     }
 
+    /**
+     * 创建下载实例
+     * @param bucketName
+     * @param fileName 文件名
+     * @param versionId
+     * @throws ServiceException 
+     */
     public DownloadObject(String bucketName, String fileName, ObjectId versionId) throws ServiceException {
         init(bucketName, fileName, versionId);
     }
@@ -47,10 +59,20 @@ public class DownloadObject {
         this.length = resp.getLength();
     }
 
+    /**
+     * 开始下载
+     * @return 
+     */
     public InputStream load() {
         return new DownloadInputStream(refers, 0, this.getLength());
     }
 
+    /**
+     * 开始下载，按范围下载
+     * @param start　开始
+     * @param end　结束
+     * @return 
+     */
     public InputStream load(long start, long end) {
         return new DownloadInputStream(refers, start, end);
     }

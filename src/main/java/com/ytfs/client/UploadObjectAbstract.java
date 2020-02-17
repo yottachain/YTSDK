@@ -21,8 +21,8 @@ import com.ytfs.service.packet.user.UploadObjectEndReq;
 import io.jafka.jeos.util.Base58;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
@@ -36,7 +36,7 @@ public abstract class UploadObjectAbstract {
     protected String signArg;
     protected long stamp;
     protected long memorys = 0;
-    protected final List<UploadBlockExecuter> execlist = new ArrayList();
+    protected final List<UploadBlockExecuter> execlist = new LinkedList<>();
 
     public abstract byte[] upload() throws ServiceException, IOException, InterruptedException;
 
@@ -87,9 +87,10 @@ public abstract class UploadObjectAbstract {
                 LOG.info("[" + VNU + "][" + id + "]Block is a repetitive block:" + Base58.encode(b.getVHP()));
             } else {
                 if (!be.needEncode()) {
+                    UploadBlockToDB(b, id, node);
+                    LOG.info("[" + VNU + "][" + id + "]Block is uploaded to DB:" + Base58.encode(b.getVHP()));
                     b.clearData();
                     this.memoryChange(b.getRealSize() * -1);
-                    UploadBlockToDB(b, id, node);
                 } else {//请求分配节点
                     UploadBlock ub = new UploadBlock(this, b, id, node, VNU, ((UploadBlockDupResp) resp).getStartTime(), signArg, stamp);
                     LOG.info("[" + VNU + "][" + id + "]Block is initialized at sn " + node.getId() + ",take times "
@@ -100,9 +101,10 @@ public abstract class UploadObjectAbstract {
         }
         if (resp instanceof UploadBlockInitResp) {
             if (!be.needEncode()) {
+                UploadBlockToDB(b, id, node);
+                LOG.info("[" + VNU + "][" + id + "]Block is uploaded to DB:" + Base58.encode(b.getVHP()));
                 b.clearData();
                 this.memoryChange(b.getRealSize() * -1);
-                UploadBlockToDB(b, id, node);
             } else {
                 UploadBlock ub = new UploadBlock(this, b, id, node, VNU, ((UploadBlockInitResp) resp).getStartTime(), signArg, stamp);
                 LOG.info("[" + VNU + "][" + id + "]Block is initialized at sn " + node.getId() + ",take times "
@@ -174,6 +176,8 @@ public abstract class UploadObjectAbstract {
     }
 
     /**
+     * 上传成功后，可以获取到该文件的唯一文件ID
+     *
      * @return the VNU
      */
     public final ObjectId getVNU() {
