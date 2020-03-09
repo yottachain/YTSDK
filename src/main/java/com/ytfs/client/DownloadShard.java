@@ -106,9 +106,11 @@ public class DownloadShard implements Runnable {
             return false;
         }
         if (data.length < UserConfig.Default_Shard_Size) {
+            LOG.error("[" + vbi + "]VHF:(" + Base58.encode(VHF) + ") Invalid data,len=" + data.length);
             return false;
         } else if (data.length == UserConfig.Default_Shard_Size) {
         } else {
+            LOG.warn("[" + vbi + "]VHF:(" + Base58.encode(VHF) + ") Data is truncated,len=" + data.length);
             byte[] bs = new byte[UserConfig.Default_Shard_Size];
             System.arraycopy(data, 0, bs, 0, bs.length);
             resp.setData(bs);
@@ -116,7 +118,11 @@ public class DownloadShard implements Runnable {
         try {
             MessageDigest sha256 = MessageDigest.getInstance("MD5");
             byte[] bs = sha256.digest(resp.getData());
-            return Arrays.equals(bs, VHF);
+            boolean b = Arrays.equals(bs, VHF);
+            if (!b) {
+                LOG.error("[" + vbi + "]VHF:(" + Base58.encode(bs) + ")ERR.");
+            }
+            return b;
         } catch (NoSuchAlgorithmException ex) {
             return false;
         }
