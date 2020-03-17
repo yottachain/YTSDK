@@ -17,11 +17,13 @@ public class DownloadObject {
     private byte[] VHW;
     private List<ObjectRefer> refers;
     private long length;
+    private BackupCaller backupCaller = null;
 
     /**
      * 创建下载实例
+     *
      * @param VHW
-     * @throws ServiceException 
+     * @throws ServiceException
      */
     public DownloadObject(byte[] VHW) throws ServiceException {
         this.VHW = VHW;
@@ -30,10 +32,11 @@ public class DownloadObject {
 
     /**
      * 创建下载实例
+     *
      * @param bucketName
      * @param fileName 文件名
      * @param versionId
-     * @throws ServiceException 
+     * @throws ServiceException
      */
     public DownloadObject(String bucketName, String fileName, ObjectId versionId) throws ServiceException {
         init(bucketName, fileName, versionId);
@@ -61,20 +64,22 @@ public class DownloadObject {
 
     /**
      * 开始下载
-     * @return 
+     *
+     * @return
      */
     public InputStream load() {
-        return new DownloadInputStream(refers, 0, this.getLength());
+        return new DownloadInputStream(refers, 0, this.getLength(), backupCaller);
     }
 
     /**
      * 开始下载，按范围下载
+     *
      * @param start　开始
      * @param end　结束
-     * @return 
+     * @return
      */
     public InputStream load(long start, long end) {
-        return new DownloadInputStream(refers, start, end);
+        return new DownloadInputStream(refers, start, end, backupCaller);
     }
 
     /**
@@ -82,5 +87,19 @@ public class DownloadObject {
      */
     public long getLength() {
         return length;
+    }
+
+    /**
+     * @return the backupCaller
+     */
+    public BackupCaller getBackupCaller() {
+        return backupCaller;
+    }
+
+    /**
+     * @param backupCaller the backupCaller to set
+     */
+    public void setBackupCaller(BackupCaller backupCaller) {
+        this.backupCaller = backupCaller;
     }
 }
