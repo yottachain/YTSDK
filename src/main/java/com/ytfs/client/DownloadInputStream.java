@@ -41,6 +41,9 @@ public class DownloadInputStream extends InputStream {
             }
             if (readpos < pos + refer.getOriginalSize()) {
                 try {
+                    if(refer.getId()>=0){
+                        throw new IOException();
+                    }
                     DownloadBlock db = new DownloadBlock(refer);
                     db.load();
                     Block block = new Block(db.getData());
