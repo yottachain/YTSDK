@@ -31,7 +31,9 @@ public class DownloadInputStream extends InputStream {
     }
 
     private void readBlock() throws IOException {
-        bin = null;
+        if (bin != null && bin instanceof BlockInputStream) {
+            bin = null;
+        }
         while (bin == null) {
             ObjectRefer refer = refers.get(referIndex);
             if (refer == null) {
@@ -69,6 +71,9 @@ public class DownloadInputStream extends InputStream {
     @Override
     public void close() throws IOException {
         refers = null;
+        if (bin != null && bin instanceof AESDecryptInputStream) {
+            bin.close();
+        }
     }
 
     @Override
