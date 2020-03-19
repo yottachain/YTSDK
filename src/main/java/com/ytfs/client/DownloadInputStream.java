@@ -41,9 +41,9 @@ public class DownloadInputStream extends InputStream {
             }
             if (readpos < pos + refer.getOriginalSize()) {
                 try {
-                    if (refer.getId() >= 0) {
+                    //if (refer.getId() >= 0) {
                         //throw new IOException();
-                    }
+                    //}
                     DownloadBlock db = new DownloadBlock(refer);
                     db.load();
                     Block block = new Block(db.getData());
@@ -56,9 +56,9 @@ public class DownloadInputStream extends InputStream {
                     if (backupCaller == null) {
                         throw e instanceof IOException ? (IOException) e : new IOException(e);
                     } else {
-                        long startpos = readpos / 16;
+                        long startpos = readpos / 16L;
                         int skipn = (int) (readpos % 16L);
-                        InputStream is = backupCaller.getBackupInputStream(startpos);
+                        InputStream is = backupCaller.getBackupInputStream(startpos * 16L);
                         bin = new AESDecryptInputStream(is, backupCaller.getAESKey());
                         if (skipn > 0) {
                             bin.skip(skipn);
