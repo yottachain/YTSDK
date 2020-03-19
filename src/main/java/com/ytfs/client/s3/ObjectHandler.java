@@ -17,7 +17,7 @@ public class ObjectHandler {
      * @param filename 文件名
      * @param VNU  文件ID
      * @param meta　文件属性，自定义格式
-     * @throws ServiceException 
+     * @throws ServiceException
      */
     public static void createObject(String bucketname, String filename, ObjectId VNU,byte[] meta) throws ServiceException {
         UploadFileReq req = new UploadFileReq();
@@ -27,6 +27,16 @@ public class ObjectHandler {
         req.setMeta(meta);
         P2PUtils.requestBPU(req, UserConfig.superNode);
     }
+
+//    public static FileMetaMsg getFileMeta(String bucketName,String fileName) throws ServiceException {
+//        GetObjectReq req = new GetObjectReq();
+//        req.setBucketName(bucketName);
+//        req.setFileName(fileName);
+//        GetObjectResp resp = (GetObjectResp) P2PUtils.requestBPU(req,UserConfig.superNode);
+//        FileMetaMsg fileMeta = new FileMetaMsg();
+//        fileMeta.setFileName(resp.getFileName());
+//        fileMeta.setVersionId(resp.get);
+//    }
 
     public static FileMetaMsg copyObject(String srcBucket,String srcObjectKey,String destBucket,String destObjectKey) throws ServiceException{
         CopyObjectReq req = new CopyObjectReq();
@@ -44,7 +54,7 @@ public class ObjectHandler {
         return fileMeta;
     }
 
-//    public static String listObject(Map<String,byte[]> map, String bucketName, String fileName, int limit) throws ServiceException {
+    //    public static String listObject(Map<String,byte[]> map, String bucketName, String fileName, int limit) throws ServiceException {
 //        ListObjectReq req = new ListObjectReq();
 //        req.setBucketName(bucketName);
 //        req.setLimit(limit);
@@ -56,16 +66,16 @@ public class ObjectHandler {
 //        return resp.getFileName();
 //    }
     public static List<FileMetaMsg> listBucket(String bucketName, String fileName, String prefix, boolean isVersion, ObjectId nextVersionId, int limit) throws ServiceException{
-            ListObjectReq req = new ListObjectReq();
-            req.setBucketName(bucketName);
-            req.setFileName(fileName);
-            req.setLimit(limit);
-            req.setPrefix(prefix);
-            req.setVersion(isVersion);
-            req.setNextVersionId(nextVersionId);
-            ListObjectResp resp = (ListObjectResp) P2PUtils.requestBPU(req, UserConfig.superNode);
-            List<FileMetaMsg> fileMetaMsgs = resp.getFileMetaMsgList();
-            return fileMetaMsgs;
+        ListObjectReq req = new ListObjectReq();
+        req.setBucketName(bucketName);
+        req.setFileName(fileName);
+        req.setLimit(limit);
+        req.setPrefix(prefix);
+        req.setVersion(isVersion);
+        req.setNextVersionId(nextVersionId);
+        ListObjectResp resp = (ListObjectResp) P2PUtils.requestBPU(req, UserConfig.superNode);
+        List<FileMetaMsg> fileMetaMsgs = resp.getFileMetaMsgList();
+        return fileMetaMsgs;
     }
     public static void deleteObject(String bucketName,String fileName,ObjectId versionId) throws ServiceException {
         DeleteFileReq req = new DeleteFileReq();
@@ -85,8 +95,8 @@ public class ObjectHandler {
         }
         return isExistObject;
     }
-    
-    
+
+
     public static ObjectId getObjectIdByName(String bucketName,String fileName) throws ServiceException{
         GetObjectReq req = new GetObjectReq();
         req.setFileName(fileName);
@@ -94,5 +104,15 @@ public class ObjectHandler {
         GetObjectResp resp = (GetObjectResp)P2PUtils.requestBPU(req, UserConfig.superNode);
         ObjectId objectId = resp.getObjectId();
         return objectId;
+    }
+
+    public static FileMetaMsg getFileMeta(String bucketName,String fileName) throws ServiceException{
+        GetObjectReq req = new GetObjectReq();
+        req.setFileName(fileName);
+        req.setBucketName(bucketName);
+        GetObjectResp resp = (GetObjectResp)P2PUtils.requestBPU(req, UserConfig.superNode);
+        FileMetaMsg fileMeta = new FileMetaMsg();
+        fileMeta.setMeta(resp.getMeta());
+        return fileMeta;
     }
 }
