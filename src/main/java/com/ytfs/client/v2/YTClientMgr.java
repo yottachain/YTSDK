@@ -27,12 +27,10 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
-import org.apache.log4j.Logger;
 import org.tanukisoftware.wrapper.WrapperManager;
 
 public class YTClientMgr {
 
-    private static final Logger LOG = Logger.getLogger(YTClientMgr.class);
     private static final Map<String, YTClient> clients = new ConcurrentHashMap<>();
 
     public static YTClient newInstance(String username, String privateKey) throws IOException {

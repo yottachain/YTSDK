@@ -21,7 +21,7 @@ public class UploadFile extends Thread {
             UPLOAD_SIGN = Integer.parseInt(num);
         } catch (Exception d) {
         }
-        num = WrapperManager.getProperties().getProperty("wrapper.batch.uploadLoopNum", "1");
+        num = WrapperManager.getProperties().getProperty("wrapper.batch.uploadLoopNum", "2");
         try {
             UPLOAD_LOOP = Integer.parseInt(num);
         } catch (Exception d) {

@@ -9,6 +9,7 @@ public class PreAllocNodeStat extends PreAllocNode {
     private final AtomicLong okDelayTimes = new AtomicLong(0);//总耗时
     private final AtomicInteger okTimes = new AtomicInteger(0);//成功次数
     private final AtomicInteger errTimes = new AtomicInteger(0);//错误次数
+    private final AtomicInteger busyTimes = new AtomicInteger(0);//错误次数
     private long resetTime = System.currentTimeMillis();
 
     public PreAllocNodeStat() {
@@ -22,31 +23,35 @@ public class PreAllocNodeStat extends PreAllocNode {
         errTimes.incrementAndGet();
     }
 
+    public void setBusy() {
+        busyTimes.incrementAndGet();
+    }
+
     public void setOK(long time) {
         okDelayTimes.addAndGet(time);
         okTimes.incrementAndGet();
     }
 
+    static final int busytimes = 15000;
+    static final int errtimes = 30000;
+
     public long getDelayTimes() {
         long oktimes = okDelayTimes.get();
         long count = okTimes.get();
         long errcount = errTimes.get();
+        long busycount = busyTimes.get();
         if (count == 0) {
-            if (errcount == 0) {
+            if (errcount == 0 && busycount == 0) {
                 return 0;
             } else {
-                return 60000;
+                return (busytimes * busycount + errtimes * errcount) / (busycount + errcount);
             }
         } else {
             long times = oktimes / count;
-            if (errcount == 0) {
+            if (times > errtimes) {
                 return times;
             } else {
-                if (times > 60000) {
-                    return times;
-                } else {
-                    return (oktimes + 60000 * errcount) / (oktimes + errcount);
-                }
+                return (oktimes + errtimes * errcount + busytimes * busycount) / (count + errcount + busycount);
             }
         }
     }
@@ -64,6 +69,7 @@ public class PreAllocNodeStat extends PreAllocNode {
         if (System.currentTimeMillis() - resetTime > 1000 * 60 * 10) {
             okDelayTimes.set(0);
             errTimes.set(0);
+            busyTimes.set(0);
             okTimes.set(0);
             resetTime = System.currentTimeMillis();
         }
