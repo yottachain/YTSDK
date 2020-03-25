@@ -26,7 +26,7 @@ public class LocalInterface {
      * @return
      */
     public static String getPrivateKey() {
-        return UserConfig.username + "@";// + UserConfig.privateKey;
+        return UserConfig.username + "@"+UserConfig.privateKey;
     }
 
 }

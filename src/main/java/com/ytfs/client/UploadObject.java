@@ -1,5 +1,6 @@
 package com.ytfs.client;
 
+import com.ytfs.client.v2.YTClient;
 import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.common.conf.UserConfig;
 import com.ytfs.common.codec.Block;
@@ -10,6 +11,8 @@ import com.ytfs.common.tracing.GlobalTracer;
 import com.ytfs.service.packet.user.UploadObjectInitReq;
 import com.ytfs.service.packet.user.UploadObjectInitResp;
 import com.ytfs.service.packet.bp.ActiveCache;
+import com.ytfs.service.packet.v2.ActiveCacheV2;
+import com.ytfs.service.packet.v2.UploadObjectInitReqV2;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
@@ -28,6 +31,30 @@ public class UploadObject extends UploadObjectAbstract {
     private byte[] data = null;
     private String path;
     private boolean exist = false;
+
+    /**
+     * 创建实例
+     *
+     * @param client
+     * @param data 要上传的文件内容
+     * @throws IOException
+     */
+    public UploadObject(YTClient client, byte[] data) throws IOException {
+        this.client = client;
+        this.data = data;
+    }
+
+    /**
+     * 创建实例
+     *
+     * @param client
+     * @param path 要上传的文件的本地路径
+     * @throws IOException
+     */
+    public UploadObject(YTClient client, String path) throws IOException {
+        this.client = client;
+        this.path = path;
+    }
 
     /**
      * 创建实例
@@ -106,9 +133,17 @@ public class UploadObject extends UploadObjectAbstract {
     }
 
     public byte[] uploadTracer() throws ServiceException, IOException, InterruptedException {
-        UploadObjectInitReq req = new UploadObjectInitReq(VHW);
-        req.setLength(ytfile.getLength());
-        UploadObjectInitResp res = (UploadObjectInitResp) P2PUtils.requestBPU(req, UserConfig.superNode, UserConfig.SN_RETRYTIMES);
+        UploadObjectInitResp res;
+        if (this.client == null) {
+            UploadObjectInitReq req = new UploadObjectInitReq(VHW);
+            req.setLength(ytfile.getLength());
+            res = (UploadObjectInitResp) P2PUtils.requestBPU(req, UserConfig.superNode, UserConfig.SN_RETRYTIMES);
+        } else {
+            UploadObjectInitReqV2 req = new UploadObjectInitReqV2(VHW);
+            req.setLength(ytfile.getLength());
+            req.fill(client.getUserId(), client.getKeyNumber(), client.getPrivateKey());
+            res = (UploadObjectInitResp) P2PUtils.requestBPU(req, client.getSuperNode(), UserConfig.SN_RETRYTIMES);
+        }
         signArg = res.getSignArg();
         stamp = res.getStamp();
         VNU = res.getVNU();
@@ -175,9 +210,16 @@ public class UploadObject extends UploadObjectAbstract {
 
     private void sendActive() {
         try {
-            ActiveCache active = new ActiveCache();
-            active.setVNU(VNU);
-            P2PUtils.requestBPU(active, UserConfig.superNode, VNU.toString(), 0);
+            if (this.client == null) {
+                ActiveCache active = new ActiveCache();
+                active.setVNU(VNU);
+                P2PUtils.requestBPU(active, UserConfig.superNode, VNU.toString(), 0);
+            } else {
+                ActiveCacheV2 active = new ActiveCacheV2();
+                active.setVNU(VNU);
+                active.fill(client.getUserId(), client.getKeyNumber(), client.getPrivateKey());
+                P2PUtils.requestBPU(active, client.getSuperNode(), VNU.toString(), 0);
+            }
         } catch (Exception r) {
         }
     }

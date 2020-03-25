@@ -41,7 +41,7 @@ public class ClientInitor {
         init(null);
     }
 
-    private static boolean inited = false;
+    public static boolean inited = false;
 
     /**
      * 初始化SDK
@@ -49,7 +49,7 @@ public class ClientInitor {
      * @param cfg
      * @throws IOException
      */
-    public static void init(Configurator cfg) throws IOException {
+    public synchronized static void init(Configurator cfg) throws IOException {
         String level = WrapperManager.getProperties().getProperty("wrapper.log4j.loglevel", "DEBUG");
         String path = WrapperManager.getProperties().getProperty("wrapper.log4j.logfile");
         if (!inited) {
@@ -114,7 +114,7 @@ public class ClientInitor {
      *
      * @throws IOException
      */
-    private static void startP2p() throws IOException {
+    public static void startP2p() throws IOException {
         String randPrivateKey = KeyUtil.createPrivateKey();
         Exception err = null;
         for (int ii = 0; ii < 10; ii++) {

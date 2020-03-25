@@ -217,8 +217,8 @@ public class Configurator {
      * @param PNN the PNN to set
      */
     public void setPNN(int PNN) {
-        if (PNN < 320) {
-            PNN = 320;
+        if (PNN < 328) {
+            PNN = 328;
         }
         if (PNN > 1000) {
             PNN = 1000;

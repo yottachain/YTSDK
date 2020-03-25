@@ -1,5 +1,6 @@
 package com.ytfs.client;
 
+import com.ytfs.client.v2.YTClient;
 import com.ytfs.common.codec.AESDecryptInputStream;
 import com.ytfs.common.codec.Block;
 import com.ytfs.common.codec.BlockInputStream;
@@ -19,8 +20,10 @@ public class DownloadInputStream extends InputStream {
     private long readpos;
     private long pos = 0;
     private int referIndex = 0;
+    private YTClient client = null;
 
-    public DownloadInputStream(List<ObjectRefer> refs, long start, long end, BackupCaller backupCaller) {
+    public DownloadInputStream(YTClient client, List<ObjectRefer> refs, long start, long end, BackupCaller backupCaller) {
+        this.client = client;
         refs.stream().forEach((refer) -> {
             int id = refer.getId() & 0xFFFF;
             this.refers.put(id, refer);
@@ -41,10 +44,7 @@ public class DownloadInputStream extends InputStream {
             }
             if (readpos < pos + refer.getOriginalSize()) {
                 try {
-                    //if (refer.getId() >= 0) {
-                        //throw new IOException();
-                    //}
-                    DownloadBlock db = new DownloadBlock(refer);
+                    DownloadBlock db = new DownloadBlock(client, refer);
                     db.load();
                     Block block = new Block(db.getData());
                     bin = new BlockInputStream(block);

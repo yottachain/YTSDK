@@ -1,5 +1,6 @@
 package com.ytfs.client;
 
+import com.ytfs.client.v2.YTClient;
 import com.ytfs.common.conf.UserConfig;
 import com.ytfs.common.codec.BlockAESDecryptor;
 import com.ytfs.common.codec.BlockEncrypted;
@@ -27,6 +28,7 @@ import static com.ytfs.common.ServiceErrorCode.COMM_ERROR;
 import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.common.codec.ShardEncoder;
 import com.ytfs.common.codec.lrc.ShardLRCDecoder;
+import com.ytfs.service.packet.v2.DownloadBlockInitReqV2;
 import io.yottachain.p2phost.utils.Base58;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -39,8 +41,10 @@ public class DownloadBlock {
     private byte[] data;
     private final List<DownloadShardResp> resList = new ArrayList();
     private byte[] ks;
+    private YTClient client = null;
 
-    DownloadBlock(ObjectRefer refer) throws ServiceException {
+    DownloadBlock(YTClient client, ObjectRefer refer) throws ServiceException {
+        this.client = client;
         this.refer = refer;
     }
 
@@ -60,10 +64,18 @@ public class DownloadBlock {
     public void load() throws ServiceException {
         ks = KeyStoreCoder.aesDecryped(refer.getKEU(), UserConfig.AESKey);
         long l = System.currentTimeMillis();
-        DownloadBlockInitReq req = new DownloadBlockInitReq();
-        req.setVBI(refer.getVBI());
         SuperNode pbd = SuperNodeList.getSuperNode(refer.getSuperID());
-        Object resp = P2PUtils.requestBPU(req, pbd, UserConfig.SN_RETRYTIMES);
+        Object resp;
+        if (client == null) {
+            DownloadBlockInitReq req = new DownloadBlockInitReq();
+            req.setVBI(refer.getVBI());
+            resp = P2PUtils.requestBPU(req, pbd, UserConfig.SN_RETRYTIMES);
+        } else {
+            DownloadBlockInitReqV2 req = new DownloadBlockInitReqV2();
+            req.fill(client.getUserId(), client.getKeyNumber(), client.getPrivateKey());
+            req.setVBI(refer.getVBI());
+            resp = P2PUtils.requestBPU(req, pbd, UserConfig.SN_RETRYTIMES);
+        }
         LOG.info("[" + refer.getVBI() + "]Download init OK at sn" + refer.getSuperID() + ",take times " + (System.currentTimeMillis() - l) + "ms");
         if (resp instanceof DownloadBlockDBResp) {
             this.data = aesDBDecode(((DownloadBlockDBResp) resp).getData());

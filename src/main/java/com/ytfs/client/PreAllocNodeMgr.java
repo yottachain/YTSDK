@@ -3,9 +3,12 @@ package com.ytfs.client;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.conf.UserConfig;
 import com.ytfs.common.net.P2PUtils;
+import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.packet.user.PreAllocNode;
 import com.ytfs.service.packet.user.PreAllocNodeReq;
 import com.ytfs.service.packet.user.PreAllocNodeResp;
+import io.yottachain.nodemgmt.core.vo.SuperNode;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -18,12 +21,44 @@ public class PreAllocNodeMgr extends Thread {
     private static final Logger LOG = Logger.getLogger(PreAllocNodeMgr.class);
     private static PreAllocNodeMgr me = null;
 
-    static void init() {
+    private static PreAllocNodeResp getPreAllocNodeResp(int[] errids) throws IOException, ServiceException {
+        if (UserConfig.superNode != null) {
+            PreAllocNodeReq req = new PreAllocNodeReq();
+            req.setCount(UserConfig.PNN);
+            if (errids != null) {
+                req.setExcludes(ErrorNodeCache.getErrorIds());
+            }
+            PreAllocNodeResp resp = (PreAllocNodeResp) P2PUtils.requestBPU(req, UserConfig.superNode, UserConfig.SN_RETRYTIMES);
+            return resp;
+        }
+        List<SuperNode> list = new ArrayList(SuperNodeList.getSuperNodeListFromCfg());
         while (true) {
+            long index = System.currentTimeMillis() % list.size();
+            SuperNode sn = list.remove((int) index);
             try {
                 PreAllocNodeReq req = new PreAllocNodeReq();
                 req.setCount(UserConfig.PNN);
-                PreAllocNodeResp resp = (PreAllocNodeResp) P2PUtils.requestBPU(req, UserConfig.superNode, UserConfig.SN_RETRYTIMES);
+                if (errids != null) {
+                    req.setExcludes(errids);
+                }
+                PreAllocNodeResp resp = (PreAllocNodeResp) P2PUtils.requestBPU(req, sn, UserConfig.SN_RETRYTIMES);
+                return resp;
+            } catch (Throwable r) {
+                try {
+                    Thread.sleep(15000);
+                } catch (InterruptedException ex) {
+                }
+                if (list.isEmpty()) {
+                    list = new ArrayList(SuperNodeList.getSuperNodeListFromCfg());
+                }
+            }
+        }
+    }
+
+    static void init() {
+        while (true) {
+            try {
+                PreAllocNodeResp resp = getPreAllocNodeResp(null);
                 List<PreAllocNode> ls = resp.getList();
                 ls.stream().forEach((node) -> {
                     PreAllocNodes.NODE_LIST.put(node.getId(), new PreAllocNodeStat(node));
@@ -32,7 +67,7 @@ public class PreAllocNodeMgr extends Thread {
                 me = new PreAllocNodeMgr();
                 me.start();
                 return;
-            } catch (ServiceException ex) {
+            } catch (Throwable ex) {
                 LOG.error("Get data node ERR:" + ex);
                 try {
                     Thread.sleep(15000);
@@ -58,13 +93,11 @@ public class PreAllocNodeMgr extends Thread {
         }
         while (!this.isInterrupted()) {
             try {
-                PreAllocNodeReq req = new PreAllocNodeReq();
-                req.setCount(UserConfig.PNN);
-                req.setExcludes(ErrorNodeCache.getErrorIds());
-                PreAllocNodeResp resp = (PreAllocNodeResp) P2PUtils.requestBPU(req, UserConfig.superNode, UserConfig.SN_RETRYTIMES);
+                int[] errids = ErrorNodeCache.getErrorIds();
+                PreAllocNodeResp resp = getPreAllocNodeResp(errids);
                 updateList(resp.getList());
-                if (req.getExcludes().length > 0) {
-                    LOG.info("Pre-Alloc Node list is updated,total:" + resp.getList().size() + "," + req.getExcludes().length + " error ids were excluded.");
+                if (errids.length > 0) {
+                    LOG.info("Pre-Alloc Node list is updated,total:" + resp.getList().size() + "," + errids.length + " error ids were excluded.");
                 } else {
                     LOG.info("Pre-Alloc Node list is updated,total:" + resp.getList().size());
                 }
@@ -83,7 +116,7 @@ public class PreAllocNodeMgr extends Thread {
     }
 
     private void updateList(List<PreAllocNode> ls) {
-        int maxsize = PreAllocNodes.NODE_LIST.size();
+        int maxsize = UserConfig.PNN;
         Map<Integer, PreAllocNode> map = new HashMap();
         ls.stream().forEach((node) -> {
             map.put(node.getId(), node);

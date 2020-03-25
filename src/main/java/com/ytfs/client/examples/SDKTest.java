@@ -16,16 +16,16 @@ import org.tanukisoftware.wrapper.WrapperManager;
 
 public class SDKTest implements WrapperListener {
 
-    private static final String sn = "cs";
-    private static final String path = "D:\\target.rar";
+    private static final String sn = "yf";
+    private static final String path = "D:\\Games.rar";
 
     @Override
     public Integer start(String[] strings) {
         if (sn.equalsIgnoreCase("yf")) {
-            System.setProperty("snlist.conf", "conf/snlist.properties");
-            System.setProperty("ytfs.conf", "conf/ytfs.properties");
+            System.setProperty("snlist.conf", "conf/snlistYF.properties");
+            System.setProperty("ytfs.conf", "conf/ytfsYF.properties");
         } else {
-            System.setProperty("snlist.conf", "conf/snlist_CS.properties");
+            System.setProperty("snlist.conf", "conf/snlist.properties");
             System.setProperty("ytfs.conf", "conf/ytfs.properties");
         }
         try {

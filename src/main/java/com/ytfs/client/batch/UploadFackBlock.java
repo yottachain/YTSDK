@@ -1,5 +1,7 @@
-package com.ytfs.client;
+package com.ytfs.client.batch;
 
+import com.ytfs.client.PreAllocNodeStat;
+import com.ytfs.client.PreAllocNodes;
 import com.ytfs.common.conf.UserConfig;
 import com.ytfs.service.packet.UploadShardRes;
 import com.ytfs.common.codec.Block;
@@ -7,16 +9,11 @@ import com.ytfs.common.codec.BlockAESEncryptor;
 import com.ytfs.common.codec.KeyStoreCoder;
 import com.ytfs.common.codec.Shard;
 import com.ytfs.common.codec.erasure.ShardRSEncoder;
-import com.ytfs.common.net.P2PUtils;
 import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.common.ServiceException;
 import com.ytfs.common.codec.ShardEncoder;
 import com.ytfs.common.codec.lrc.ShardLRCEncoder;
 import static com.ytfs.common.conf.UserConfig.Default_Shard_Size;
-import static com.ytfs.common.conf.UserConfig.SN_RETRYTIMES;
-import com.ytfs.service.packet.user.UploadBlockEndReq;
-import com.ytfs.service.packet.user.UploadBlockEndResp;
-import com.ytfs.service.packet.v2.UploadBlockEndReqV2;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,9 +23,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 
-public class UploadBlock {
+public class UploadFackBlock {
 
-    private static final Logger LOG = Logger.getLogger(UploadBlock.class);
+    private static final Logger LOG = Logger.getLogger(UploadFackBlock.class);
 
     protected final short id;
     protected final ObjectId VNU;
@@ -45,9 +42,9 @@ public class UploadBlock {
     private final List<UploadShardRes> resList = new ArrayList();
     private final List<UploadShardRes> okList = new ArrayList();
     private final Map<Integer, Shard> map = new HashMap();
-    private final UploadObjectAbstract uploadObject;
+    private final UploadFackObjectAbstract uploadObject;
 
-    public UploadBlock(UploadObjectAbstract uploadObject, Block block, short id, SuperNode bpdNode, ObjectId VNU, long sTime, String signArg, long stamp) {
+    public UploadFackBlock(UploadFackObjectAbstract uploadObject, Block block, short id, SuperNode bpdNode, ObjectId VNU, long sTime, String signArg, long stamp) {
         this.uploadObject = uploadObject;
         this.block = block;
         this.id = id;
@@ -129,7 +126,7 @@ public class UploadBlock {
         int shardindex = 0;
         for (Shard sd : shards) {
             map.put(shardindex, sd);
-            UploadShard.startUploadShard(this, sd, shardindex);
+            UploadFackShard.startUploadShard(this, sd, shardindex);
             shardindex++;
         }
         synchronized (this) {
@@ -208,7 +205,7 @@ public class UploadBlock {
         long startTime = System.currentTimeMillis();
         for (Integer shardid : shards) {
             Shard shard = map.get(shardid);
-            UploadShard.startUploadShard(this, shard, shardid);
+            UploadFackShard.startUploadShard(this, shard, shardid);
         }
         synchronized (this) {
             while (resList.size() != errcount) {
@@ -226,56 +223,6 @@ public class UploadBlock {
      */
     private void completeUploadBlock(byte[] ks) throws ServiceException {
         long l = System.currentTimeMillis();
-        if (uploadObject.client == null) {
-            UploadBlockEndReq req = new UploadBlockEndReq();
-            req.setId(id);
-            req.setVHP(block.getVHP());
-            req.setVHB(encoder.makeVHB());
-            req.setKEU(KeyStoreCoder.aesEncryped(ks, UserConfig.AESKey));
-            req.setKED(KeyStoreCoder.aesEncryped(ks, block.getKD()));
-            req.setOriginalSize(block.getOriginalSize());
-            req.setRealSize(block.getRealSize());
-            if (encoder.isCopyMode()) {
-                req.setAR(ShardEncoder.AR_COPY_MODE);
-            } else {
-                if (encoder instanceof ShardRSEncoder) {
-                    req.setAR(ShardEncoder.AR_RS_MODE);
-                } else {
-                    req.setAR(encoder.getDataCount());
-                }
-            }
-            req.setOkList(okList);
-            req.setVNU(VNU);
-            Object obj = P2PUtils.requestBPU(req, bpdNode, VNU.toString(), SN_RETRYTIMES);//重试5分钟
-            if (obj instanceof UploadBlockEndResp) {
-                BlockSyncCache.putBlock(req, (UploadBlockEndResp) obj);
-            }
-        } else {
-            UploadBlockEndReqV2 req = new UploadBlockEndReqV2();
-            req.fill(uploadObject.client.getUserId(), uploadObject.client.getKeyNumber(), uploadObject.client.getPrivateKey());
-            req.setId(id);
-            req.setVHP(block.getVHP());
-            req.setVHB(encoder.makeVHB());
-            req.setKEU(KeyStoreCoder.aesEncryped(ks, uploadObject.client.getAESKey()));
-            req.setKED(KeyStoreCoder.aesEncryped(ks, block.getKD()));
-            req.setOriginalSize(block.getOriginalSize());
-            req.setRealSize(block.getRealSize());
-            if (encoder.isCopyMode()) {
-                req.setAR(ShardEncoder.AR_COPY_MODE);
-            } else {
-                if (encoder instanceof ShardRSEncoder) {
-                    req.setAR(ShardEncoder.AR_RS_MODE);
-                } else {
-                    req.setAR(encoder.getDataCount());
-                }
-            }
-            req.setOkList(okList);
-            req.setVNU(VNU);
-            Object obj = P2PUtils.requestBPU(req, bpdNode, VNU.toString(), SN_RETRYTIMES);//重试5分钟
-            if (obj instanceof UploadBlockEndResp) {
-                BlockSyncCache.putBlockV2(req, (UploadBlockEndResp) obj);
-            }
-        }
         LOG.info("[" + VNU + "][" + id + "]Upload block OK,take times " + (System.currentTimeMillis() - l) + "ms");
     }
 }
