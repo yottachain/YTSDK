@@ -21,7 +21,7 @@ public class YTClient {
     private int userId;
     private int keyNumber;
     private SuperNode superNode;
-    private final String publicKey; //用户私钥
+    private final String accessorKey; //用户私钥
 
     public ObjectAccessor createObjectAccessor() {
         return new ObjectAccessor(this);
@@ -57,7 +57,7 @@ public class YTClient {
         this.AESKey = KeyStoreCoder.generateUserKey(KUSp);
         String pubkey = KeyUtil.toPublicKey(privateKey);
         pubkey = pubkey.substring(3);
-        this.publicKey = pubkey;
+        this.accessorKey = pubkey;
     }
 
     /**
@@ -133,8 +133,8 @@ public class YTClient {
     /**
      * @return the publicKey
      */
-    public String getPublicKey() {
-        return publicKey;
+    public String getAccessorKey() {
+        return accessorKey;
     }
 
 }

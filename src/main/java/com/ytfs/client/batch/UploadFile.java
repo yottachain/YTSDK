@@ -10,32 +10,32 @@ import org.apache.log4j.Logger;
 import org.tanukisoftware.wrapper.WrapperManager;
 
 public class UploadFile extends Thread {
-    
+
     private static final Logger LOG = Logger.getLogger(UploadFile.class);
     static int UPLOAD_SIGN = 0;
     static int UPLOAD_LOOP = 0;
-    
+
     static {
-        String num = WrapperManager.getProperties().getProperty("wrapper.batch.uploadSign", "0");
+        String num = WrapperManager.getProperties().getProperty("wrapper.batch.uploadSign", "1");
         try {
             UPLOAD_SIGN = Integer.parseInt(num);
         } catch (Exception d) {
         }
-        num = WrapperManager.getProperties().getProperty("wrapper.batch.uploadLoopNum", "2");
+        num = WrapperManager.getProperties().getProperty("wrapper.batch.uploadLoopNum", "3");
         try {
             UPLOAD_LOOP = Integer.parseInt(num);
         } catch (Exception d) {
         }
     }
-    
+
     private final String bucketName;
     private final String path;
-    
+
     public UploadFile(String bucketName, String path) {
         this.bucketName = bucketName;
         this.path = path;
     }
-    
+
     @Override
     public void run() {
         MakeFile makeFile = new MakeFile(path, bucketName);
@@ -85,5 +85,5 @@ public class UploadFile extends Thread {
         }
         UploadBooter.delList(this);
     }
-    
+
 }

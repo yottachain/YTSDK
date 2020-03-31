@@ -27,7 +27,7 @@ public class UploadFackShard implements Runnable {
     static int NODE_SLEEP = 100;
 
     static {
-        String num = WrapperManager.getProperties().getProperty("wrapper.batch.node.sleep", "100");
+        String num = WrapperManager.getProperties().getProperty("wrapper.batch.node.sleep", "10");
         try {
             NODE_SLEEP = Integer.parseInt(num);
         } catch (Exception d) {
@@ -97,8 +97,8 @@ public class UploadFackShard implements Runnable {
                     req.setAllocId(ctlresp.getAllocId());
                     ctrtimes = System.currentTimeMillis() - l;
                     if (!ctlresp.isWritable()) {
-                        LOG.warn(logHead + "Node " + node.getId() + " is unavailabe,take times " + ctrtimes + " ms");
-                        node.setERR();
+                        LOG.warn(logHead + "Node " + node.getId() + " is busy,take times " + ctrtimes + " ms");
+                        node.setBusy();
                         PreAllocNodeStat n = uploadBlock.excessNode.poll();
                         if (n == null) {
                             res.setDNSIGN(null);
@@ -125,9 +125,9 @@ public class UploadFackShard implements Runnable {
                         }
                     } else {
                         //LOG.info("发送："+req.getClass().getName());
-                        Object obj=P2PUtils.requestNode(req, node.getNode(), logHead);
+                        Object obj = P2PUtils.requestNode(req, node.getNode(), logHead);
                         //LOG.info("返回："+obj.getClass().getName());
-                        resp = (UploadShard2CResp)obj;// P2PUtils.requestNode(req, node.getNode(), logHead);
+                        resp = (UploadShard2CResp) obj;// P2PUtils.requestNode(req, node.getNode(), logHead);
                     }
                     long times = System.currentTimeMillis() - l;
                     if (resp.getRES() == UploadShardRes.RES_OK || resp.getRES() == UploadShardRes.RES_VNF_EXISTS) {

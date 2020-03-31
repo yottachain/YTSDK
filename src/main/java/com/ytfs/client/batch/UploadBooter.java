@@ -42,10 +42,10 @@ public class UploadBooter implements WrapperListener {
 
     @Override
     public Integer start(String[] strings) {
-        //System.setProperty("snlist.conf", "conf/snlist.properties");
-        //System.setProperty("ytfs.conf", "conf/ytfs.properties");
+        //System.setProperty("snlist.conf", "conf/snlistYF.properties");
+        //System.setProperty("ytfs.conf", "conf/ytfsYF.properties");
         try {
-            String num = WrapperManager.getProperties().getProperty("wrapper.batch.uploadFileThreadNum", "2");
+            String num = WrapperManager.getProperties().getProperty("wrapper.batch.uploadFileThreadNum", "5");
             try {
                 uploadFileThreadNum = Integer.parseInt(num);
             } catch (Exception d) {

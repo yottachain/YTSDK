@@ -20,6 +20,7 @@ import static com.ytfs.common.conf.UserConfig.UPLOADSHARDTHREAD;
 import static com.ytfs.common.conf.UserConfig.tmpFilePath;
 import static com.ytfs.common.conf.UserConfig.zipkinServer;
 import com.ytfs.common.tracing.GlobalTracer;
+import io.jafka.jeos.util.KeyUtil;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -34,6 +35,11 @@ public class YTClientMgr {
     private static final Map<String, YTClient> clients = new ConcurrentHashMap<>();
 
     public static YTClient newInstance(String username, String privateKey) throws IOException {
+        String accesskey = KeyUtil.toPublicKey(privateKey);
+        accesskey = accesskey.substring(3);
+        if (clients.containsKey(accesskey)) {
+            return clients.get(accesskey);
+        }
         if (clients.size() > 2000) {
             throw new IOException("Maximum number of users reached.");
         }
@@ -44,15 +50,15 @@ public class YTClientMgr {
     }
 
     private static void putClient(YTClient client) {
-        clients.put(client.getUserId() + client.getPrivateKey(), client);
+        clients.put(client.getAccessorKey(), client);
     }
 
-    public static YTClient getClient(int userid, String key) {
-        return clients.get(userid + key);
+    public static YTClient getClient(String accessorKey) {
+        return clients.get(accessorKey);
     }
 
     public static void free(YTClient client) {
-        clients.remove(client.getUserId() + client.getPrivateKey());
+        clients.remove(client.getAccessorKey());
     }
 
     /**

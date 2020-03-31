@@ -13,7 +13,7 @@ public class MakeFile {
     static int UPLOAD_FILE_LEN = 100;
 
     static {
-        String num = WrapperManager.getProperties().getProperty("wrapper.batch.uploadFileLength", "100");
+        String num = WrapperManager.getProperties().getProperty("wrapper.batch.uploadFileLength", "10");
         try {
             UPLOAD_FILE_LEN = Integer.parseInt(num);
         } catch (Exception d) {
@@ -56,18 +56,28 @@ public class MakeFile {
 
     private int makeLength() {
         Random ran = new Random();
-        while (true) {
-            int ii = ran.nextInt(UPLOAD_FILE_LEN);
-            if (ii > 50) {
-                return ii;
-            }
+        int num = UPLOAD_FILE_LEN / 5;
+        if (num == 0) {
+            return UPLOAD_FILE_LEN;
         }
+        int ii = ran.nextInt(num);
+        return num * 4 + ii;
     }
 
+
     public long makeFile() throws IOException {
+        return makeFile(false);
+    }
+
+    public long makeFile(boolean repeat) throws IOException {
         int loopnum = makeLength();
         long needlength = 1024L * 1024L * (long) loopnum;
         File file = new File(getFilePath());
+        if (repeat) {
+            if (file.exists()) {
+                return file.length();
+            }
+        }
         if (file.exists()) {
             long length = file.length();
             RandomAccessFile raf = null;
@@ -103,7 +113,8 @@ public class MakeFile {
                     raf = new RandomAccessFile(file, "rw");
                     raf.setLength(needlength);
                     long skipn = 0;
-                    for (long ii = 0; ii < loopnum; ii++) {
+                    long num = loopnum;
+                    for (long ii = 0; ii < num; ii++) {
                         raf.seek(skipn);
                         byte[] bs = makeSmallBytes();
                         raf.write(bs);

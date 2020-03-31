@@ -63,9 +63,11 @@ public class ClientInitor {
             UploadShard.init();
             DownloadShard.init();
             startP2p();
-            RegUser.regist();
-            regCaller();
-            PreAllocNodes.init();
+            if (username != null) {
+                RegUser.regist();
+                regCaller();
+                PreAllocNodes.init();
+            }
             MemoryCache.init();
             GlobalTracer.init(zipkinServer, "S3server");
             inited = true;
@@ -78,6 +80,7 @@ public class ClientInitor {
             }
             RegUser.regist();
             regCaller();
+            PreAllocNodes.init();
         }
     }
 
@@ -212,9 +215,12 @@ public class ClientInitor {
         is.close();
         username = p.getProperty("username");
         if (username == null || username.trim().isEmpty()) {
-            throw new IOException("The 'username' parameter is not configured.");
+            username = null;
+            LOG.warn("The 'username' parameter is not configured.");
+        } else {
+            username = username.trim();
+            exportPrivateKey(p.getProperty("KUSp").trim());
         }
-        exportPrivateKey(p.getProperty("KUSp").trim());
         try {
             String ss = p.getProperty("tmpFilePath", "").trim();
             File parent = new File(ss);

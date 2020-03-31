@@ -1,5 +1,6 @@
 package com.ytfs.client;
 
+import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.service.packet.user.PreAllocNode;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -32,8 +33,18 @@ public class PreAllocNodeStat extends PreAllocNode {
         okTimes.incrementAndGet();
     }
 
-    static final int busytimes = 15000;
-    static final int errtimes = 30000;
+    static int busytimes = 15000;
+    static int errtimes = 25000;
+
+    static {
+        String s = System.getenv("P2PHOST_GRPCCLI_TIMEOUT");
+        s = s == null || s.trim().isEmpty() ? "10000" : s.trim();
+        try {
+            busytimes = Integer.parseInt(s);
+            errtimes = busytimes + 10000;
+        } catch (Exception d) {
+        }
+    }
 
     public long getDelayTimes() {
         long oktimes = okDelayTimes.get();

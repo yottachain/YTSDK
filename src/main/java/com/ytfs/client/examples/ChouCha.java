@@ -1,7 +1,6 @@
 package com.ytfs.client.examples;
 
 import com.ytfs.client.ClientInitor;
-import com.ytfs.client.PreAllocNodeMgr;
 import com.ytfs.client.PreAllocNodeStat;
 import com.ytfs.client.PreAllocNodes;
 import com.ytfs.common.ServiceException;

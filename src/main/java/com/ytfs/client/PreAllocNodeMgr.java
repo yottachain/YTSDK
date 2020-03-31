@@ -55,23 +55,25 @@ public class PreAllocNodeMgr extends Thread {
         }
     }
 
-    static void init() {
-        while (true) {
-            try {
-                PreAllocNodeResp resp = getPreAllocNodeResp(null);
-                List<PreAllocNode> ls = resp.getList();
-                ls.stream().forEach((node) -> {
-                    PreAllocNodes.NODE_LIST.put(node.getId(), new PreAllocNodeStat(node));
-                });
-                LOG.info("Pre-Alloc Node total:" + ls.size());
-                me = new PreAllocNodeMgr();
-                me.start();
-                return;
-            } catch (Throwable ex) {
-                LOG.error("Get data node ERR:" + ex);
+    static synchronized void init() {
+        if (me == null) {
+            while (true) {
                 try {
-                    Thread.sleep(15000);
-                } catch (InterruptedException ex1) {
+                    PreAllocNodeResp resp = getPreAllocNodeResp(null);
+                    List<PreAllocNode> ls = resp.getList();
+                    ls.stream().forEach((node) -> {
+                        PreAllocNodes.NODE_LIST.put(node.getId(), new PreAllocNodeStat(node));
+                    });
+                    LOG.info("Pre-Alloc Node total:" + ls.size());
+                    me = new PreAllocNodeMgr();
+                    me.start();
+                    return;
+                } catch (Throwable ex) {
+                    LOG.error("Get data node ERR:" + ex);
+                    try {
+                        Thread.sleep(15000);
+                    } catch (InterruptedException ex1) {
+                    }
                 }
             }
         }
@@ -80,6 +82,7 @@ public class PreAllocNodeMgr extends Thread {
     public static void shutdown() {
         if (me != null) {
             me.interrupt();
+            me = null;
         }
     }
 

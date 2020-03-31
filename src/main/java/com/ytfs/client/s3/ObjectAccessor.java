@@ -2,10 +2,8 @@ package com.ytfs.client.s3;
 
 import com.ytfs.client.v2.YTClient;
 import com.ytfs.common.ServiceException;
-import com.ytfs.common.conf.UserConfig;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.service.packet.s3.CopyObjectResp;
-import com.ytfs.service.packet.s3.GetObjectReq;
 import com.ytfs.service.packet.s3.GetObjectResp;
 import com.ytfs.service.packet.s3.ListObjectResp;
 import com.ytfs.service.packet.s3.entities.FileMetaMsg;

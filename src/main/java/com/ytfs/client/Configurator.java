@@ -19,6 +19,14 @@ public class Configurator {
     private int RETRYTIMES = UserConfig.RETRYTIMES;
     private String zipkinServer;
 
+    public Configurator() {
+    }
+
+    public Configurator(String username, String KUSp) {
+        this.username = username;
+        this.KUSp = KUSp;
+    }
+
     /**
      * @return the superNodeID
      */

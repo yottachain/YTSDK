@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.log4j.Logger;
 
 public class UploadObject extends UploadObjectAbstract {
-
+    
     private static final Logger LOG = Logger.getLogger(UploadObject.class);
     private YTFileEncoder ytfile;
     ServiceException err = null;
@@ -131,7 +131,7 @@ public class UploadObject extends UploadObjectAbstract {
             }
         }
     }
-
+    
     public byte[] uploadTracer() throws ServiceException, IOException, InterruptedException {
         UploadObjectInitResp res;
         if (this.client == null) {
@@ -207,7 +207,7 @@ public class UploadObject extends UploadObjectAbstract {
         }
         return VHW;
     }
-
+    
     private void sendActive() {
         try {
             if (this.client == null) {

@@ -84,7 +84,7 @@ public class UploadShard implements Runnable {
                     ctrtimes = System.currentTimeMillis() - l;
                     if (!ctlresp.isWritable()) {
                         LOG.warn(logHead + "Node " + node.getId() + " is unavailabe,take times " + ctrtimes + " ms");
-                        node.setERR();
+                        node.setBusy();
                         PreAllocNodeStat n = uploadBlock.excessNode.poll();
                         if (n == null) {
                             res.setDNSIGN(null);

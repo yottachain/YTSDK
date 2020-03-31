@@ -27,9 +27,9 @@ import org.apache.log4j.Logger;
 import org.bson.types.ObjectId;
 
 public class UploadBlock {
-
+    
     private static final Logger LOG = Logger.getLogger(UploadBlock.class);
-
+    
     protected final short id;
     protected final ObjectId VNU;
     protected final SuperNode bpdNode;
@@ -46,7 +46,7 @@ public class UploadBlock {
     private final List<UploadShardRes> okList = new ArrayList();
     private final Map<Integer, Shard> map = new HashMap();
     private final UploadObjectAbstract uploadObject;
-
+    
     public UploadBlock(UploadObjectAbstract uploadObject, Block block, short id, SuperNode bpdNode, ObjectId VNU, long sTime, String signArg, long stamp) {
         this.uploadObject = uploadObject;
         this.block = block;
@@ -57,7 +57,7 @@ public class UploadBlock {
         this.stamp = stamp;
         this.sTime = sTime;
     }
-
+    
     void onResponse(UploadShardRes res) {
         long freelen = 0;
         synchronized (this) {
@@ -80,7 +80,7 @@ public class UploadBlock {
             }
         }
     }
-
+    
     void upload() throws ServiceException, InterruptedException {
         try {
             long l = System.currentTimeMillis();
@@ -105,7 +105,7 @@ public class UploadBlock {
             throw r instanceof ServiceException ? (ServiceException) r : new ServiceException(SERVER_ERROR);
         }
     }
-
+    
     private long firstUpload() throws InterruptedException {
         List<PreAllocNodeStat> ls = PreAllocNodes.getNodes();
         List<Shard> shards = encoder.getShardList();
@@ -139,7 +139,7 @@ public class UploadBlock {
         }
         return System.currentTimeMillis() - l;
     }
-
+    
     private void subUpload(long times) throws InterruptedException, ServiceException {
         int retrycount = 0;
         int lasterrnum = 0;
@@ -172,7 +172,7 @@ public class UploadBlock {
             times = secondUpload(shards);
         }
     }
-
+    
     private void fillExcessNode(List<Integer> shards) throws ServiceException {
         int preAllocNodeTimes = 0;
         while (true) {
@@ -201,7 +201,7 @@ public class UploadBlock {
             }
         }
     }
-
+    
     private long secondUpload(List<Integer> shards) throws InterruptedException {
         int errcount = shards.size();
         LOG.info("[" + VNU + "][" + id + "]Upload block is still incomplete,remaining " + errcount + " shards.");

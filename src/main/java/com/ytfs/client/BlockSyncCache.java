@@ -1,6 +1,5 @@
 package com.ytfs.client;
 
-import com.ytfs.client.v2.YTClient;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.node.SuperNodeList;
 import com.ytfs.service.packet.user.UploadBlockEndReq;

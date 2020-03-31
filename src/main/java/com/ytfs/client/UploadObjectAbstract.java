@@ -169,7 +169,7 @@ public abstract class UploadObjectAbstract {
                 req.setVNU(VNU);
                 req.setVHP(b.getVHP());
                 req.setVHB(enc.getBlockEncrypted().getVHB());
-                req.setKEU(KeyStoreCoder.aesEncryped(ks,  client.getAESKey()));
+                req.setKEU(KeyStoreCoder.aesEncryped(ks, client.getAESKey()));
                 req.setKED(KeyStoreCoder.aesEncryped(ks, b.getKD()));
                 req.setOriginalSize(b.getOriginalSize());
                 req.setData(enc.getBlockEncrypted().getData());
@@ -238,4 +238,5 @@ public abstract class UploadObjectAbstract {
     public final ObjectId getVNU() {
         return VNU;
     }
+
 }
