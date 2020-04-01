@@ -66,7 +66,7 @@ public class ClientInitor {
             if (username != null) {
                 RegUser.regist();
                 regCaller();
-                PreAllocNodes.init();
+                PreAllocNodeMgr.init();
             }
             MemoryCache.init();
             GlobalTracer.init(zipkinServer, "S3server");
@@ -80,7 +80,7 @@ public class ClientInitor {
             }
             RegUser.regist();
             regCaller();
-            PreAllocNodes.init();
+            PreAllocNodeMgr.init();
         }
     }
 

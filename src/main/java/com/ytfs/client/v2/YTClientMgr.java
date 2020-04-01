@@ -25,6 +25,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -44,9 +47,16 @@ public class YTClientMgr {
             throw new IOException("Maximum number of users reached.");
         }
         YTClient client = new YTClient(username, privateKey);
-        RegUser.regist(client);
+        RegUser.regist(client);       
         putClient(client);
+        PreAllocNodeMgrV2.init(client);
         return client;
+    }
+
+    public static List<YTClient> getYTClients() {
+        List<YTClient> ls = new ArrayList(clients.values());
+        Collections.shuffle(ls);
+        return ls;
     }
 
     private static void putClient(YTClient client) {
@@ -90,7 +100,6 @@ public class YTClientMgr {
             UploadShard.init();
             DownloadShard.init();
             startP2p();
-            PreAllocNodes.init();
             MemoryCache.init();
             GlobalTracer.init(zipkinServer, "S3server");
             inited = true;
