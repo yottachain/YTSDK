@@ -1,6 +1,5 @@
 package com.ytfs.client;
 
-import com.ytfs.common.conf.ServerConfig;
 import com.ytfs.service.packet.user.PreAllocNode;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -12,12 +11,13 @@ public class PreAllocNodeStat extends PreAllocNode {
     private final AtomicInteger errTimes = new AtomicInteger(0);//错误次数
     private final AtomicInteger busyTimes = new AtomicInteger(0);//错误次数
     private long resetTime = System.currentTimeMillis();
+    private int snid;
 
     public PreAllocNodeStat() {
     }
 
-    public PreAllocNodeStat(PreAllocNode node) {
-        init(node);
+    public PreAllocNodeStat(PreAllocNode node,int snid) {
+        init(node,snid);
     }
 
     public void setERR() {
@@ -67,13 +67,28 @@ public class PreAllocNodeStat extends PreAllocNode {
         }
     }
 
-    public final void init(PreAllocNode node) {
+    public final void init(PreAllocNode node,int snid) {
         this.setId(node.getId());
         this.setNodeid(node.getNodeid());
         this.setPubkey(node.getPubkey());
         this.setAddrs(node.getAddrs());
         this.setTimestamp(node.getTimestamp());
         this.setSign(node.getSign());
+        this.snid=snid;
+    }
+
+    /**
+     * @return the snid
+     */
+    public int getSnid() {
+        return snid;
+    }
+
+    /**
+     * @param snid the snid to set
+     */
+    public void setSnid(int snid) {
+        this.snid = snid;
     }
 
     public void resetStat() {

@@ -62,15 +62,15 @@ public class SDKTestV2 implements WrapperListener {
                 switch (index) {
                     case 0:
                         System.out.println("准备上传文件，大小(b):" + smallFileLength);
-                        upload = new UploadObject(MakeRandFile.makeSmallFile());
+                        upload = client.createUploadObject(MakeRandFile.makeSmallFile());
                         break;
                     case 1:
                         System.out.println("准备上传文件，大小(b):" + mediumFileLength);
-                        upload = new UploadObject(MakeRandFile.makeMediumFile());
+                        upload = client.createUploadObject(MakeRandFile.makeMediumFile());
                         break;
                     default:
                         System.out.println("准备上传文件，大小(b):" + largeFileLength);
-                        upload = new UploadObject(MakeRandFile.makeLargeFile());
+                        upload =client.createUploadObject(MakeRandFile.makeLargeFile());
                         break;
                 }
             }

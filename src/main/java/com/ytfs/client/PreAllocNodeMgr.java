@@ -32,7 +32,7 @@ public class PreAllocNodeMgr extends Thread {
                     PreAllocNodeResp resp = getPreAllocNodeResp(null);
                     List<PreAllocNode> ls = resp.getList();
                     ls.stream().forEach((node) -> {
-                        PreAllocNodes.NODE_LIST.put(node.getId(), new PreAllocNodeStat(node));
+                        PreAllocNodes.NODE_LIST.put(node.getId(), new PreAllocNodeStat(node,UserConfig.superNode.getId()));
                     });
                     LOG.info("Pre-Alloc Node total:" + ls.size());
                     me = new PreAllocNodeMgr();
@@ -68,7 +68,7 @@ public class PreAllocNodeMgr extends Thread {
             try {
                 int[] errids = ErrorNodeCache.getErrorIds();
                 PreAllocNodeResp resp = getPreAllocNodeResp(errids);
-                PreAllocNodes.updateList(resp.getList());
+                PreAllocNodes.updateList(resp.getList(),UserConfig.superNode.getId());
                 if (errids.length > 0) {
                     LOG.info("Pre-Alloc Node list is updated,total:" + resp.getList().size() + "," + errids.length + " error ids were excluded.");
                 } else {

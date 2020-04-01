@@ -24,7 +24,7 @@ public class PreAllocNodes {
 
     public static final Map<Integer, PreAllocNodeStat> NODE_LIST = new HashMap();
 
-    public static void updateList(List<PreAllocNode> ls) {
+    public static void updateList(List<PreAllocNode> ls,int snid) {
         int maxsize = UserConfig.PNN;
         Map<Integer, PreAllocNode> map = new HashMap();
         ls.stream().forEach((node) -> {
@@ -35,7 +35,7 @@ public class PreAllocNodes {
         stats.stream().forEach((ent) -> {
             PreAllocNodeStat stat = ent.getValue();
             if (map.containsKey(ent.getKey())) {
-                stat.init(map.remove(ent.getKey()));
+                stat.init(map.remove(ent.getKey()),snid);
                 stat.resetStat();
             } else {
                 PreAllocNodes.NODE_LIST.remove(ent.getKey());
@@ -44,7 +44,7 @@ public class PreAllocNodes {
         });
         Collection<PreAllocNode> coll = map.values();
         coll.stream().forEach((node) -> {
-            PreAllocNodes.NODE_LIST.put(node.getId(), new PreAllocNodeStat(node));
+            PreAllocNodes.NODE_LIST.put(node.getId(), new PreAllocNodeStat(node,snid));
         });
         while (PreAllocNodes.NODE_LIST.size() < maxsize && (!removels.isEmpty())) {
             PreAllocNodeStat node = removels.remove(0);

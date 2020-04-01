@@ -2,7 +2,6 @@ package com.ytfs.client;
 
 import com.ytfs.common.GlobleThreadPool;
 import com.ytfs.common.codec.Shard;
-import com.ytfs.common.conf.UserConfig;
 import static com.ytfs.common.conf.UserConfig.UPLOADSHARDTHREAD;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.tracing.GlobalTracer;
@@ -49,7 +48,7 @@ public class UploadShard implements Runnable {
 
     private UploadShardReq makeUploadShardReq(PreAllocNodeStat node) {
         UploadShardReq req = new UploadShardReq();
-        req.setBPDID(UserConfig.superNode.getId());
+        req.setBPDID(node.getSnid());
         req.setBPDSIGN(node.getSign().getBytes());
         req.setUSERSIGN(uploadBlock.signArg.getBytes());
         req.setDAT(shard.getData());

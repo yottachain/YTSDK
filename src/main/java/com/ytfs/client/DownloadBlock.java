@@ -62,7 +62,9 @@ public class DownloadBlock {
     }
 
     public void load() throws ServiceException {
-        ks = KeyStoreCoder.aesDecryped(refer.getKEU(), UserConfig.AESKey);
+        ks = client == null?
+                KeyStoreCoder.aesDecryped(refer.getKEU(), UserConfig.AESKey):
+                KeyStoreCoder.aesDecryped(refer.getKEU(), client.getAESKey());
         long l = System.currentTimeMillis();
         SuperNode pbd = SuperNodeList.getSuperNode(refer.getSuperID());
         Object resp;
