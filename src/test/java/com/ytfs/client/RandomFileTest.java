@@ -13,7 +13,7 @@ public class RandomFileTest {
 
     public static void main(String[] args) throws IOException {
         if (sn.equalsIgnoreCase("cs")) {
-            System.setProperty("snlist.conf", "conf/snlist_CS.properties");
+            System.setProperty("snlist.conf", "conf/snlist.properties");
             System.setProperty("ytfs.conf", "conf/ytfs.properties");
         } else {
             System.setProperty("snlist.conf", "conf/snlist_YF.properties");
