@@ -27,10 +27,10 @@ public class RegUser {
             SuperNode sn = list.remove((int) index);
             try {
                 RegUser.regist(sn, client);
-                LOG.info("User '" + client.getUsername() + "' Registration Successful.");
+                LOG.info("User ID'" + client.getUserId() + "' Registration Successful.");
                 return;
             } catch (Throwable r) {
-                LOG.info("User '" + client.getUsername() + "' registration failed:" + r.getMessage());
+                LOG.info("User '" + client.getUserId() + "' registration failed:" + r.getMessage());
                 try {
                     Thread.sleep(15000);
                 } catch (InterruptedException ex) {
@@ -62,7 +62,7 @@ public class RegUser {
             client.setUserId(resp.getUserId());
             client.setKeyNumber(resp.getKeyNumber());
             client.setSuperNode(sn);
-            LOG.info("Current user '" + client.getUsername() + "',ID:" + client.getUserId() + ",supernode:" + sn.getId() + ",ID:" + sn.getNodeid());
+            LOG.info("supernode:" + sn.getId() + ",ID:" + sn.getNodeid());
         } catch (Exception r) {
             throw new ServiceException(SERVER_ERROR);
         }
