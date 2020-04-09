@@ -19,6 +19,14 @@ public class Configurator {
     private int RETRYTIMES = UserConfig.RETRYTIMES;
     private String zipkinServer;
 
+    public Configurator() {
+    }
+
+    public Configurator(String username, String KUSp) {
+        this.username = username;
+        this.KUSp = KUSp;
+    }
+
     /**
      * @return the superNodeID
      */
@@ -217,8 +225,8 @@ public class Configurator {
      * @param PNN the PNN to set
      */
     public void setPNN(int PNN) {
-        if (PNN < 320) {
-            PNN = 320;
+        if (PNN < 328) {
+            PNN = 328;
         }
         if (PNN > 1000) {
             PNN = 1000;

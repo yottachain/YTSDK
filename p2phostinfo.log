@@ -1,0 +1,10 @@
+P2PHOST->INFO: 2020/03/25 15:42:03 wrapper.go:260: configure callback handler successful.
+P2PHOST->INFO: 2020/03/25 15:42:03 wrapper.go:274: GRPC address: 0.0.0.0:11002
+P2PHOST->INFO: 2020/03/25 16:42:03 wrapper.go:260: configure callback handler successful.
+P2PHOST->INFO: 2020/03/25 16:42:03 wrapper.go:274: GRPC address: 0.0.0.0:11002
+P2PHOST->INFO: 2020/03/25 16:44:12 wrapper.go:260: configure callback handler successful.
+P2PHOST->INFO: 2020/03/25 16:44:12 wrapper.go:274: GRPC address: 0.0.0.0:11002
+P2PHOST->INFO: 2020/03/25 16:45:51 wrapper.go:260: configure callback handler successful.
+P2PHOST->INFO: 2020/03/25 16:45:51 wrapper.go:274: GRPC address: 0.0.0.0:11002
+P2PHOST->INFO: 2020/03/25 16:47:00 wrapper.go:260: configure callback handler successful.
+P2PHOST->INFO: 2020/03/25 16:47:00 wrapper.go:274: GRPC address: 0.0.0.0:11002

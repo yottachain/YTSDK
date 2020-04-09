@@ -6,6 +6,8 @@ import com.ytfs.client.UploadObject;
 import static com.ytfs.client.examples.MakeRandFile.largeFileLength;
 import static com.ytfs.client.examples.MakeRandFile.mediumFileLength;
 import static com.ytfs.client.examples.MakeRandFile.smallFileLength;
+import com.ytfs.client.v2.YTClient;
+import com.ytfs.client.v2.YTClientMgr;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -14,10 +16,10 @@ import org.apache.commons.codec.binary.Hex;
 import org.tanukisoftware.wrapper.WrapperListener;
 import org.tanukisoftware.wrapper.WrapperManager;
 
-public class SDKTest implements WrapperListener {
+public class SDKTestV2 implements WrapperListener {
 
-    private static final String sn = "cs";
-    private static final String path = "D:\\DELPHI7企业版.ISO";
+    private static final String sn = "yf";
+    private static final String path = "D:\\Games.rar";
 
     @Override
     public Integer start(String[] strings) {
@@ -30,7 +32,8 @@ public class SDKTest implements WrapperListener {
         }
         try {
             //LogConfigurator.configPath(new File("D:\\log\\log"), "DEBUG");
-            ClientInitor.init();
+            YTClientMgr.init();
+            YTClient client=YTClientMgr.newInstance("username1234", "5KfbRow4L71fZnnu9XEnkmVqByi6CSmRiADJCx6asRS4TUEkU79");
             if (strings.length < 1) {
                 strings = new String[]{path};
             }
@@ -53,28 +56,27 @@ public class SDKTest implements WrapperListener {
             byte[] VHW = null;
             if (filepath != null) {
                 System.out.println("准备上传文件:" + strings[0]);
-                upload = new UploadObject(filepath);
+                upload =  client.createUploadObject(filepath);
             } else {
                 int index = (int) System.currentTimeMillis() % 3;
                 switch (index) {
                     case 0:
                         System.out.println("准备上传文件，大小(b):" + smallFileLength);
-                        upload = new UploadObject(MakeRandFile.makeSmallFile());
+                        upload = client.createUploadObject(MakeRandFile.makeSmallFile());
                         break;
                     case 1:
                         System.out.println("准备上传文件，大小(b):" + mediumFileLength);
-                        upload = new UploadObject(MakeRandFile.makeMediumFile());
+                        upload = client.createUploadObject(MakeRandFile.makeMediumFile());
                         break;
                     default:
                         System.out.println("准备上传文件，大小(b):" + largeFileLength);
-                        upload = new UploadObject(MakeRandFile.makeLargeFile());
+                        upload =client.createUploadObject(MakeRandFile.makeLargeFile());
                         break;
                 }
             }
             VHW = upload.upload();
             System.out.println(Hex.encodeHexString(VHW) + " 上传完毕！准备下载......");
-
-            DownloadObject obj = new DownloadObject(VHW);
+            DownloadObject obj =  client.createDownloadObject(VHW);
             FileOutputStream out = null;
             if (newfilepath != null) {
                 out = new FileOutputStream(newfilepath);
@@ -109,7 +111,7 @@ public class SDKTest implements WrapperListener {
     }
 
     public static void main(String[] args) {
-        WrapperManager.start(new SDKTest(), args);
+        WrapperManager.start(new SDKTestV2(), args);
     }
 
     @Override

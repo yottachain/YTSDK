@@ -1,12 +1,15 @@
-package com.ytfs.client;
+package com.ytfs.client.batch;
 
+import com.ytfs.client.ErrorNodeCache;
+import com.ytfs.client.PreAllocNodeStat;
 import com.ytfs.common.GlobleThreadPool;
 import com.ytfs.common.codec.Shard;
+import com.ytfs.common.conf.UserConfig;
 import static com.ytfs.common.conf.UserConfig.UPLOADSHARDTHREAD;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.tracing.GlobalTracer;
+import com.ytfs.service.packet.UploadFackShardReq;
 import com.ytfs.service.packet.UploadShard2CResp;
-import com.ytfs.service.packet.UploadShardReq;
 import com.ytfs.service.packet.UploadShardRes;
 import com.ytfs.service.packet.node.GetNodeCapacityReq;
 import com.ytfs.service.packet.node.GetNodeCapacityResp;
@@ -17,23 +20,34 @@ import io.opentracing.Tracer;
 import io.opentracing.tag.Tags;
 import java.util.concurrent.ArrayBlockingQueue;
 import org.apache.log4j.Logger;
+import org.tanukisoftware.wrapper.WrapperManager;
 
-public class UploadShard implements Runnable {
+public class UploadFackShard implements Runnable {
 
-    private static final Logger LOG = Logger.getLogger(UploadShard.class);
-    private static ArrayBlockingQueue<UploadShard> queue = null;
+    static int NODE_SLEEP = 100;
+
+    static {
+        String num = WrapperManager.getProperties().getProperty("wrapper.batch.node.sleep", "10");
+        try {
+            NODE_SLEEP = Integer.parseInt(num);
+        } catch (Exception d) {
+        }
+    }
+
+    private static final Logger LOG = Logger.getLogger(UploadFackShard.class);
+    private static ArrayBlockingQueue<UploadFackShard> queue = null;
 
     public static void init() {
         if (queue == null) {
             queue = new ArrayBlockingQueue(UPLOADSHARDTHREAD);
             for (int ii = 0; ii < UPLOADSHARDTHREAD; ii++) {
-                queue.add(new UploadShard());
+                queue.add(new UploadFackShard());
             }
         }
     }
 
-    static void startUploadShard(UploadBlock uploadBlock, Shard shard, int shardId) throws InterruptedException {
-        UploadShard uploader = queue.take();
+    static void startUploadShard(UploadFackBlock uploadBlock, Shard shard, int shardId) throws InterruptedException {
+        UploadFackShard uploader = queue.take();
         uploader.shard = shard;
         uploader.uploadBlock = uploadBlock;
         uploader.shardId = shardId;
@@ -41,19 +55,20 @@ public class UploadShard implements Runnable {
         GlobleThreadPool.execute(uploader);
     }
 
-    private UploadBlock uploadBlock;
+    private UploadFackBlock uploadBlock;
     private Shard shard;
     private int shardId;
     private String logHead;
 
-    private UploadShardReq makeUploadShardReq(PreAllocNodeStat node) {
-        UploadShardReq req = new UploadShardReq();
-        req.setBPDID(node.getSnid());
+    private UploadFackShardReq makeUploadShardReq(PreAllocNodeStat node) {
+        UploadFackShardReq req = new UploadFackShardReq();
+        req.setBPDID(UserConfig.superNode.getId());
         req.setBPDSIGN(node.getSign().getBytes());
         req.setUSERSIGN(uploadBlock.signArg.getBytes());
         req.setDAT(shard.getData());
         req.setSHARDID(shardId);
         req.setVHF(shard.getVHF());
+        req.setSleep(NODE_SLEEP);
         return req;
     }
 
@@ -71,7 +86,7 @@ public class UploadShard implements Runnable {
             }
             while (true) {
                 res.setNODEID(node.getId());
-                UploadShardReq req = this.makeUploadShardReq(node);
+                UploadFackShardReq req = this.makeUploadShardReq(node);
                 long l = System.currentTimeMillis();
                 long ctrtimes = 0;
                 try {
@@ -82,7 +97,7 @@ public class UploadShard implements Runnable {
                     req.setAllocId(ctlresp.getAllocId());
                     ctrtimes = System.currentTimeMillis() - l;
                     if (!ctlresp.isWritable()) {
-                        LOG.warn(logHead + "Node " + node.getId() + " is unavailabe,take times " + ctrtimes + " ms");
+                        LOG.warn(logHead + "Node " + node.getId() + " is busy,take times " + ctrtimes + " ms");
                         node.setBusy();
                         PreAllocNodeStat n = uploadBlock.excessNode.poll();
                         if (n == null) {
@@ -109,7 +124,10 @@ public class UploadShard implements Runnable {
                             span.finish();
                         }
                     } else {
-                        resp = (UploadShard2CResp) P2PUtils.requestNode(req, node.getNode(), logHead);
+                        //LOG.info("发送："+req.getClass().getName());
+                        Object obj = P2PUtils.requestNode(req, node.getNode(), logHead);
+                        //LOG.info("返回："+obj.getClass().getName());
+                        resp = (UploadShard2CResp) obj;// P2PUtils.requestNode(req, node.getNode(), logHead);
                     }
                     long times = System.currentTimeMillis() - l;
                     if (resp.getRES() == UploadShardRes.RES_OK || resp.getRES() == UploadShardRes.RES_VNF_EXISTS) {

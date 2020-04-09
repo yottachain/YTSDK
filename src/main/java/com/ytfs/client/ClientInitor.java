@@ -41,7 +41,7 @@ public class ClientInitor {
         init(null);
     }
 
-    private static boolean inited = false;
+    public static boolean inited = false;
 
     /**
      * 初始化SDK
@@ -49,7 +49,7 @@ public class ClientInitor {
      * @param cfg
      * @throws IOException
      */
-    public static void init(Configurator cfg) throws IOException {
+    public synchronized static void init(Configurator cfg) throws IOException {
         String level = WrapperManager.getProperties().getProperty("wrapper.log4j.loglevel", "DEBUG");
         String path = WrapperManager.getProperties().getProperty("wrapper.log4j.logfile");
         if (!inited) {
@@ -63,9 +63,11 @@ public class ClientInitor {
             UploadShard.init();
             DownloadShard.init();
             startP2p();
-            RegUser.regist();
-            regCaller();
-            PreAllocNodes.init();
+            if (username != null) {
+                RegUser.regist();
+                regCaller();
+                PreAllocNodeMgr.init();
+            }
             MemoryCache.init();
             GlobalTracer.init(zipkinServer, "S3server");
             inited = true;
@@ -78,6 +80,7 @@ public class ClientInitor {
             }
             RegUser.regist();
             regCaller();
+            PreAllocNodeMgr.init();
         }
     }
 
@@ -114,7 +117,7 @@ public class ClientInitor {
      *
      * @throws IOException
      */
-    private static void startP2p() throws IOException {
+    public static void startP2p() throws IOException {
         String randPrivateKey = KeyUtil.createPrivateKey();
         Exception err = null;
         for (int ii = 0; ii < 10; ii++) {
@@ -212,9 +215,12 @@ public class ClientInitor {
         is.close();
         username = p.getProperty("username");
         if (username == null || username.trim().isEmpty()) {
-            throw new IOException("The 'username' parameter is not configured.");
+            username = null;
+            LOG.warn("The 'username' parameter is not configured.");
+        } else {
+            username = username.trim();
+            exportPrivateKey(p.getProperty("KUSp").trim());
         }
-        exportPrivateKey(p.getProperty("KUSp").trim());
         try {
             String ss = p.getProperty("tmpFilePath", "").trim();
             File parent = new File(ss);

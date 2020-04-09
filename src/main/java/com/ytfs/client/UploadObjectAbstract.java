@@ -1,5 +1,6 @@
 package com.ytfs.client;
 
+import com.ytfs.client.v2.YTClient;
 import static com.ytfs.common.ServiceErrorCode.INVALID_UPLOAD_ID;
 import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.common.ServiceException;
@@ -18,6 +19,10 @@ import com.ytfs.service.packet.user.UploadBlockDupResp;
 import com.ytfs.service.packet.user.UploadBlockInitReq;
 import com.ytfs.service.packet.user.UploadBlockInitResp;
 import com.ytfs.service.packet.user.UploadObjectEndReq;
+import com.ytfs.service.packet.v2.UploadBlockDBReqV2;
+import com.ytfs.service.packet.v2.UploadBlockDupReqV2;
+import com.ytfs.service.packet.v2.UploadBlockInitReqV2;
+import com.ytfs.service.packet.v2.UploadObjectEndReqV2;
 import io.jafka.jeos.util.Base58;
 import io.yottachain.nodemgmt.core.vo.SuperNode;
 import java.io.IOException;
@@ -29,7 +34,7 @@ import org.bson.types.ObjectId;
 
 public abstract class UploadObjectAbstract {
 
-    private static final Logger LOG = Logger.getLogger(UploadObjectSlow.class);
+    private static final Logger LOG = Logger.getLogger(UploadObjectAbstract.class);
 
     protected ObjectId VNU;
     protected byte[] VHW;
@@ -37,6 +42,7 @@ public abstract class UploadObjectAbstract {
     protected long stamp;
     protected long memorys = 0;
     protected final List<UploadBlockExecuter> execlist = new LinkedList<>();
+    protected YTClient client = null;
 
     public abstract byte[] upload() throws ServiceException, IOException, InterruptedException;
 
@@ -46,11 +52,19 @@ public abstract class UploadObjectAbstract {
 
     //结束上传
     protected final void complete() throws ServiceException {
-        UploadObjectEndReq req = new UploadObjectEndReq();
-        req.setVHW(VHW);
-        req.setVNU(VNU);
         try {
-            P2PUtils.requestBPU(req, UserConfig.superNode, VNU.toString(), UserConfig.SN_RETRYTIMES);
+            if (client == null) {
+                UploadObjectEndReq req = new UploadObjectEndReq();
+                req.setVHW(VHW);
+                req.setVNU(VNU);
+                P2PUtils.requestBPU(req, UserConfig.superNode, VNU.toString(), UserConfig.SN_RETRYTIMES);
+            } else {
+                UploadObjectEndReqV2 req = new UploadObjectEndReqV2();
+                req.setVHW(VHW);
+                req.setVNU(VNU);
+                req.fill(client.getUserId(), client.getKeyNumber(), client.getPrivateKey());
+                P2PUtils.requestBPU(req, client.getSuperNode(), VNU.toString(), UserConfig.SN_RETRYTIMES);
+            }
         } catch (ServiceException e) {
             if (e.getErrorCode() != INVALID_UPLOAD_ID) {
                 throw e;
@@ -71,19 +85,37 @@ public abstract class UploadObjectAbstract {
     public final void upload(Block b, short id, SuperNode node) throws ServiceException, InterruptedException {
         long l = System.currentTimeMillis();
         BlockEncrypted be = new BlockEncrypted(b.getRealSize());
-        UploadBlockInitReq req = new UploadBlockInitReq(VNU, b.getVHP(), id);
-        Object resp = P2PUtils.requestBPU(req, node, VNU.toString(), UserConfig.SN_RETRYTIMES);
-        if (resp instanceof UploadBlockDupResp) {//重复,resp.getExist()=0已经上传     
-            UploadBlockDupReq uploadBlockDupReq = checkResp((UploadBlockDupResp) resp, b);
-            if (uploadBlockDupReq != null) {//请求节点
+        Object resp;
+        if (this.client == null) {
+            UploadBlockInitReq req = new UploadBlockInitReq(VNU, b.getVHP(), id);
+            resp = P2PUtils.requestBPU(req, node, VNU.toString(), UserConfig.SN_RETRYTIMES);
+        } else {
+            UploadBlockInitReqV2 req = new UploadBlockInitReqV2(VNU, b.getVHP(), id);
+            req.fill(client.getUserId(), client.getKeyNumber(), client.getPrivateKey());
+            resp = P2PUtils.requestBPU(req, node, UserConfig.SN_RETRYTIMES);
+        }
+        if (resp instanceof UploadBlockDupResp) {//重复,resp.getExist()=0已经上传  
+            Object obj = checkResp((UploadBlockDupResp) resp, b);
+            if (obj != null) {//请求节点
                 b.clearData();
                 this.memoryChange(b.getRealSize() * -1);
-                uploadBlockDupReq.setId(id);
-                uploadBlockDupReq.setVHP(b.getVHP());  //计数
-                uploadBlockDupReq.setOriginalSize(b.getOriginalSize());
-                uploadBlockDupReq.setRealSize(b.getRealSize());
-                uploadBlockDupReq.setVNU(VNU);
-                P2PUtils.requestBPU(uploadBlockDupReq, node, VNU.toString(), UserConfig.SN_RETRYTIMES);
+                if (obj instanceof UploadBlockDupReq) {
+                    UploadBlockDupReq uploadBlockDupReq = (UploadBlockDupReq) obj;
+                    uploadBlockDupReq.setId(id);
+                    uploadBlockDupReq.setVHP(b.getVHP());  //计数
+                    uploadBlockDupReq.setOriginalSize(b.getOriginalSize());
+                    uploadBlockDupReq.setRealSize(b.getRealSize());
+                    uploadBlockDupReq.setVNU(VNU);
+                    P2PUtils.requestBPU(uploadBlockDupReq, node, VNU.toString(), UserConfig.SN_RETRYTIMES);
+                } else {
+                    UploadBlockDupReqV2 uploadBlockDupReq = (UploadBlockDupReqV2) obj;
+                    uploadBlockDupReq.setId(id);
+                    uploadBlockDupReq.setVHP(b.getVHP());  //计数
+                    uploadBlockDupReq.setOriginalSize(b.getOriginalSize());
+                    uploadBlockDupReq.setRealSize(b.getRealSize());
+                    uploadBlockDupReq.setVNU(VNU);
+                    P2PUtils.requestBPU(uploadBlockDupReq, node, VNU.toString(), UserConfig.SN_RETRYTIMES);
+                }
                 LOG.info("[" + VNU + "][" + id + "]Block is a repetitive block:" + Base58.encode(b.getVHP()));
             } else {
                 if (!be.needEncode()) {
@@ -120,16 +152,30 @@ public abstract class UploadObjectAbstract {
             byte[] ks = KeyStoreCoder.generateRandomKey();
             BlockAESEncryptor enc = new BlockAESEncryptor(b, ks);
             enc.encrypt();
-            UploadBlockDBReq req = new UploadBlockDBReq();
-            req.setId(id);
-            req.setVNU(VNU);
-            req.setVHP(b.getVHP());
-            req.setVHB(enc.getBlockEncrypted().getVHB());
-            req.setKEU(KeyStoreCoder.aesEncryped(ks, UserConfig.AESKey));
-            req.setKED(KeyStoreCoder.aesEncryped(ks, b.getKD()));
-            req.setOriginalSize(b.getOriginalSize());
-            req.setData(enc.getBlockEncrypted().getData());
-            P2PUtils.requestBPU(req, node, VNU.toString(), UserConfig.SN_RETRYTIMES);
+            if (this.client == null) {
+                UploadBlockDBReq req = new UploadBlockDBReq();
+                req.setId(id);
+                req.setVNU(VNU);
+                req.setVHP(b.getVHP());
+                req.setVHB(enc.getBlockEncrypted().getVHB());
+                req.setKEU(KeyStoreCoder.aesEncryped(ks, UserConfig.AESKey));
+                req.setKED(KeyStoreCoder.aesEncryped(ks, b.getKD()));
+                req.setOriginalSize(b.getOriginalSize());
+                req.setData(enc.getBlockEncrypted().getData());
+                P2PUtils.requestBPU(req, node, VNU.toString(), UserConfig.SN_RETRYTIMES);
+            } else {
+                UploadBlockDBReqV2 req = new UploadBlockDBReqV2();
+                req.setId(id);
+                req.setVNU(VNU);
+                req.setVHP(b.getVHP());
+                req.setVHB(enc.getBlockEncrypted().getVHB());
+                req.setKEU(KeyStoreCoder.aesEncryped(ks, client.getAESKey()));
+                req.setKED(KeyStoreCoder.aesEncryped(ks, b.getKD()));
+                req.setOriginalSize(b.getOriginalSize());
+                req.setData(enc.getBlockEncrypted().getData());
+                req.fill(client.getUserId(), client.getKeyNumber(), client.getPrivateKey());
+                P2PUtils.requestBPU(req, node, VNU.toString(), UserConfig.SN_RETRYTIMES);
+            }
             LOG.info("[" + VNU + "][" + id + "]Upload block to DB,VHP:" + Base58.encode(b.getVHP()));
         } catch (Throwable e) {
             LOG.error("[" + VNU + "][" + id + "]Upload block ERR:" + e.getMessage());
@@ -138,7 +184,7 @@ public abstract class UploadObjectAbstract {
     }
 
     //检查重复
-    private UploadBlockDupReq checkResp(UploadBlockDupResp resp, Block b) {
+    private Object checkResp(UploadBlockDupResp resp, Block b) {
         byte[][] keds = resp.getKED();
         byte[][] vhbs = resp.getVHB();
         int[] ars = resp.getAR();
@@ -163,11 +209,20 @@ public abstract class UploadObjectAbstract {
                     VHB = aes.getBlockEncrypted().getVHB();
                 }
                 if (Arrays.equals(vhbs[ii], VHB)) {
-                    UploadBlockDupReq req = new UploadBlockDupReq();
-                    req.setVHB(VHB);
-                    byte[] keu = KeyStoreCoder.aesEncryped(ks, UserConfig.AESKey);
-                    req.setKEU(keu);
-                    return req;
+                    if (this.client == null) {
+                        UploadBlockDupReq req = new UploadBlockDupReq();
+                        req.setVHB(VHB);
+                        byte[] keu = KeyStoreCoder.aesEncryped(ks, UserConfig.AESKey);
+                        req.setKEU(keu);
+                        return req;
+                    } else {
+                        UploadBlockDupReqV2 req = new UploadBlockDupReqV2();
+                        req.setVHB(VHB);
+                        byte[] keu = KeyStoreCoder.aesEncryped(ks, client.getAESKey());
+                        req.setKEU(keu);
+                        req.fill(client.getUserId(), client.getKeyNumber(), client.getPrivateKey());
+                        return req;
+                    }
                 }
             } catch (Exception r) {//解密不了,认为作假
             }
@@ -183,4 +238,5 @@ public abstract class UploadObjectAbstract {
     public final ObjectId getVNU() {
         return VNU;
     }
+
 }
