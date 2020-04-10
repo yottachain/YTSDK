@@ -76,18 +76,35 @@ public class BlockSyncCache {
         blockSyncCache.put(newreq, ip);
     }
 
-    private static boolean checkDomain(UploadBlockEndSyncReq req, BlockIP ip) {
-        SuperNode sn = SuperNodeList.getBlockSuperNode(req.getVHP());
-        String newip = SuperNodeList.getSelfIp(sn.getId());
-        if (ip.host.equalsIgnoreCase(newip)) {
-            return true;
-        }
-        try {
-            P2PUtils.requestBPU(req, sn, req.getVNU().toString(), 0);
-            LOG.info("[" + req.getVNU() + "][" + req.getId() + "]Upload block OK.");
-            return true;
-        } catch (Exception e) {
-            return false;
+    private static boolean checkDomain(Object obj, BlockIP ip) {
+        if (obj instanceof UploadBlockEndReq) {
+            UploadBlockEndReq req = (UploadBlockEndReq) obj;
+            SuperNode sn = SuperNodeList.getBlockSuperNode(req.getVHP());
+            String newip = SuperNodeList.getSelfIp(sn.getId());
+            if (ip.host.equalsIgnoreCase(newip)) {
+                return true;
+            }
+            try {
+                P2PUtils.requestBPU(req, sn, req.getVNU().toString(), 0);
+                LOG.info("[" + req.getVNU() + "][" + req.getId() + "]Upload block OK.");
+                return true;
+            } catch (Exception e) {
+                return false;
+            }
+        } else {
+            UploadBlockEndSyncReq req = (UploadBlockEndSyncReq) obj;
+            SuperNode sn = SuperNodeList.getBlockSuperNode(req.getVHP());
+            String newip = SuperNodeList.getSelfIp(sn.getId());
+            if (ip.host.equalsIgnoreCase(newip)) {
+                return true;
+            }
+            try {
+                P2PUtils.requestBPU(req, sn, req.getVNU().toString(), 0);
+                LOG.info("[" + req.getVNU() + "][" + req.getId() + "]Upload block OK.");
+                return true;
+            } catch (Exception e) {
+                return false;
+            }
         }
     }
 
@@ -104,8 +121,8 @@ public class BlockSyncCache {
             while (!this.isInterrupted()) {
                 try {
                     sleep(1000 * 15);
-                    List<Map.Entry<UploadBlockEndSyncReq, BlockIP>> set = new ArrayList(blockSyncCache.entrySet());
-                    for (Map.Entry<UploadBlockEndSyncReq, BlockIP> ent : set) {
+                    List<Map.Entry<Object, BlockIP>> set = new ArrayList(blockSyncCache.entrySet());
+                    for (Map.Entry<Object, BlockIP> ent : set) {
                         if (System.currentTimeMillis() - ent.getValue().time > ExpiredTime) {
                             if (checkDomain(ent.getKey(), ent.getValue())) {
                                 blockSyncCache.remove(ent.getKey());
