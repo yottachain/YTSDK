@@ -77,20 +77,19 @@ public class BlockSyncCache {
     }
 
     private static boolean checkDomain(Object obj, BlockIP ip) {
-        if (obj instanceof UploadBlockEndReq) {
-            UploadBlockEndReq req = (UploadBlockEndReq) obj;
+        if (obj instanceof UploadBlockEndSyncReqV2) {
+            UploadBlockEndSyncReqV2 req = (UploadBlockEndSyncReqV2) obj;
             SuperNode sn = SuperNodeList.getBlockSuperNode(req.getVHP());
             String newip = SuperNodeList.getSelfIp(sn.getId());
             if (ip.host.equalsIgnoreCase(newip)) {
                 return true;
             }
             try {
-                P2PUtils.requestBPU(req, sn, req.getVNU().toString(), 0);
+                P2PUtils.requestBPU(req, sn, req.getVNU().toString(), 3);
                 LOG.info("[" + req.getVNU() + "][" + req.getId() + "]Upload block OK.");
-                return true;
             } catch (Exception e) {
-                return false;
             }
+            return true;
         } else {
             UploadBlockEndSyncReq req = (UploadBlockEndSyncReq) obj;
             SuperNode sn = SuperNodeList.getBlockSuperNode(req.getVHP());
@@ -99,12 +98,11 @@ public class BlockSyncCache {
                 return true;
             }
             try {
-                P2PUtils.requestBPU(req, sn, req.getVNU().toString(), 0);
+                P2PUtils.requestBPU(req, sn, req.getVNU().toString(), 3);
                 LOG.info("[" + req.getVNU() + "][" + req.getId() + "]Upload block OK.");
-                return true;
             } catch (Exception e) {
-                return false;
             }
+            return true;
         }
     }
 
