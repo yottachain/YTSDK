@@ -22,23 +22,14 @@ public class RegUser {
 
     public static void regist(YTClient client) throws IOException {
         List<SuperNode> list = new ArrayList(SuperNodeList.getSuperNodeListFromCfg());
-        while (true) {
-            long index = System.currentTimeMillis() % list.size();
-            SuperNode sn = list.remove((int) index);
-            try {
-                RegUser.regist(sn, client);
-                LOG.info("User ID'" + client.getUserId() + "' Registration Successful.");
-                return;
-            } catch (Throwable r) {
-                LOG.info("User '" + client.getUserId() + "' registration failed:" + r.getMessage());
-                try {
-                    Thread.sleep(15000);
-                } catch (InterruptedException ex) {
-                }
-                if (list.isEmpty()) {
-                    list = new ArrayList(SuperNodeList.getSuperNodeListFromCfg());
-                }
-            }
+        long index = System.currentTimeMillis() % list.size();
+        SuperNode sn = list.remove((int) index);
+        try {
+            RegUser.regist(sn, client);
+            LOG.info("User '" + client.getUsername() + "' Registration Successful,ID:"+client.getUserId());
+        } catch (Throwable r) {
+            LOG.info("User '" + client.getUsername()+ "' registration failed:" + r.getMessage());
+            throw r instanceof IOException?(IOException) r:new IOException(r);
         }
     }
 
