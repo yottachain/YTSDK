@@ -47,24 +47,18 @@ public class PreAllocNodeMgrV2 extends Thread {
 
     static synchronized void init(YTClient client) {
         if (me == null) {
-            while (true) {
-                try {
-                    PreAllocNodeResp resp = getPreAllocNodeResp(client, null);
-                    List<PreAllocNode> ls = resp.getList();
-                    ls.stream().forEach((node) -> {
-                        PreAllocNodes.NODE_LIST.put(node.getId(), new PreAllocNodeStat(node, client.getSuperNode().getId()));
-                    });
-                    LOG.info("Pre-Alloc Node total:" + ls.size());
-                    me = new PreAllocNodeMgrV2();
-                    me.start();
-                    return;
-                } catch (Throwable ex) {
-                    LOG.error("Get data node ERR:" + ex);
-                    try {
-                        Thread.sleep(15000);
-                    } catch (InterruptedException ex1) {
-                    }
-                }
+            try {
+                PreAllocNodeResp resp = getPreAllocNodeResp(client, null);
+                List<PreAllocNode> ls = resp.getList();
+                ls.stream().forEach((node) -> {
+                    PreAllocNodes.NODE_LIST.put(node.getId(), new PreAllocNodeStat(node, client.getSuperNode().getId()));
+                });
+                LOG.info("Pre-Alloc Node total:" + ls.size());
+                me = new PreAllocNodeMgrV2();
+                me.start();
+                return;
+            } catch (Throwable ex) {
+                LOG.error("Get data node ERR:" + ex);
             }
         }
     }

@@ -69,7 +69,7 @@ public class PreAllocNodes {
                 });
                 return ls;
             } catch (Throwable t) {
-                LOG.error("Get node priority order:" + t.getMessage());
+                LOG.error("Get node priority order ERR:" + t.getMessage());
             }
         }
         List<PreAllocNodeStat> ls = new ArrayList(NODE_LIST.values());
