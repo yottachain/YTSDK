@@ -33,7 +33,7 @@ public class SDKTestV2 implements WrapperListener {
         try {
             //LogConfigurator.configPath(new File("D:\\log\\log"), "DEBUG");
             YTClientMgr.init();
-            YTClient client=YTClientMgr.newInstance("username1234", "5KfbRow4L71fZnnu9XEnkmVqByi6CSmRiADJCx6asRS4TUEkU79");
+            YTClient client=YTClientMgr.newInstance("username12341", "5KfbRow4L71fZnnu9XEnkmVqByi6CSmRiADJCx6asRS4TUEkU79");
             if (strings.length < 1) {
                 strings = new String[]{path};
             }

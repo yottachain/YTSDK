@@ -17,7 +17,7 @@ import org.tanukisoftware.wrapper.WrapperManager;
 public class SDKTest implements WrapperListener {
 
     private static final String sn = "cs";
-    private static final String path = "D:\\DELPHI7企业版.ISO";
+    private static final String path = "D:\\Games.rar";
 
     @Override
     public Integer start(String[] strings) {

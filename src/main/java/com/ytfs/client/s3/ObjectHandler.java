@@ -10,8 +10,6 @@ import org.bson.types.ObjectId;
 import java.util.List;
 
 public class ObjectHandler {
-    
-    
 
     /**
      * 创建文件元数控
@@ -31,16 +29,6 @@ public class ObjectHandler {
         P2PUtils.requestBPU(req, UserConfig.superNode);
     }
 
-//    public static FileMetaMsg getFileMeta(String bucketName,String fileName) throws ServiceException {
-//        GetObjectReq req = new GetObjectReq();
-//        req.setBucketName(bucketName);
-//        req.setFileName(fileName);
-//        GetObjectResp resp = (GetObjectResp) P2PUtils.requestBPU(req,UserConfig.superNode);
-//        FileMetaMsg fileMeta = new FileMetaMsg();
-//        fileMeta.setFileName(resp.getFileName());
-//        fileMeta.setVersionId(resp.get);
-//    }
-
     public static FileMetaMsg copyObject(String srcBucket, String srcObjectKey, String destBucket, String destObjectKey) throws ServiceException {
         CopyObjectReq req = new CopyObjectReq();
         req.setSrcBucket(srcBucket);
@@ -56,18 +44,7 @@ public class ObjectHandler {
         return fileMeta;
     }
 
-    //    public static String listObject(Map<String,byte[]> map, String bucketName, String fileName, int limit) throws ServiceException {
-//        ListObjectReq req = new ListObjectReq();
-//        req.setBucketName(bucketName);
-//        req.setLimit(limit);
-//        req.setFileName(fileName);
-//        ListObjectResp resp = (ListObjectResp) P2PUtils.requestBPU(req, UserConfig.superNode);
-//        map.putAll(resp.getMap());
-//        Map<ObjectId,String> lastMap = new HashMap<>();
-//        System.out.println("resp.getFileName()====="+resp.getFileName()+"  ,resp.getObjectId()====="+resp.getObjectId());
-//        return resp.getFileName();
-//    }
-    public static List<FileMetaMsg> listBucket(String bucketName, String fileName, String prefix, boolean isVersion, ObjectId nextVersionId, int limit) throws ServiceException{
+    public static List<FileMetaMsg> listBucket(String bucketName, String fileName, String prefix, boolean isVersion, ObjectId nextVersionId, int limit) throws ServiceException {
         ListObjectReq req = new ListObjectReq();
         req.setBucketName(bucketName);
         req.setFileName(fileName);
@@ -75,9 +52,15 @@ public class ObjectHandler {
         req.setPrefix(prefix);
         req.setVersion(isVersion);
         req.setNextVersionId(nextVersionId);
-        ListObjectResp resp = (ListObjectResp) P2PUtils.requestBPU(req, UserConfig.superNode);
-        List<FileMetaMsg> fileMetaMsgs = resp.getFileMetaMsgList();
-        return fileMetaMsgs;
+        req.setCompress(true);
+        Object obj = P2PUtils.requestBPU(req, UserConfig.superNode);
+        if (obj instanceof ListObjectRespV2) {
+            ListObjectRespV2 resp = (ListObjectRespV2) obj;
+            return resp.getFileMetaMsgList();
+        } else {
+            ListObjectResp resp = (ListObjectResp) obj;
+            return resp.getFileMetaMsgList();
+        }
     }
 
     public static void deleteObject(String bucketName, String fileName, ObjectId versionId) throws ServiceException {
@@ -100,7 +83,6 @@ public class ObjectHandler {
         return isExistObject;
     }
 
-
     public static ObjectId getObjectIdByName(String bucketName, String fileName) throws ServiceException {
         GetObjectReq req = new GetObjectReq();
         req.setFileName(fileName);
@@ -110,11 +92,11 @@ public class ObjectHandler {
         return objectId;
     }
 
-    public static FileMetaMsg getFileMeta(String bucketName,String fileName) throws ServiceException{
+    public static FileMetaMsg getFileMeta(String bucketName, String fileName) throws ServiceException {
         GetObjectReq req = new GetObjectReq();
         req.setFileName(fileName);
         req.setBucketName(bucketName);
-        GetObjectResp resp = (GetObjectResp)P2PUtils.requestBPU(req, UserConfig.superNode);
+        GetObjectResp resp = (GetObjectResp) P2PUtils.requestBPU(req, UserConfig.superNode);
         FileMetaMsg fileMeta = new FileMetaMsg();
         fileMeta.setMeta(resp.getMeta());
         return fileMeta;
