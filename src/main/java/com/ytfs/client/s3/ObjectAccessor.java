@@ -6,6 +6,7 @@ import com.ytfs.common.net.P2PUtils;
 import com.ytfs.service.packet.s3.CopyObjectResp;
 import com.ytfs.service.packet.s3.GetObjectResp;
 import com.ytfs.service.packet.s3.ListObjectResp;
+import com.ytfs.service.packet.s3.ListObjectRespV2;
 import com.ytfs.service.packet.s3.entities.FileMetaMsg;
 import com.ytfs.service.packet.s3.v2.CopyObjectReqV2;
 import com.ytfs.service.packet.s3.v2.DeleteFileReqV2;
@@ -67,9 +68,15 @@ public class ObjectAccessor {
         req.setPrefix(prefix);
         req.setVersion(isVersion);
         req.setNextVersionId(nextVersionId);
-        ListObjectResp resp = (ListObjectResp) P2PUtils.requestBPU(req, client.getSuperNode());
-        List<FileMetaMsg> fileMetaMsgs = resp.getFileMetaMsgList();
-        return fileMetaMsgs;
+        req.setCompress(true);
+        Object obj = P2PUtils.requestBPU(req, client.getSuperNode());
+        if (obj instanceof ListObjectRespV2) {
+            ListObjectRespV2 resp = (ListObjectRespV2) obj;
+            return resp.getFileMetaMsgList();
+        } else {
+            ListObjectResp resp = (ListObjectResp) obj;
+            return resp.getFileMetaMsgList();
+        }
     }
 
     public void deleteObject(String bucketName, String fileName, ObjectId versionId) throws ServiceException {

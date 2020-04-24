@@ -61,15 +61,20 @@ public class PreAllocNodes {
             ls.forEach((stat) -> {
                 nodemap.put(stat.getNodeid(), stat);
             });
-            try {
+            long st=System.currentTimeMillis();
+            try {                
                 List<String> newids = YottaP2P.getOptNodes(new ArrayList(nodemap.keySet()));
+                LOG.info("Get node priority order OK("+(System.currentTimeMillis()-st)+" ms)");
                 ls.clear();
                 newids.stream().map((nodeid) -> nodemap.get(nodeid)).filter((s) -> (s != null)).forEachOrdered((s) -> {
                     ls.add(s);
-                });
+                });               
                 return ls;
             } catch (Throwable t) {
-                LOG.error("Get node priority order ERR:" + t.getMessage());
+                LOG.error("Get node priority order ERR("+(System.currentTimeMillis()-st)+" ms):" + t.getMessage());
+                List<PreAllocNodeStat> nls = new ArrayList(NODE_LIST.values());
+                Collections.sort(nls, new PreAllocNodeComparator());
+                return nls;
             }
         }
         List<PreAllocNodeStat> ls = new ArrayList(NODE_LIST.values());
