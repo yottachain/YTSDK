@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.apache.log4j.Logger;
 import org.tanukisoftware.wrapper.WrapperManager;
 
@@ -21,6 +22,9 @@ public class PreAllocNodes {
         try {
             ALLOC_MODE = Integer.parseInt(num);
         } catch (Exception d) {
+        }
+        if (ALLOC_MODE == 4) {
+            GetNodeList.init();
         }
     }
     private static final Logger LOG = Logger.getLogger(PreAllocNodes.class);
@@ -55,23 +59,48 @@ public class PreAllocNodes {
     }
 
     public static List<PreAllocNodeStat> getNodes() {
+        if (ALLOC_MODE == 4) {
+            long st = System.currentTimeMillis();
+            try {
+                Set<String> set = GetNodeList.nodemap.keySet();
+                List<String> ids = new ArrayList();
+                int ii = 0;
+                for (String ss : set) {
+                    if (ii++ <= 328) {
+                        ids.add(ss);
+                    }
+                }
+                List<String> newids = YottaP2P.getOptNodes(ids);
+                List<PreAllocNodeStat> ls = new ArrayList();
+                LOG.info("Get node priority order OK(" + (System.currentTimeMillis() - st) + " ms)");
+                newids.stream().map((nodeid) -> GetNodeList.nodemap.get(nodeid)).filter((s) -> (s != null)).forEachOrdered((s) -> {
+                    ls.add(s);
+                });
+                return ls;
+            } catch (Throwable t) {
+                LOG.error("Get node priority order ERR(" + (System.currentTimeMillis() - st) + " ms):", t);
+                List<PreAllocNodeStat> nls = new ArrayList(NODE_LIST.values());
+                Collections.sort(nls, new PreAllocNodeComparator());
+                return nls;
+            }
+        }
         if (ALLOC_MODE == 0) {
             Map<String, PreAllocNodeStat> nodemap = new HashMap();
             List<PreAllocNodeStat> ls = new ArrayList(NODE_LIST.values());
             ls.forEach((stat) -> {
                 nodemap.put(stat.getNodeid(), stat);
             });
-            long st=System.currentTimeMillis();
-            try {                
+            long st = System.currentTimeMillis();
+            try {
                 List<String> newids = YottaP2P.getOptNodes(new ArrayList(nodemap.keySet()));
-                LOG.info("Get node priority order OK("+(System.currentTimeMillis()-st)+" ms)");
+                LOG.info("Get node priority order OK(" + (System.currentTimeMillis() - st) + " ms)");
                 ls.clear();
                 newids.stream().map((nodeid) -> nodemap.get(nodeid)).filter((s) -> (s != null)).forEachOrdered((s) -> {
                     ls.add(s);
-                });               
+                });
                 return ls;
             } catch (Throwable t) {
-                LOG.error("Get node priority order ERR("+(System.currentTimeMillis()-st)+" ms):" + t.getMessage());
+                LOG.error("Get node priority order ERR(" + (System.currentTimeMillis() - st) + " ms):", t);
                 List<PreAllocNodeStat> nls = new ArrayList(NODE_LIST.values());
                 Collections.sort(nls, new PreAllocNodeComparator());
                 return nls;
