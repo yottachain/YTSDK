@@ -16,14 +16,14 @@ import org.tanukisoftware.wrapper.WrapperManager;
 public class PreAllocNodes {
 
     private static final Logger LOG = Logger.getLogger(PreAllocNodes.class);
-    static int ALLOC_MODE = 0;
+    static int ALLOC_MODE = 4;
 
     static {
-        String num = WrapperManager.getProperties().getProperty("wrapper.batch.node.allocMode", "0");
+        String num = WrapperManager.getProperties().getProperty("wrapper.batch.node.allocMode", "4");
         try {
             ALLOC_MODE = Integer.parseInt(num);
         } catch (Exception d) {
-
+            LOG.error("ALLOC_MODE read ERR:" + d.getMessage());
         }
         LOG.info("ALLOC_MODE:" + ALLOC_MODE);
         if (ALLOC_MODE == 4) {
@@ -81,7 +81,7 @@ public class PreAllocNodes {
                 });
                 return ls;
             } catch (Throwable t) {
-                LOG.error("Get node priority order ERR(" + (System.currentTimeMillis() - st) + " ms):", t);
+                LOG.error("Get node priority order ERR(" + (System.currentTimeMillis() - st) + " ms):" + getErrMessage(t));
                 List<PreAllocNodeStat> nls = new ArrayList(NODE_LIST.values());
                 Collections.sort(nls, new PreAllocNodeComparator());
                 return nls;
@@ -103,7 +103,7 @@ public class PreAllocNodes {
                 });
                 return ls;
             } catch (Throwable t) {
-                LOG.error("Get node priority order ERR(" + (System.currentTimeMillis() - st) + " ms):", t);
+                LOG.error("Get node priority order ERR(" + (System.currentTimeMillis() - st) + " ms):" + getErrMessage(t));
                 List<PreAllocNodeStat> nls = new ArrayList(NODE_LIST.values());
                 Collections.sort(nls, new PreAllocNodeComparator());
                 return nls;
@@ -118,4 +118,16 @@ public class PreAllocNodes {
         return ls;
     }
 
+    private static String getErrMessage(Throwable err) {
+        Throwable t = err;
+        while (t != null) {
+            if (t.getMessage() == null || t.getMessage().isEmpty()) {
+                t = t.getCause();
+                continue;
+            } else {
+                return t.getMessage();
+            }
+        }
+        return "";
+    }
 }

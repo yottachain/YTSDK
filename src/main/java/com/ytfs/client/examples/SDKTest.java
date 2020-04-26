@@ -30,7 +30,7 @@ public class SDKTest implements WrapperListener {
             System.setProperty("ytfs.conf", "conf/ytfs.properties");
         }
         try {
-            LogConfigurator.configPath(new File("D:\\log\\log"), "DEBUG");
+           // LogConfigurator.configPath(new File("D:\\log\\log"), "DEBUG");
             ClientInitor.init();
             if (strings.length < 1) {
                 strings = new String[]{path};
