@@ -15,6 +15,7 @@ import org.tanukisoftware.wrapper.WrapperManager;
 
 public class PreAllocNodes {
 
+    private static final Logger LOG = Logger.getLogger(PreAllocNodes.class);
     static int ALLOC_MODE = 0;
 
     static {
@@ -22,12 +23,14 @@ public class PreAllocNodes {
         try {
             ALLOC_MODE = Integer.parseInt(num);
         } catch (Exception d) {
+
         }
+        LOG.info("ALLOC_MODE:" + ALLOC_MODE);
         if (ALLOC_MODE == 4) {
             GetNodeList.init();
         }
     }
-    private static final Logger LOG = Logger.getLogger(PreAllocNodes.class);
+
     public static final Map<Integer, PreAllocNodeStat> NODE_LIST = new HashMap();
 
     public static void updateList(List<PreAllocNode> ls, int snid) {
