@@ -16,10 +16,10 @@ import org.tanukisoftware.wrapper.WrapperManager;
 public class PreAllocNodes {
 
     private static final Logger LOG = Logger.getLogger(PreAllocNodes.class);
-    static int ALLOC_MODE = 4;
+    static int ALLOC_MODE = 0;
 
     static {
-        String num = WrapperManager.getProperties().getProperty("wrapper.batch.node.allocMode", "4");
+        String num = WrapperManager.getProperties().getProperty("wrapper.batch.node.allocMode", "0");
         try {
             ALLOC_MODE = Integer.parseInt(num);
         } catch (Exception d) {
@@ -96,11 +96,11 @@ public class PreAllocNodes {
             long st = System.currentTimeMillis();
             try {
                 List<String> newids = YottaP2P.getOptNodes(new ArrayList(nodemap.keySet()));
-                LOG.info("Get node priority order OK(" + (System.currentTimeMillis() - st) + " ms)");
                 ls.clear();
                 newids.stream().map((nodeid) -> nodemap.get(nodeid)).filter((s) -> (s != null)).forEachOrdered((s) -> {
                     ls.add(s);
                 });
+                LOG.info("Get node priority order OK(" + (System.currentTimeMillis() - st) + " ms)," + ls.size() + "/" + nodemap.size());
                 return ls;
             } catch (Throwable t) {
                 LOG.error("Get node priority order ERR(" + (System.currentTimeMillis() - st) + " ms):" + getErrMessage(t));

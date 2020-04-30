@@ -6,7 +6,6 @@ import com.ytfs.client.UploadObject;
 import static com.ytfs.client.examples.MakeRandFile.largeFileLength;
 import static com.ytfs.client.examples.MakeRandFile.mediumFileLength;
 import static com.ytfs.client.examples.MakeRandFile.smallFileLength;
-import com.ytfs.common.LogConfigurator;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;

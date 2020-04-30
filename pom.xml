@@ -12,6 +12,9 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.3.2</version>
                 <configuration>
+                    <excludes>
+                        <exclude>**/com/ytfs/client/fack/*.java/</exclude> 
+                    </excludes>
                     <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
             </plugin>
