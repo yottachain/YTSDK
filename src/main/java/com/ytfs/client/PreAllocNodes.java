@@ -16,10 +16,10 @@ import org.tanukisoftware.wrapper.WrapperManager;
 public class PreAllocNodes {
 
     private static final Logger LOG = Logger.getLogger(PreAllocNodes.class);
-    static int ALLOC_MODE = 0;
+    static int ALLOC_MODE = 1;
 
     static {
-        String num = WrapperManager.getProperties().getProperty("wrapper.batch.node.allocMode", "0");
+        String num = WrapperManager.getProperties().getProperty("wrapper.batch.node.allocMode", "1");
         try {
             ALLOC_MODE = Integer.parseInt(num);
         } catch (Exception d) {

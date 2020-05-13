@@ -5,13 +5,20 @@ import com.ytfs.common.ServiceException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
+import java.util.Random;
 import org.apache.commons.codec.binary.Hex;
 
 public class RandomFileTest {
-
+    
     private static final String sn = "cs";
-
+    
     public static void main(String[] args) throws IOException {
+        
+        Random ran = new Random();
+        
+        int ii = (new Random()).nextInt(1024 * 1024);
+        System.out.print(ii);
+        
         if (sn.equalsIgnoreCase("cs")) {
             System.setProperty("snlist.conf", "conf/snlist.properties");
             System.setProperty("ytfs.conf", "conf/ytfs.properties");
@@ -19,7 +26,6 @@ public class RandomFileTest {
             System.setProperty("snlist.conf", "conf/snlist_YF.properties");
             System.setProperty("ytfs.conf", "conf/ytfs.properties");
         }
-
         
         ClientInitor.init();
         //测试小文件
@@ -29,13 +35,12 @@ public class RandomFileTest {
         //测试rs模式
         test(new UploadObject(MakeRandFile.makeLargeFile()));
     }
-
+    
     public static void test(UploadObject upload) {
         try {
             byte[] VHW = upload.upload();
             System.out.println(Hex.encodeHexString(VHW) + " 上传完毕！准备下载......");
-
-          
+            
             DownloadObject obj = new DownloadObject(VHW);
             MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
             InputStream is = obj.load(0, 1111111111111L);

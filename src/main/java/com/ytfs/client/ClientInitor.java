@@ -42,6 +42,7 @@ public class ClientInitor {
     }
 
     public static boolean inited = false;
+    private static String privKey;
 
     /**
      * 初始化SDK
@@ -119,6 +120,9 @@ public class ClientInitor {
      */
     public static void startP2p() throws IOException {
         String randPrivateKey = KeyUtil.createPrivateKey();
+        if (privKey != null) {
+            randPrivateKey = privKey;
+        }
         Exception err = null;
         for (int ii = 0; ii < 10; ii++) {
             try {
@@ -213,6 +217,7 @@ public class ClientInitor {
         Properties p = new Properties();
         p.load(is);
         is.close();
+        privKey = p.getProperty("privateKey");
         username = p.getProperty("username");
         if (username == null || username.trim().isEmpty()) {
             username = null;

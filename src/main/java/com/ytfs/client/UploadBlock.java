@@ -14,6 +14,7 @@ import com.ytfs.common.codec.ShardEncoder;
 import com.ytfs.common.codec.lrc.ShardLRCEncoder;
 import static com.ytfs.common.conf.UserConfig.Default_Shard_Size;
 import static com.ytfs.common.conf.UserConfig.SN_RETRYTIMES;
+import com.ytfs.service.packet.ObjectRefer;
 import com.ytfs.service.packet.user.UploadBlockEndReq;
 import com.ytfs.service.packet.user.UploadBlockEndResp;
 import com.ytfs.service.packet.v2.UploadBlockEndReqV2;
@@ -81,7 +82,7 @@ public class UploadBlock {
         }
     }
 
-    void upload() throws ServiceException, InterruptedException {
+    public ObjectRefer upload() throws ServiceException, InterruptedException {
         try {
             long l = System.currentTimeMillis();
             byte[] ks = KeyStoreCoder.generateRandomKey();
@@ -100,7 +101,7 @@ public class UploadBlock {
             long times = firstUpload();
             subUpload(times);
             LOG.info("[" + VNU + "][" + id + "]Upload block OK,shardcount " + encoder.getShardList().size() + ",take times " + (System.currentTimeMillis() - l) + "ms");
-            completeUploadBlock(ks);
+            return completeUploadBlock(ks);
         } catch (Exception r) {
             throw r instanceof ServiceException ? (ServiceException) r : new ServiceException(SERVER_ERROR);
         }
@@ -226,8 +227,9 @@ public class UploadBlock {
      * @param ks
      * @throws ServiceException
      */
-    private void completeUploadBlock(byte[] ks) throws ServiceException {
+    private ObjectRefer completeUploadBlock(byte[] ks) throws ServiceException {
         long l = System.currentTimeMillis();
+        ObjectRefer refer = new ObjectRefer();
         if (uploadObject.client == null) {
             UploadBlockEndReq req = new UploadBlockEndReq();
             req.setId(id);
@@ -251,7 +253,11 @@ public class UploadBlock {
             Object obj = P2PUtils.requestBPU(req, bpdNode, VNU.toString(), SN_RETRYTIMES);//重试5分钟
             if (obj instanceof UploadBlockEndResp) {
                 BlockSyncCache.putBlock(req, (UploadBlockEndResp) obj);
+                refer.setVBI(((UploadBlockEndResp) obj).getVBI());
             }
+            refer.setKEU(req.getKEU());
+            refer.setKeyNumber(0);
+
         } else {
             UploadBlockEndReqV2 req = new UploadBlockEndReqV2();
             req.fill(uploadObject.client.getUserId(), uploadObject.client.getKeyNumber(), uploadObject.client.getPrivateKey());
@@ -276,8 +282,16 @@ public class UploadBlock {
             Object obj = P2PUtils.requestBPU(req, bpdNode, VNU.toString(), SN_RETRYTIMES);//重试5分钟
             if (obj instanceof UploadBlockEndResp) {
                 BlockSyncCache.putBlockV2(req, (UploadBlockEndResp) obj);
+                refer.setVBI(((UploadBlockEndResp) obj).getVBI());
             }
+            refer.setKEU(req.getKEU());
+            refer.setKeyNumber(uploadObject.client.getKeyNumber());
         }
         LOG.info("[" + VNU + "][" + id + "]Upload block OK,take times " + (System.currentTimeMillis() - l) + "ms");
+        refer.setId(id);
+        refer.setOriginalSize(block.getOriginalSize());
+        refer.setRealSize(block.getRealSize());
+        refer.setSuperID((byte) 0);
+        return refer;
     }
 }
