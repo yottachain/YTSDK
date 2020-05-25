@@ -42,6 +42,7 @@ public class RegUser {
     private static void regist(SuperNode sNode, YTClient client) throws ServiceException {
         try {
             RegUserReqV2 req = new RegUserReqV2();
+            req.setVersionId(Version.getVersionID());
             req.setUsername(client.getUsername());
             String pubkey = KeyUtil.toPublicKey(client.getPrivateKey());
             req.setPubKey(pubkey.substring(3));
@@ -91,6 +92,7 @@ public class RegUser {
         try {
             RegUserReq req = new RegUserReq();
             req.setUsername(UserConfig.username);
+            req.setVersionId(Version.getVersionID());
             String pubkey = KeyUtil.toPublicKey(UserConfig.privateKey);
             req.setPubKey(pubkey.substring(3));
             RegUserResp resp = (RegUserResp) P2PUtils.requestBPU(req, sNode, 0);
