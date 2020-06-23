@@ -3,6 +3,7 @@ package com.ytfs.client.examples;
 import com.ytfs.client.ClientInitor;
 import com.ytfs.client.DownloadObject;
 import com.ytfs.client.UploadObject;
+import com.ytfs.client.Version;
 import static com.ytfs.client.examples.MakeRandFile.largeFileLength;
 import static com.ytfs.client.examples.MakeRandFile.mediumFileLength;
 import static com.ytfs.client.examples.MakeRandFile.smallFileLength;
@@ -16,7 +17,7 @@ import org.tanukisoftware.wrapper.WrapperManager;
 
 public class SDKTest implements WrapperListener {
 
-    private static final String sn = "cs";
+    private static final String sn = "zw";
     private static final String path = "D:\\Games.rar";
 
     @Override
@@ -30,6 +31,7 @@ public class SDKTest implements WrapperListener {
         }
         try {
            // LogConfigurator.configPath(new File("D:\\log\\log"), "DEBUG");
+            Version.setVersionID("1.0.0.1");
             ClientInitor.init();
             if (strings.length < 1) {
                 strings = new String[]{path};
@@ -56,6 +58,7 @@ public class SDKTest implements WrapperListener {
                 upload = new UploadObject(filepath);
             } else {
                 int index = (int) System.currentTimeMillis() % 3;
+                index=1;
                 switch (index) {
                     case 0:
                         System.out.println("准备上传文件，大小(b):" + smallFileLength);

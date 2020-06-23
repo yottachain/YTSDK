@@ -3,16 +3,22 @@ package com.ytfs.client.examples;
 import com.ytfs.client.ClientInitor;
 import com.ytfs.client.DownloadObject;
 import com.ytfs.client.UploadObject;
+import com.ytfs.client.Version;
 import static com.ytfs.client.examples.MakeRandFile.largeFileLength;
 import static com.ytfs.client.examples.MakeRandFile.mediumFileLength;
 import static com.ytfs.client.examples.MakeRandFile.smallFileLength;
+import com.ytfs.client.s3.BucketAccessor;
+import com.ytfs.client.s3.ObjectAccessor;
 import com.ytfs.client.v2.YTClient;
 import com.ytfs.client.v2.YTClientMgr;
+import com.ytfs.service.packet.s3.entities.FileMetaMsg;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.security.MessageDigest;
+import java.util.List;
 import org.apache.commons.codec.binary.Hex;
+import org.bson.types.ObjectId;
 import org.tanukisoftware.wrapper.WrapperListener;
 import org.tanukisoftware.wrapper.WrapperManager;
 
@@ -27,16 +33,21 @@ public class SDKTestV2 implements WrapperListener {
             System.setProperty("snlist.conf", "conf/snlistYF.properties");
             System.setProperty("ytfs.conf", "conf/ytfsYF.properties");
         } else {
-            System.setProperty("snlist.conf", "conf/snlist.properties");
+            System.setProperty("snlist.conf", "conf/snlistCS.properties");
             System.setProperty("ytfs.conf", "conf/ytfs.properties");
         }
         try {
             //LogConfigurator.configPath(new File("D:\\log\\log"), "DEBUG");
+            Version.setVersionID("1.0.1.15");
             YTClientMgr.init();
-            YTClient client=YTClientMgr.newInstance("username12341", "5KfbRow4L71fZnnu9XEnkmVqByi6CSmRiADJCx6asRS4TUEkU79");
-            if (strings.length < 1) {
-                strings = new String[]{path};
-            }
+            YTClient client = YTClientMgr.newInstance("username1234", "5JcDH48njDbUQLu1R8SWwKsfWLnqBpWXDDiCgxFC3hioDuwLhVx");
+            //YTClient client=YTClientMgr.newInstance("storename123", "5KjhEUN6iQiemuzCCkEYZRL3nsBQ1ozvHkKWdUqqnjD25uq16uf");
+            //YTClient client=YTClientMgr.newInstance("username12345", "5JcDH48n9DbUQLu1R8SWwKsfWLnqBpWXDDiCgxFC3hioDuwLhVi");
+
+           //BucketAccessor accessor = client.createBucketAccessor();
+           //accessor.createBucket("bbbb",  new byte[0]);
+            
+             
             String filepath = null;
             String newfilepath = null;
             if (strings.length > 0) {
@@ -56,9 +67,10 @@ public class SDKTestV2 implements WrapperListener {
             byte[] VHW = null;
             if (filepath != null) {
                 System.out.println("准备上传文件:" + strings[0]);
-                upload =  client.createUploadObject(filepath);
+                upload = client.createUploadObject(filepath);
             } else {
                 int index = (int) System.currentTimeMillis() % 3;
+                index = 3;
                 switch (index) {
                     case 0:
                         System.out.println("准备上传文件，大小(b):" + smallFileLength);
@@ -70,13 +82,13 @@ public class SDKTestV2 implements WrapperListener {
                         break;
                     default:
                         System.out.println("准备上传文件，大小(b):" + largeFileLength);
-                        upload =client.createUploadObject(MakeRandFile.makeLargeFile());
+                        upload = client.createUploadObject(MakeRandFile.makeLargeFile());
                         break;
                 }
             }
             VHW = upload.upload();
             System.out.println(Hex.encodeHexString(VHW) + " 上传完毕！准备下载......");
-            DownloadObject obj =  client.createDownloadObject(VHW);
+            DownloadObject obj = client.createDownloadObject(VHW);
             FileOutputStream out = null;
             if (newfilepath != null) {
                 out = new FileOutputStream(newfilepath);
