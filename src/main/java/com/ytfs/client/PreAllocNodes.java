@@ -42,9 +42,10 @@ public class PreAllocNodes {
     private static long lasttime = System.currentTimeMillis();
 
     private static void resetNODE_LIST() {
-        if (System.currentTimeMillis() - lasttime > ALLOC_RESET_TIME * 60 * 1000) {
+        if (System.currentTimeMillis() - lasttime > ALLOC_RESET_TIME * 59 * 1000) {
             NODE_LIST.clear();
             lasttime = System.currentTimeMillis();
+            LOG.info("Clear node list...");
         }
     }
 
