@@ -17,6 +17,7 @@ public class PreAllocNodes {
 
     private static final Logger LOG = Logger.getLogger(PreAllocNodes.class);
     static int ALLOC_MODE = 1;
+    static int ALLOC_RESET_TIME = 30;
 
     static {
         String num = WrapperManager.getProperties().getProperty("wrapper.batch.node.allocMode", "1");
@@ -25,6 +26,12 @@ public class PreAllocNodes {
         } catch (Exception d) {
             LOG.error("ALLOC_MODE read ERR:" + d.getMessage());
         }
+        num = WrapperManager.getProperties().getProperty("wrapper.node.reset.interval", "30");
+        try {
+            ALLOC_RESET_TIME = Integer.parseInt(num);
+        } catch (Exception d) {
+            LOG.error("ALLOC_RESET_TIME read ERR:" + d.getMessage());
+        }
         LOG.info("ALLOC_MODE:" + ALLOC_MODE);
         if (ALLOC_MODE == 4) {
             GetNodeList.init();
@@ -32,8 +39,17 @@ public class PreAllocNodes {
     }
 
     public static final Map<Integer, PreAllocNodeStat> NODE_LIST = new HashMap();
+    private static long lasttime = System.currentTimeMillis();
+
+    private static void resetNODE_LIST() {
+        if (System.currentTimeMillis() - lasttime > ALLOC_RESET_TIME * 60 * 1000) {
+            NODE_LIST.clear();
+            lasttime = System.currentTimeMillis();
+        }
+    }
 
     public static void updateList(List<PreAllocNode> ls, int snid) {
+        resetNODE_LIST();
         int maxsize = UserConfig.PNN;
         Map<Integer, PreAllocNode> map = new HashMap();
         ls.stream().forEach((node) -> {
