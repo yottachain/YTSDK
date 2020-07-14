@@ -4,7 +4,7 @@ import io.yottachain.nodemgmt.core.vo.Node;
 
 public class DownloadShardParam {
 
-    public static int Max_Retry_Times = 5;
+    public static int Max_Retry_Times = 60;
 
     private Node node;
     private byte[] VHF;

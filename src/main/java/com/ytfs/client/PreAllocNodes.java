@@ -41,16 +41,16 @@ public class PreAllocNodes {
     public static final Map<Integer, PreAllocNodeStat> NODE_LIST = new HashMap();
     private static long lasttime = System.currentTimeMillis();
 
-    private static void resetNODE_LIST() {
-        if (System.currentTimeMillis() - lasttime > ALLOC_RESET_TIME * 59 * 1000) {
+    private static void resetNODE_LIST(boolean direct) {
+        if (direct||System.currentTimeMillis() - lasttime > ALLOC_RESET_TIME * 59 * 1000) {
             NODE_LIST.clear();
             lasttime = System.currentTimeMillis();
             LOG.info("Clear node list...");
         }
     }
 
-    public static void updateList(List<PreAllocNode> ls, int snid) {
-        resetNODE_LIST();
+    public static void updateList(List<PreAllocNode> ls, int snid,boolean direct) {
+        resetNODE_LIST(direct);
         int maxsize = UserConfig.PNN;
         Map<Integer, PreAllocNode> map = new HashMap();
         ls.stream().forEach((node) -> {
