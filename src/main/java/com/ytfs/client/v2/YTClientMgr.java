@@ -83,7 +83,7 @@ public class YTClientMgr {
     /**
      * 初始化SDK
      *
-     * @param cfg
+     * @param cfg 
      * @throws IOException
      */
     public synchronized static void init(Configurator cfg) throws IOException {

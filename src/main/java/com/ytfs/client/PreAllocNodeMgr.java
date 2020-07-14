@@ -25,6 +25,15 @@ public class PreAllocNodeMgr extends Thread {
         return resp;
     }
 
+    public static void Reset() {
+        if (me != null) {
+            synchronized (me) {
+                me.direct = true;
+                me.notify();
+            }
+        }
+    }
+
     static synchronized void init() {
         if (me == null) {
             while (true) {
@@ -32,7 +41,7 @@ public class PreAllocNodeMgr extends Thread {
                     PreAllocNodeResp resp = getPreAllocNodeResp(null);
                     List<PreAllocNode> ls = resp.getList();
                     ls.stream().forEach((node) -> {
-                        PreAllocNodes.NODE_LIST.put(node.getId(), new PreAllocNodeStat(node,UserConfig.superNode.getId()));
+                        PreAllocNodes.NODE_LIST.put(node.getId(), new PreAllocNodeStat(node, UserConfig.superNode.getId()));
                     });
                     LOG.info("Pre-Alloc Node total:" + ls.size());
                     me = new PreAllocNodeMgr();
@@ -56,11 +65,16 @@ public class PreAllocNodeMgr extends Thread {
         }
     }
 
+    boolean direct = false;
+
     @Override
     public void run() {
         LOG.info("Pre-Alloc Node manager is starting...");
         try {
-            sleep(UserConfig.PTR);
+            synchronized (me) {
+                direct = false;
+                me.wait(UserConfig.PTR);
+            }
         } catch (InterruptedException ex) {
             this.interrupt();
         }
@@ -68,13 +82,16 @@ public class PreAllocNodeMgr extends Thread {
             try {
                 int[] errids = ErrorNodeCache.getErrorIds();
                 PreAllocNodeResp resp = getPreAllocNodeResp(errids);
-                PreAllocNodes.updateList(resp.getList(),UserConfig.superNode.getId());
+                PreAllocNodes.updateList(resp.getList(), UserConfig.superNode.getId(), direct);
                 if (errids.length > 0) {
                     LOG.info("Pre-Alloc Node list is updated,total:" + resp.getList().size() + "," + errids.length + " error ids were excluded.");
                 } else {
                     LOG.info("Pre-Alloc Node list is updated,total:" + resp.getList().size());
                 }
-                sleep(UserConfig.PTR);
+                synchronized (me) {
+                    direct = false;
+                    me.wait(UserConfig.PTR);
+                }
             } catch (InterruptedException ie) {
                 break;
             } catch (Throwable ex) {

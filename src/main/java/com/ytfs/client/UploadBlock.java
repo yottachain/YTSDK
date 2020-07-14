@@ -94,7 +94,7 @@ public class UploadBlock {
                 encoder = new ShardRSEncoder(aes.getBlockEncrypted());
             }
             encoder.encode();
-            block.clearData();
+            //block.clearData();
             aes.getBlockEncrypted().clearData();
             long size = encoder.getLength() - block.getRealSize();
             uploadObject.memoryChange(size);

@@ -1,6 +1,8 @@
 package com.ytfs.client;
 
+import com.ytfs.client.v2.PreAllocNodeMgrV2;
 import com.ytfs.client.v2.YTClient;
+import static com.ytfs.common.ServiceErrorCode.DN_IN_BLACKLIST;
 import static com.ytfs.common.ServiceErrorCode.INVALID_UPLOAD_ID;
 import static com.ytfs.common.ServiceErrorCode.SERVER_ERROR;
 import com.ytfs.common.ServiceException;
@@ -80,9 +82,28 @@ public abstract class UploadObjectAbstract {
             }
         }
     }
-    //上传块
 
+    //上传块
     public final void upload(Block b, short id, SuperNode node) throws ServiceException, InterruptedException {
+        for (int ii = 0; ii < 3; ii++) {
+            try {
+                uploadNoCheck(b, id, node);
+                return;
+            } catch (ServiceException se) {
+                if (se.getErrorCode() == DN_IN_BLACKLIST) {
+                    LOG.info("[" + VNU + "][" + id + "]Upload block ERR:DN_IN_BLACKLIST");
+                    PreAllocNodeMgrV2.Reset();
+                    PreAllocNodeMgr.Reset();
+                    Thread.sleep(15000);
+                    continue;
+                }
+                throw se;
+            }
+        }
+        throw new ServiceException(DN_IN_BLACKLIST);
+    }
+
+    public final void uploadNoCheck(Block b, short id, SuperNode node) throws ServiceException, InterruptedException {
         long l = System.currentTimeMillis();
         BlockEncrypted be = new BlockEncrypted(b.getRealSize());
         Object resp;

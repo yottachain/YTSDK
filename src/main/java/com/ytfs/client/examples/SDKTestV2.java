@@ -7,25 +7,20 @@ import com.ytfs.client.Version;
 import static com.ytfs.client.examples.MakeRandFile.largeFileLength;
 import static com.ytfs.client.examples.MakeRandFile.mediumFileLength;
 import static com.ytfs.client.examples.MakeRandFile.smallFileLength;
-import com.ytfs.client.s3.BucketAccessor;
-import com.ytfs.client.s3.ObjectAccessor;
 import com.ytfs.client.v2.YTClient;
 import com.ytfs.client.v2.YTClientMgr;
-import com.ytfs.service.packet.s3.entities.FileMetaMsg;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.security.MessageDigest;
-import java.util.List;
 import org.apache.commons.codec.binary.Hex;
-import org.bson.types.ObjectId;
 import org.tanukisoftware.wrapper.WrapperListener;
 import org.tanukisoftware.wrapper.WrapperManager;
 
 public class SDKTestV2 implements WrapperListener {
 
     private static final String sn = "yf";
-    private static final String path = "D:\\Games.rar";
+    private static final String path = "D:\\aa.exe";
 
     @Override
     public Integer start(String[] strings) {
@@ -33,21 +28,23 @@ public class SDKTestV2 implements WrapperListener {
             System.setProperty("snlist.conf", "conf/snlistYF.properties");
             System.setProperty("ytfs.conf", "conf/ytfsYF.properties");
         } else {
-            System.setProperty("snlist.conf", "conf/snlistCS.properties");
+            System.setProperty("snlist.conf", "conf/snlist.properties");
             System.setProperty("ytfs.conf", "conf/ytfs.properties");
+        }
+        if (strings.length < 1) {
+            strings = new String[]{path};
         }
         try {
             //LogConfigurator.configPath(new File("D:\\log\\log"), "DEBUG");
-            Version.setVersionID("1.0.1.15");
+            Version.setVersionID("1.0.0.13");
             YTClientMgr.init();
-            YTClient client = YTClientMgr.newInstance("username1234", "5JcDH48njDbUQLu1R8SWwKsfWLnqBpWXDDiCgxFC3hioDuwLhVx");
-            //YTClient client=YTClientMgr.newInstance("storename123", "5KjhEUN6iQiemuzCCkEYZRL3nsBQ1ozvHkKWdUqqnjD25uq16uf");
+            YTClient client = YTClientMgr.newInstance("devtestpolly", "5Kh5MhSNM9zjNwGz1GrC88bat9JptJpAVkeQWVdssAhtVS312hK");
+            //YTClient client = YTClientMgr.newInstance("devtestuser4", "5JVadiZJwPpQyDJeyfPEhGTy6RESFqEehY8M2Q12LwSxefF6UVk");
+           // YTClient client=YTClientMgr.newInstance("ianmooneyy11", "5JnLRW1bTRD2bxo93wZ1qnpXfMDHzA97qcQjabnoqgmJTt7kBoH");
             //YTClient client=YTClientMgr.newInstance("username12345", "5JcDH48n9DbUQLu1R8SWwKsfWLnqBpWXDDiCgxFC3hioDuwLhVi");
 
-           //BucketAccessor accessor = client.createBucketAccessor();
-           //accessor.createBucket("bbbb",  new byte[0]);
-            
-             
+            //BucketAccessor accessor = client.createBucketAccessor();
+            //accessor.createBucket("bbbb",  new byte[0]);
             String filepath = null;
             String newfilepath = null;
             if (strings.length > 0) {
