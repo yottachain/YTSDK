@@ -45,6 +45,19 @@ public class PreAllocNodeMgrV2 extends Thread {
         }
     }
 
+    static void addtestnode() {
+        PreAllocNode node = new PreAllocNode();
+        node.setId(725);
+        node.setNodeid("16Uiu2HAmGcp3KCqE2fezhFKWPfnpGGSbee9r3N9YdLoJf4K5XoU9");
+        node.setPubkey("7HAQVKTc6hF3ivLhbVgLCBsUcsbYABx6A5swuorjPBh955dW2K");
+        List<String> addr = new ArrayList();
+        addr.add("/ip4/49.233.90.160/tcp/9001");
+        node.setAddrs(addr);
+        node.setTimestamp(0);
+        node.setSign("");
+        PreAllocNodes.NODE_LIST.put(node.getId(), new PreAllocNodeStat(node, 0));
+    }
+
     static synchronized void init(YTClient client) {
         if (me == null) {
             try {
@@ -53,6 +66,7 @@ public class PreAllocNodeMgrV2 extends Thread {
                 ls.stream().forEach((node) -> {
                     PreAllocNodes.NODE_LIST.put(node.getId(), new PreAllocNodeStat(node, client.getSuperNode().getId()));
                 });
+                //addtestnode();
                 LOG.info("Pre-Alloc Node total:" + ls.size());
                 me = new PreAllocNodeMgrV2();
                 me.start();
@@ -73,18 +87,22 @@ public class PreAllocNodeMgrV2 extends Thread {
     public static void Reset() {
         if (me != null) {
             synchronized (me) {
-                me.direct=true;
-                me.notify();
+                me.direct = true;
+                me.notifyAll();
             }
         }
     }
 
-    boolean direct=false;
+    boolean direct = false;
+
     @Override
     public void run() {
         LOG.info("Pre-Alloc Node manager is starting...");
         try {
-            sleep(UserConfig.PTR);
+            synchronized (me) {
+                direct = false;
+                me.wait(UserConfig.PTR);
+            }
         } catch (InterruptedException ex) {
             this.interrupt();
         }
@@ -94,16 +112,16 @@ public class PreAllocNodeMgrV2 extends Thread {
                 if (!clients.isEmpty()) {
                     int[] errids = ErrorNodeCache.getErrorIds();
                     PreAllocNodeResp resp = getPreAllocNodeResp(clients.get(0), errids);
-                    PreAllocNodes.updateList(resp.getList(), clients.get(0).getSuperNode().getId(),direct);
+                    PreAllocNodes.updateList(resp.getList(), clients.get(0).getSuperNode().getId(), direct);
                     if (errids.length > 0) {
                         LOG.info("Pre-Alloc Node list is updated,total:" + resp.getList().size() + "," + errids.length + " error ids were excluded.");
                     } else {
                         LOG.info("Pre-Alloc Node list is updated,total:" + resp.getList().size());
                     }
                 }
-                synchronized (this) {
-                    direct=false;
-                    this.wait(UserConfig.PTR);
+                synchronized (me) {
+                    direct = false;
+                    me.wait(UserConfig.PTR);
                 }
             } catch (InterruptedException ie) {
                 break;

@@ -1,7 +1,5 @@
 package com.ytfs.client;
 
-import com.ytfs.client.v2.PreAllocNodeMgrV2;
-import static com.ytfs.common.ServiceErrorCode.DN_IN_BLACKLIST;
 import com.ytfs.common.conf.UserConfig;
 import com.ytfs.service.packet.UploadShardRes;
 import com.ytfs.common.codec.Block;
@@ -85,42 +83,28 @@ public class UploadBlock {
     }
 
     public ObjectRefer upload() throws ServiceException, InterruptedException {
-        for (int ii = 0; ii < 3; ii++) {
-            try {
-                long l = System.currentTimeMillis();
-                byte[] ks = KeyStoreCoder.generateRandomKey();
-                BlockAESEncryptor aes = new BlockAESEncryptor(block, ks);
-                aes.encrypt();
-                if (UserConfig.useLRCCoder) {
-                    encoder = new ShardLRCEncoder(aes.getBlockEncrypted());
-                } else {
-                    encoder = new ShardRSEncoder(aes.getBlockEncrypted());
-                }
-                encoder.encode();
-                block.clearData();
-                aes.getBlockEncrypted().clearData();
-                long size = encoder.getLength() - block.getRealSize();
-                uploadObject.memoryChange(size);
-                long times = firstUpload();
-                subUpload(times);
-                LOG.info("[" + VNU + "][" + id + "]Upload block OK,shardcount " + encoder.getShardList().size() + ",take times " + (System.currentTimeMillis() - l) + "ms");
-                return completeUploadBlock(ks);
-            } catch (Exception r) {
-                if (r instanceof ServiceException) {
-                    ServiceException se = (ServiceException) r;
-                    if (se.getErrorCode() == DN_IN_BLACKLIST) {
-                        PreAllocNodeMgrV2.Reset();
-                        PreAllocNodeMgr.Reset();
-                        Thread.sleep(30000);
-                        LOG.info("[" + VNU + "][" + id + "]Upload block ERR:DN_IN_BLACKLIST");
-                        continue;
-                    }
-                    throw se;
-                }
-                throw new ServiceException(SERVER_ERROR);
+        try {
+            long l = System.currentTimeMillis();
+            byte[] ks = KeyStoreCoder.generateRandomKey();
+            BlockAESEncryptor aes = new BlockAESEncryptor(block, ks);
+            aes.encrypt();
+            if (UserConfig.useLRCCoder) {
+                encoder = new ShardLRCEncoder(aes.getBlockEncrypted());
+            } else {
+                encoder = new ShardRSEncoder(aes.getBlockEncrypted());
             }
+            encoder.encode();
+            //block.clearData();
+            aes.getBlockEncrypted().clearData();
+            long size = encoder.getLength() - block.getRealSize();
+            uploadObject.memoryChange(size);
+            long times = firstUpload();
+            subUpload(times);
+            LOG.info("[" + VNU + "][" + id + "]Upload block OK,shardcount " + encoder.getShardList().size() + ",take times " + (System.currentTimeMillis() - l) + "ms");
+            return completeUploadBlock(ks);
+        } catch (Exception r) {
+            throw r instanceof ServiceException ? (ServiceException) r : new ServiceException(SERVER_ERROR);
         }
-        throw new ServiceException(SERVER_ERROR);
     }
 
     private long firstUpload() throws InterruptedException {

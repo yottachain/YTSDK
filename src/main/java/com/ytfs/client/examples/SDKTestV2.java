@@ -24,7 +24,7 @@ public class SDKTestV2 implements WrapperListener {
 
     @Override
     public Integer start(String[] strings) {
-        if (sn.equalsIgnoreCase("yaf")) {
+        if (sn.equalsIgnoreCase("yf")) {
             System.setProperty("snlist.conf", "conf/snlistYF.properties");
             System.setProperty("ytfs.conf", "conf/ytfsYF.properties");
         } else {
@@ -38,9 +38,9 @@ public class SDKTestV2 implements WrapperListener {
             //LogConfigurator.configPath(new File("D:\\log\\log"), "DEBUG");
             Version.setVersionID("1.0.0.13");
             YTClientMgr.init();
-            //YTClient client = YTClientMgr.newInstance("devtestpolly", "5Kh5MhSNM9zjNwGz1GrC88bat9JptJpAVkeQWVdssAhtVS312hK");
+            YTClient client = YTClientMgr.newInstance("devtestpolly", "5Kh5MhSNM9zjNwGz1GrC88bat9JptJpAVkeQWVdssAhtVS312hK");
             //YTClient client = YTClientMgr.newInstance("devtestuser4", "5JVadiZJwPpQyDJeyfPEhGTy6RESFqEehY8M2Q12LwSxefF6UVk");
-            YTClient client=YTClientMgr.newInstance("ianmooneyy11", "5JnLRW1bTRD2bxo93wZ1qnpXfMDHzA97qcQjabnoqgmJTt7kBoH");
+           // YTClient client=YTClientMgr.newInstance("ianmooneyy11", "5JnLRW1bTRD2bxo93wZ1qnpXfMDHzA97qcQjabnoqgmJTt7kBoH");
             //YTClient client=YTClientMgr.newInstance("username12345", "5JcDH48n9DbUQLu1R8SWwKsfWLnqBpWXDDiCgxFC3hioDuwLhVi");
 
             //BucketAccessor accessor = client.createBucketAccessor();

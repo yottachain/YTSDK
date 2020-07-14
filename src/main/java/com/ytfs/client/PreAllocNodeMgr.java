@@ -28,7 +28,7 @@ public class PreAllocNodeMgr extends Thread {
     public static void Reset() {
         if (me != null) {
             synchronized (me) {
-                me.direct=true;
+                me.direct = true;
                 me.notify();
             }
         }
@@ -65,12 +65,16 @@ public class PreAllocNodeMgr extends Thread {
         }
     }
 
-    boolean direct=false;
+    boolean direct = false;
+
     @Override
     public void run() {
         LOG.info("Pre-Alloc Node manager is starting...");
         try {
-            sleep(UserConfig.PTR);
+            synchronized (me) {
+                direct = false;
+                me.wait(UserConfig.PTR);
+            }
         } catch (InterruptedException ex) {
             this.interrupt();
         }
@@ -78,15 +82,15 @@ public class PreAllocNodeMgr extends Thread {
             try {
                 int[] errids = ErrorNodeCache.getErrorIds();
                 PreAllocNodeResp resp = getPreAllocNodeResp(errids);
-                PreAllocNodes.updateList(resp.getList(), UserConfig.superNode.getId(),direct);
+                PreAllocNodes.updateList(resp.getList(), UserConfig.superNode.getId(), direct);
                 if (errids.length > 0) {
                     LOG.info("Pre-Alloc Node list is updated,total:" + resp.getList().size() + "," + errids.length + " error ids were excluded.");
                 } else {
                     LOG.info("Pre-Alloc Node list is updated,total:" + resp.getList().size());
                 }
-                synchronized (this) {
-                    direct=false;
-                    this.wait(UserConfig.PTR);
+                synchronized (me) {
+                    direct = false;
+                    me.wait(UserConfig.PTR);
                 }
             } catch (InterruptedException ie) {
                 break;
