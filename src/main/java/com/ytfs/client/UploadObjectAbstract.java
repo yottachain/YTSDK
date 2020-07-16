@@ -113,6 +113,7 @@ public abstract class UploadObjectAbstract {
         } else {
             UploadBlockInitReqV2 req = new UploadBlockInitReqV2(VNU, b.getVHP(), id);
             req.fill(client.getUserId(), client.getKeyNumber(), client.getPrivateKey());
+            req.setVersion(Version.getVersionID());
             resp = P2PUtils.requestBPU(req, node, UserConfig.SN_RETRYTIMES);
         }
         if (resp instanceof UploadBlockDupResp) {//重复,resp.getExist()=0已经上传  
