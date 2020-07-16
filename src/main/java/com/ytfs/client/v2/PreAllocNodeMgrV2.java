@@ -118,10 +118,11 @@ public class PreAllocNodeMgrV2 extends Thread {
                     } else {
                         LOG.info("Pre-Alloc Node list is updated,total:" + resp.getList().size());
                     }
+                    Thread.sleep(5000);
                 }
                 synchronized (me) {
                     direct = false;
-                    me.wait(UserConfig.PTR);
+                    me.wait(UserConfig.PTR-5000);
                 }
             } catch (InterruptedException ie) {
                 break;
