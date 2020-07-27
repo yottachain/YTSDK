@@ -1,7 +1,9 @@
 package com.ytfs.client;
 
 import com.ytfs.common.GlobleThreadPool;
+import com.ytfs.common.ServiceException;
 import com.ytfs.common.codec.Shard;
+import com.ytfs.common.conf.UserConfig;
 import static com.ytfs.common.conf.UserConfig.UPLOADSHARDTHREAD;
 import com.ytfs.common.net.P2PUtils;
 import com.ytfs.common.tracing.GlobalTracer;
@@ -16,6 +18,7 @@ import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.tag.Tags;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.logging.Level;
 import org.apache.log4j.Logger;
 
 public class UploadShard implements Runnable {
@@ -57,6 +60,23 @@ public class UploadShard implements Runnable {
         return req;
     }
 
+    private GetNodeCapacityResp GetToken(GetNodeCapacityReq ctlreq, PreAllocNodeStat node) throws ServiceException {
+        for (int ii = 0; ii < UserConfig.RETRYTIMES; ii++) {
+            long l = System.currentTimeMillis();
+            GetNodeCapacityResp ctlresp = (GetNodeCapacityResp) P2PUtils.requestNode(ctlreq, node.getNode(), logHead);
+            if (!ctlresp.isWritable()) {
+                long ctrtimes = System.currentTimeMillis() - l;
+                LOG.warn(logHead + "Node " + node.getId() + " is unavailabe,take times " + ctrtimes + " ms");
+                node.setBusy();
+            } else {
+                return ctlresp;
+            }
+        }
+        GetNodeCapacityResp res = new GetNodeCapacityResp();
+        res.setWritable(false);
+        return res;
+    }
+
     @Override
     public void run() {
         try {
@@ -78,7 +98,8 @@ public class UploadShard implements Runnable {
                     GetNodeCapacityReq ctlreq = new GetNodeCapacityReq();
                     ctlreq.setRetryTimes(uploadBlock.retryTimes);
                     ctlreq.setStartTime(uploadBlock.sTime);
-                    GetNodeCapacityResp ctlresp = (GetNodeCapacityResp) P2PUtils.requestNode(ctlreq, node.getNode(), logHead);
+                    // GetNodeCapacityResp ctlresp = (GetNodeCapacityResp) P2PUtils.requestNode(ctlreq, node.getNode(), logHead);
+                    GetNodeCapacityResp ctlresp = GetToken(ctlreq, node);
                     req.setAllocId(ctlresp.getAllocId());
                     ctrtimes = System.currentTimeMillis() - l;
                     if (!ctlresp.isWritable()) {

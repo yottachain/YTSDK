@@ -68,6 +68,8 @@ public class PreAllocNodes {
                 removels.add(ent.getValue());
             }
         });
+        
+        
         Collection<PreAllocNode> coll = map.values();
         coll.stream().forEach((node) -> {
             PreAllocNodes.NODE_LIST.put(node.getId(), new PreAllocNodeStat(node, snid));

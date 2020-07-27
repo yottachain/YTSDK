@@ -1,10 +1,10 @@
 package com.ytfs.client.v2;
 
+import com.ytfs.client.ClientInitor;
 import static com.ytfs.client.ClientInitor.inited;
 import static com.ytfs.client.ClientInitor.startP2p;
 import com.ytfs.client.Configurator;
 import com.ytfs.client.DownloadShard;
-import com.ytfs.client.PreAllocNodes;
 import com.ytfs.client.RegUser;
 import com.ytfs.client.UploadBlockExecuter;
 import com.ytfs.client.UploadShard;
@@ -17,7 +17,9 @@ import static com.ytfs.common.conf.UserConfig.RETRYTIMES;
 import static com.ytfs.common.conf.UserConfig.UPLOADBLOCKTHREAD;
 import static com.ytfs.common.conf.UserConfig.UPLOADFILEMAXMEMORY;
 import static com.ytfs.common.conf.UserConfig.UPLOADSHARDTHREAD;
+import static com.ytfs.common.conf.UserConfig.privateKey;
 import static com.ytfs.common.conf.UserConfig.tmpFilePath;
+import static com.ytfs.common.conf.UserConfig.username;
 import static com.ytfs.common.conf.UserConfig.zipkinServer;
 import com.ytfs.common.tracing.GlobalTracer;
 import io.jafka.jeos.util.KeyUtil;
@@ -47,7 +49,7 @@ public class YTClientMgr {
             throw new IOException("Maximum number of users reached.");
         }
         YTClient client = new YTClient(username, privateKey);
-        RegUser.regist(client);       
+        RegUser.regist(client);
         putClient(client);
         PreAllocNodeMgrV2.init(client);
         return client;
@@ -61,6 +63,14 @@ public class YTClientMgr {
 
     private static void putClient(YTClient client) {
         clients.put(client.getAccessorKey(), client);
+    }
+
+    public static YTClient getClient() {
+        if (clients.isEmpty()){
+            return null;
+        }else{
+            return clients.values().iterator().next();
+        }
     }
 
     public static YTClient getClient(String accessorKey) {
@@ -83,7 +93,7 @@ public class YTClientMgr {
     /**
      * 初始化SDK
      *
-     * @param cfg 
+     * @param cfg
      * @throws IOException
      */
     public synchronized static void init(Configurator cfg) throws IOException {
@@ -103,6 +113,9 @@ public class YTClientMgr {
             MemoryCache.init();
             GlobalTracer.init(zipkinServer, "S3server");
             inited = true;
+            if (username != null) {
+                YTClientMgr.newInstance(username, privateKey);
+            }
         }
     }
 
@@ -136,6 +149,14 @@ public class YTClientMgr {
         }
         if (!tmpFilePath.isDirectory()) {
             throw new IOException("The 'tmpFilePath' parameter is not configured.");
+        }
+        ClientInitor.privKey = p.getProperty("privateKey");
+        username = p.getProperty("username");
+        if (username == null || username.trim().isEmpty()) {
+            username = null;
+        } else {
+            username = username.trim();
+            ClientInitor.exportPrivateKey(p.getProperty("KUSp").trim());
         }
         Configurator cfg = new Configurator();
         cfg.setDownloadThread(p.getProperty("downloadThread"));
