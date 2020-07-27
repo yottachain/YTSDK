@@ -42,7 +42,7 @@ public class ClientInitor {
     }
 
     public static boolean inited = false;
-    private static String privKey;
+    public static String privKey;
 
     /**
      * 初始化SDK
@@ -180,7 +180,7 @@ public class ClientInitor {
         zipkinServer = cfg.getZipkinServer();
     }
 
-    private static void exportPrivateKey(String password) throws IOException {
+    public static void exportPrivateKey(String password) throws IOException {
         try {
             KUSp = Base58.decode(password);
             if (KUSp.length != 37) {

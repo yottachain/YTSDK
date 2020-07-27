@@ -85,7 +85,7 @@ public abstract class UploadObjectAbstract {
 
     //上传块
     public final void upload(Block b, short id, SuperNode node) throws ServiceException, InterruptedException {
-        for (int ii = 0; ii < 3; ii++) {
+        for (int ii = 0; ii < 8; ii++) {
             try {
                 uploadNoCheck(b, id, node);
                 return;
