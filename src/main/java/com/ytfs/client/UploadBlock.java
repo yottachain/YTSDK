@@ -108,8 +108,18 @@ public class UploadBlock {
     }
 
     private long firstUpload() throws InterruptedException {
+        this.maxOkTimes = UserConfig.shardNumPerNode;
         List<PreAllocNodeStat> ls = PreAllocNodes.getNodes();
         List<Shard> shards = encoder.getShardList();
+        if (ls.size() >= shards.size()) {
+            this.excessNode.addAll(ls);
+        } else {
+            int num = shards.size() / ls.size() + 1;
+            for (int ii = 0; ii < num; ii++) {
+                this.excessNode.addAll(ls);
+            }
+        }
+        /*
         if (ls.size() >= shards.size()) {
             if (ls.size() / shards.size() >= 2) {
                 this.maxOkTimes = 1;
@@ -125,7 +135,7 @@ public class UploadBlock {
             for (int ii = 0; ii < num; ii++) {
                 this.excessNode.addAll(ls);
             }
-        }
+        }*/
         LOG.info("[" + VNU + "][" + id + "]Start uploading...Num of shards:" + shards.size() + ",Num of nodes:" + ls.size());
         long l = System.currentTimeMillis();
         int shardindex = 0;
