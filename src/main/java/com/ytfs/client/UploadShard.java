@@ -65,8 +65,8 @@ public class UploadShard implements Runnable {
             long l = System.currentTimeMillis();
             GetNodeCapacityResp ctlresp = (GetNodeCapacityResp) P2PUtils.requestNode(ctlreq, node.getNode(), logHead);
             if (!ctlresp.isWritable()) {
-                long ctrtimes = System.currentTimeMillis() - l;
-                LOG.warn(logHead + "Node " + node.getId() + " is unavailabe,take times " + ctrtimes + " ms");
+                //long ctrtimes = System.currentTimeMillis() - l;
+                //LOG.warn(logHead + "Node " + node.getId() + " is unavailabe,take times " + ctrtimes + " ms");
                 node.setBusy();
             } else {
                 return ctlresp;

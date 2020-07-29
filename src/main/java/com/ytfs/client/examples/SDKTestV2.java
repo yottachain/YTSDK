@@ -19,7 +19,7 @@ import org.tanukisoftware.wrapper.WrapperManager;
 
 public class SDKTestV2 implements WrapperListener {
 
-    private static final String sn = "yf";
+    private static final String sn = "yfa";
     private static final String path = "D:\\aa.exe";
 
     @Override
@@ -40,8 +40,8 @@ public class SDKTestV2 implements WrapperListener {
             YTClientMgr.init();
             //YTClient client = YTClientMgr.newInstance("devtestpolly", "5Kh5MhSNM9zjNwGz1GrC88bat9JptJpAVkeQWVdssAhtVS312hK");
             //YTClient client = YTClientMgr.newInstance("devtestuser4", "5JVadiZJwPpQyDJeyfPEhGTy6RESFqEehY8M2Q12LwSxefF6UVk");
-           // YTClient client = YTClientMgr.newInstance("ianmooneyy11", "5JnLRW1bTRD2bxo93wZ1qnpXfMDHzA97qcQjabnoqgmJTt7kBoH");
-            YTClient client=YTClientMgr.newInstance("username1234", "5KfbRow4L71fZnnu9XEnkmVqByi6CSmRiADJCx6asRS4TUEkU79");
+            YTClient client = YTClientMgr.newInstance("ianmooneyy11", "5JnLRW1bTRD2bxo93wZ1qnpXfMDHzA97qcQjabnoqgmJTt7kBoH");
+           // YTClient client=YTClientMgr.newInstance("username1234", "5KfbRow4L71fZnnu9XEnkmVqByi6CSmRiADJCx6asRS4TUEkU79");
 
             //BucketAccessor accessor = client.createBucketAccessor();
             //accessor.createBucket("bbbb",  new byte[0]);
